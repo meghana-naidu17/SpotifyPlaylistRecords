@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlist Records Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="logo">
+        <i class="fa-brands fa-spotify"></i>
+        Spotify Playlist Records Dashboard
+    </div>
+
+</header>
+
+<div class="container">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <h2>Modules</h2>
+
+        <a href="{{ url_for('data_loading') }}"
+           class="{% if active=='data-loading' %}active{% endif %}">
+            <i class="fa-solid fa-database"></i>
+            Dataset Summary
+        </a>
+
+        <a class="disabled">
+            <i class="fa-solid fa-chart-column"></i>
+            Exploratory Data Analysis
+        </a>
+
+        <a class="disabled">
+            <i class="fa-solid fa-filter"></i>
+            Data Preprocessing
+        </a>
+
+        <a class="disabled">
+            <i class="fa-solid fa-brain"></i>
+            Machine Learning
+        </a>
+
+        <a class="disabled">
+            <i class="fa-solid fa-bullseye"></i>
+            Prediction
+        </a>
+
+    </aside>
+
+    <!-- Main Content -->
+
+    <main class="content">
+
+        {% if active=="none" %}
+
+        <section class="hero">
+
+            <h1>Spotify Playlist Records Dashboard</h1>
+
+            <p>
+                Analyze songs, artists, genres, playlists,
+                popularity, and audio features using
+                Exploratory Data Analysis and Machine Learning.
+            </p>
+
+        </section>
+
+        {% endif %}
+
+        {% if active=="data-loading" %}
+
+        <!-- Summary Cards -->
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Rows</h3>
+                <p>{{ summary.n_rows }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Total Columns</h3>
+                <p>{{ summary.n_columns }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Total Cells</h3>
+                <p>{{ summary.total_cells }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Duplicate Rows</h3>
+                <p>{{ summary.duplicate_rows }}</p>
+            </div>
+
+        </div>
+
+        <!-- Dataset Summary -->
+
+        <div class="table-card">
+
+            <h2>Dataset Summary</h2>
+
+            <table class="summary-table">
+
+                <tr>
+                    <td>Total Rows</td>
+                    <td>{{ summary.n_rows }}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Columns</td>
+                    <td>{{ summary.n_columns }}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Cells</td>
+                    <td>{{ summary.total_cells }}</td>
+                </tr>
+
+                <tr>
+                    <td>Duplicate Rows</td>
+                    <td>{{ summary.duplicate_rows }}</td>
+                </tr>
+
+                <tr>
+                    <td>Memory Usage</td>
+                    <td>{{ summary.memory_usage }} KB</td>
+                </tr>
+
+            </table>
+
+        </div>
+
+        <!-- Column Information -->
+
+        <div class="table-card">
+
+            <h2>Column Information</h2>
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+                    <thead>
+
+                    <tr>
+
+                        <th>Column</th>
+                        <th>Datatype</th>
+                        <th>Missing</th>
+                        <th>Missing %</th>
+                        <th>Unique</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for col in summary.columns %}
+
+                    <tr>
+
+                        <td>{{ col }}</td>
+                        <td>{{ summary.dtypes[col] }}</td>
+                        <td>{{ summary.missing_counts[col] }}</td>
+                        <td>{{ summary.missing_percentages[col] }}%</td>
+                        <td>{{ summary.unique_values[col] }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Dataset Preview -->
+
+        <div class="table-card">
+
+            <h2>Dataset Preview</h2>
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+                    <thead>
+
+                    <tr>
+
+                        {% for col in summary.columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for row in summary.preview %}
+
+                    <tr>
+
+                        {% for col in summary.columns %}
+                        <td>{{ row[col] }}</td>
+                        {% endfor %}
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+</body>
+</html>
