@@ -307,3 +307,101 @@ button:hover{
         padding:20px;
     }
 }
+/* ===========================
+   Chart Section
+=========================== */
+
+.chart-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+
+    gap:25px;
+
+    margin-top:20px;
+
+}
+
+.chart-card{
+
+    background:white;
+
+    border-radius:10px;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+
+    padding:20px;
+
+    transition:.3s;
+
+}
+
+.chart-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+
+}
+
+.chart-card h3{
+
+    text-align:center;
+
+    margin-bottom:15px;
+
+    color:#1f3a5f;
+
+    font-size:22px;
+
+}
+
+.chart-card img{
+
+    width:100%;
+
+    height:340px;
+
+    object-fit:contain;
+
+    border-radius:8px;
+
+    background:#ffffff;
+
+}
+
+.error-card{
+
+    background:#ffe6e6;
+
+    color:#b30000;
+
+}
+
+.summary-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin-top:10px;
+
+}
+
+.summary-table td,
+.summary-table th{
+
+    border:1px solid #ddd;
+
+    padding:10px;
+
+}
+
+.summary-table th{
+
+    background:#1f3a5f;
+
+    color:white;
+
+}

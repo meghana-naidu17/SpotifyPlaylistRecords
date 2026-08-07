@@ -36,10 +36,10 @@
             Dataset Summary
         </a>
 
-        <a class="disabled">
-            <i class="fa-solid fa-chart-column"></i>
-            Exploratory Data Analysis
-        </a>
+       <a href="{{ url_for('eda_page') }}"
+   class="{% if active=='eda' %}active{% endif %}">
+    📊 Exploratory Data Analysis
+</a>
 
         <a class="disabled">
             <i class="fa-solid fa-filter"></i>
