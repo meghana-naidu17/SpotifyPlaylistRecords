@@ -30,6 +30,37 @@ def run_eda():
 
     numeric_cols = data.select_dtypes(include=np.number).columns
 
+    # 1. DATASET SUMMARY
+    rows = len(data)
+    columns = len(data.columns)
+    basic_info = pd.DataFrame({
+        "Data Type": data.dtypes.astype(str),
+        "Non Null Count": data.count()
+    })
+
+    numeric_summary = (
+        data.describe()
+        .round(2)
+        .to_dict()
+    )
+
+    categorical_summary = (
+        data.describe(
+            include=["object", "string"]
+        )
+        .fillna("")
+        .to_dict()
+    )
+
+    # 2. BASIC INFORMATION
+    dtypes = data.dtypes.astype(str).to_dict()
+
+    # 4. DUPLICATE ROWS
+
+    duplicates = int(
+        data.duplicated().sum()
+    )
+
     # Histograms
     for col in numeric_cols:
         try:
@@ -314,6 +345,13 @@ def run_eda():
         save_chart("scatter_valence_popularity.png")
         charts.append("scatter_valence_popularity.png")
 
+    results["rows"] = rows
+    results["columns"] = columns
+    results["basic_info"] = basic_info.to_dict(orient="index")
+    results["numeric_summary"] = numeric_summary
+    results["categorical_summary"] = categorical_summary
+    results["dtypes"] = dtypes
+    results["duplicates"] = duplicates
     results["charts"] = charts
     results["rows"] = data.shape[0]
     results["columns"] = data.shape[1]
