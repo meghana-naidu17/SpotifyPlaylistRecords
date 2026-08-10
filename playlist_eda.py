@@ -152,6 +152,168 @@ def run_eda():
 
         charts.append(filename)
 
+
+    #Missing values chart
+
+    missing = data.isnull().sum()
+    missing = missing[missing > 0].sort_values(ascending=False)
+
+    if len(missing) > 0:
+        plt.figure(figsize=(12, 5))
+
+        sns.barplot(
+            x=missing.index,
+            y=missing.values,
+            color="skyblue"
+        )
+
+        plt.xticks(rotation=45, ha="right")
+        plt.xlabel("Columns")
+        plt.ylabel("Number of Missing Values")
+        plt.title("Missing Values by Column")
+
+        save_chart("missing_values.png")
+        charts.append("missing_values.png")
+
+    # Pairplot
+
+    pairplot_cols = [
+        "popularity",
+        "danceability",
+        "energy",
+        "loudness",
+        "acousticness",
+        "valence"
+    ]
+
+    pairplot_cols = [
+        col for col in pairplot_cols
+        if col in data.columns
+    ]
+
+    if len(pairplot_cols) >= 2:
+        # Sample data for faster plotting
+        pair_data = data[pairplot_cols].dropna().sample(
+            min(3000, len(data)),
+            random_state=42
+        )
+
+        pair_plot = sns.pairplot(
+            pair_data,
+            diag_kind="hist"
+        )
+
+        pair_plot.fig.suptitle(
+            "Spotify Audio Features Pairplot",
+            y=1.02
+        )
+
+        pair_plot.fig.savefig(
+            os.path.join(CHART_DIR, "pairplot.png"),
+            dpi=120,
+            bbox_inches="tight"
+        )
+
+        plt.close("all")
+
+        charts.append("pairplot.png")
+
+    #scatter plot
+
+    # Energy vs Popularity
+    if "energy" in data.columns and "popularity" in data.columns:
+        plt.figure(figsize=(8, 5))
+
+        sns.scatterplot(
+            data=data,
+            x="energy",
+            y="popularity",
+            alpha=0.4
+        )
+
+        plt.xlabel("Energy")
+        plt.ylabel("Popularity")
+        plt.title("Energy vs Popularity")
+
+        save_chart("scatter_energy_popularity.png")
+        charts.append("scatter_energy_popularity.png")
+
+    # Danceability vs Popularity
+
+    if "danceability" in data.columns and "popularity" in data.columns:
+        plt.figure(figsize=(8, 5))
+
+        sns.scatterplot(
+            data=data,
+            x="danceability",
+            y="popularity",
+            alpha=0.4
+        )
+
+        plt.xlabel("Danceability")
+        plt.ylabel("Popularity")
+        plt.title("Danceability vs Popularity")
+
+        save_chart("scatter_danceability_popularity.png")
+        charts.append("scatter_danceability_popularity.png")
+
+    # Loudness vs Energy
+
+    if "loudness" in data.columns and "energy" in data.columns:
+        plt.figure(figsize=(8, 5))
+
+        sns.scatterplot(
+            data=data,
+            x="loudness",
+            y="energy",
+            alpha=0.4
+        )
+
+        plt.xlabel("Loudness")
+        plt.ylabel("Energy")
+        plt.title("Loudness vs Energy")
+
+        save_chart("scatter_loudness_energy.png")
+        charts.append("scatter_loudness_energy.png")
+
+    # Acousticness vs Popularity
+
+    if "acousticness" in data.columns and "popularity" in data.columns:
+        plt.figure(figsize=(8, 5))
+
+        sns.scatterplot(
+            data=data,
+            x="acousticness",
+            y="popularity",
+            alpha=0.4
+        )
+
+        plt.xlabel("Acousticness")
+        plt.ylabel("Popularity")
+        plt.title("Acousticness vs Popularity")
+
+        save_chart("scatter_acousticness_popularity.png")
+        charts.append("scatter_acousticness_popularity.png")
+
+    # Valence vs Popularity
+
+    if "valence" in data.columns and "popularity" in data.columns:
+        plt.figure(figsize=(8, 5))
+
+        sns.scatterplot(
+            data=data,
+            x="valence",
+            y="popularity",
+            alpha=0.4
+        )
+
+        plt.xlabel("Valence")
+        plt.ylabel("Popularity")
+        plt.title("Valence vs Popularity")
+
+        save_chart("scatter_valence_popularity.png")
+        charts.append("scatter_valence_popularity.png")
+
     results["charts"] = charts
     results["rows"] = data.shape[0]
     results["columns"] = data.shape[1]

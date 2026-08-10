@@ -25,7 +25,6 @@ def data_loading():
             summary=None,
             error=str(e)
         )
-
 @app.route("/eda")
 def eda_page():
     try:

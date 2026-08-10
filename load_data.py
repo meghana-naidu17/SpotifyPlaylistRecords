@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Dataset path
-DATA_PATH = r"C:\Users\Abhiii\Downloads\SpotifyPlaylistRecords\SpotifyPlaylistRecords.csv"
+DATA_PATH = r"D:\SEM4\MACHINE LEARNING\SpotifyPlaylistRecords\SpotifyPlaylistRecords.csv"
 
 
 def load_data(path=DATA_PATH):
