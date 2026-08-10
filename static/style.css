@@ -1,7 +1,3 @@
-/* ===========================
-   RESET
-=========================== */
-
 *{
     margin:0;
     padding:0;
@@ -14,10 +10,6 @@ body{
     color:#ffffff;
     overflow-x:hidden;
 }
-
-/* ===========================
-   HEADER
-=========================== */
 
 .topbar{
     height:70px;
@@ -38,18 +30,10 @@ body{
     letter-spacing:.5px;
 }
 
-/* ===========================
-   LAYOUT
-=========================== */
-
 .container{
     display:flex;
     min-height:calc(100vh - 70px);
 }
-
-/* ===========================
-   SIDEBAR
-=========================== */
 
 .sidebar{
     width:260px;
@@ -58,7 +42,8 @@ body{
     border-right:1px solid #2d2d2d;
 }
 
-.sidebar h2{
+.sidebar h2,
+.sidebar h3{
     color:#1DB954;
     margin-bottom:25px;
 }
@@ -91,18 +76,11 @@ body{
     cursor:not-allowed;
 }
 
-/* ===========================
-   CONTENT
-=========================== */
-
 .content{
     flex:1;
     padding:35px;
+    background:#121212;
 }
-
-/* ===========================
-   HERO
-=========================== */
 
 .hero{
     background:linear-gradient(135deg,#1DB954,#14833b);
@@ -123,10 +101,6 @@ body{
     color:#eeeeee;
 }
 
-/* ===========================
-   SUMMARY CARDS
-=========================== */
-
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -138,14 +112,19 @@ body{
     background:#181818;
     border-radius:15px;
     padding:25px;
-    text-align:center;
+    margin-bottom:25px;
     box-shadow:0 5px 18px rgba(0,0,0,.35);
     transition:.3s;
 }
 
 .card:hover{
-    transform:translateY(-6px);
+    transform:translateY(-4px);
     box-shadow:0 10px 25px rgba(29,185,84,.25);
+}
+
+.card h2{
+    color:#1DB954;
+    margin-bottom:20px;
 }
 
 .card h3{
@@ -156,13 +135,8 @@ body{
 
 .card p{
     color:#1DB954;
-    font-size:34px;
-    font-weight:bold;
+    font-size:20px;
 }
-
-/* ===========================
-   TABLE CONTAINER
-=========================== */
 
 .table-card{
     background:#181818;
@@ -177,42 +151,48 @@ body{
     margin-bottom:20px;
 }
 
-/* ===========================
-   SUMMARY TABLE
-=========================== */
-
 .summary-table{
     width:100%;
-    max-width:600px;
     border-collapse:collapse;
+    margin-top:10px;
+    color:white;
 }
 
-.summary-table td{
-    border:1px solid #333;
+.summary-table td,
+.summary-table th{
+    border:1px solid #333333;
     padding:14px;
 }
 
-.summary-table tr:nth-child(even){
+.summary-table th{
+    background:#1DB954;
+    color:white;
+    text-align:left;
+}
+
+.summary-table td{
+    background:#181818;
+}
+
+.summary-table tr:nth-child(even) td{
     background:#242424;
 }
 
-.summary-table tr:hover{
-    background:#2f2f2f;
+.summary-table tr:hover td{
+    background:#2d2d2d;
 }
-
-/* ===========================
-   DATA TABLE
-=========================== */
 
 .table-wrapper{
     overflow:auto;
     max-height:500px;
+    border-radius:8px;
 }
 
 .data-table{
     width:100%;
     border-collapse:collapse;
     min-width:900px;
+    color:white;
 }
 
 .data-table th{
@@ -222,24 +202,22 @@ body{
     color:white;
     padding:14px;
     text-align:left;
+    z-index:2;
 }
 
 .data-table td{
     border:1px solid #333;
     padding:12px;
+    background:#181818;
 }
 
-.data-table tr:nth-child(even){
+.data-table tr:nth-child(even) td{
     background:#202020;
 }
 
-.data-table tr:hover{
+.data-table tr:hover td{
     background:#2d2d2d;
 }
-
-/* ===========================
-   BUTTONS
-=========================== */
 
 button{
     background:#1DB954;
@@ -255,9 +233,57 @@ button:hover{
     background:#159a46;
 }
 
-/* ===========================
-   SCROLLBAR
-=========================== */
+.chart-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    gap:25px;
+    margin-top:20px;
+}
+
+.chart-card{
+    background:#ffffff;
+    border:2px solid #1DB954;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 4px 15px rgba(0,0,0,.35);
+    transition:.3s;
+}
+
+.chart-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 8px 22px rgba(29,185,84,.35);
+}
+
+.chart-card h3{
+    text-align:center;
+    margin-bottom:15px;
+    color:#23456b;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.chart-card img{
+    width:100%;
+    height:340px;
+    object-fit:contain;
+    display:block;
+    border-radius:8px;
+    background:#ffffff;
+}
+
+.error-card{
+    background:#ffe6e6;
+    color:#b30000;
+    border-left:5px solid #e53935;
+}
+
+.error-card h2{
+    color:#b30000;
+}
+
+.error-card p{
+    color:#b30000;
+}
 
 ::-webkit-scrollbar{
     width:8px;
@@ -265,7 +291,7 @@ button:hover{
 }
 
 ::-webkit-scrollbar-track{
-    background:#222;
+    background:#222222;
 }
 
 ::-webkit-scrollbar-thumb{
@@ -276,10 +302,6 @@ button:hover{
 ::-webkit-scrollbar-thumb:hover{
     background:#18a84d;
 }
-
-/* ===========================
-   RESPONSIVE
-=========================== */
 
 @media(max-width:900px){
 
@@ -306,102 +328,12 @@ button:hover{
     .content{
         padding:20px;
     }
-}
-/* ===========================
-   Chart Section
-=========================== */
 
-.chart-grid{
+    .chart-grid{
+        grid-template-columns:1fr;
+    }
 
-    display:grid;
-
-    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
-
-    gap:25px;
-
-    margin-top:20px;
-
-}
-
-.chart-card{
-
-    background:white;
-
-    border-radius:10px;
-
-    box-shadow:0 4px 12px rgba(0,0,0,.12);
-
-    padding:20px;
-
-    transition:.3s;
-
-}
-
-.chart-card:hover{
-
-    transform:translateY(-4px);
-
-    box-shadow:0 8px 20px rgba(0,0,0,.18);
-
-}
-
-.chart-card h3{
-
-    text-align:center;
-
-    margin-bottom:15px;
-
-    color:#1f3a5f;
-
-    font-size:22px;
-
-}
-
-.chart-card img{
-
-    width:100%;
-
-    height:340px;
-
-    object-fit:contain;
-
-    border-radius:8px;
-
-    background:#ffffff;
-
-}
-
-.error-card{
-
-    background:#ffe6e6;
-
-    color:#b30000;
-
-}
-
-.summary-table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    margin-top:10px;
-
-}
-
-.summary-table td,
-.summary-table th{
-
-    border:1px solid #ddd;
-
-    padding:10px;
-
-}
-
-.summary-table th{
-
-    background:#1f3a5f;
-
-    color:white;
-
+    .chart-card img{
+        height:280px;
+    }
 }
