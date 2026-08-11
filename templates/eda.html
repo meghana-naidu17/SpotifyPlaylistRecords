@@ -249,6 +249,160 @@
             border-radius: 6px;
         }
 
+        /* ================= CLICKABLE CHARTS ================= */
+
+        .chart-card {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .chart-hint {
+            margin-top: 12px;
+            color: #999999;
+            font-size: 13px;
+        }
+
+
+        /* ================= CHART MODAL ================= */
+
+        .chart-modal {
+            display: none;
+
+            position: fixed;
+            z-index: 9999;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.85);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+        }
+
+
+        /* Modal box */
+
+        .chart-modal-content {
+            position: relative;
+
+            background: #181818;
+
+            width: 90%;
+            max-width: 1200px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            border-radius: 15px;
+
+            padding: 30px;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+
+        /* Modal title */
+
+        .chart-modal-content h2 {
+            color: #1DB954;
+
+            font-size: 24px;
+
+            margin-bottom: 20px;
+
+            padding-right: 40px;
+        }
+
+
+        /* Enlarged chart */
+
+        .modal-chart-container {
+            width: 100%;
+
+            background: white;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            text-align: center;
+        }
+
+        .modal-chart-container img {
+            width: 100%;
+
+            max-height: 600px;
+
+            object-fit: contain;
+        }
+
+
+        /* Details section */
+
+        .chart-details {
+            margin-top: 20px;
+
+            background: #222222;
+
+            border-left: 4px solid #1DB954;
+
+            border-radius: 8px;
+
+            padding: 18px;
+        }
+
+        .chart-details h3 {
+            color: #1DB954;
+
+            margin-bottom: 10px;
+        }
+
+        .chart-details p {
+            color: #dddddd;
+
+            line-height: 1.6;
+
+            font-size: 15px;
+        }
+
+
+        /* Close button */
+
+        .close-button {
+            position: absolute;
+
+            top: 15px;
+            right: 20px;
+
+            background: none;
+
+            border: none;
+
+            color: #ffffff;
+
+            font-size: 35px;
+
+            cursor: pointer;
+
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            color: #1DB954;
+        }
+
         /* ================= ERROR ================= */
 
         .error {
@@ -809,7 +963,11 @@
 
                 {% for chart in results.charts %}
 
-                <div class="chart-card">
+                <div class="chart-card"
+                     onclick="openChart(
+                         '{{ url_for('static', filename='charts/' + chart) }}',
+                         '{{ chart.replace(".png", "").replace("_", " ").title() }}'
+                     )">
 
                     <h3>
                         {{ chart
@@ -823,6 +981,10 @@
                         src="{{ url_for('static', filename='charts/' + chart) }}"
                         alt="{{ chart }}"
                     >
+
+                    <p class="chart-hint">
+                        Click to view details
+                    </p>
 
                 </div>
 
@@ -859,6 +1021,211 @@
     </main>
 
 </div>
+
+<!-- ================= CHART MODAL ================= -->
+
+<div id="chartModal" class="chart-modal">
+
+    <div class="chart-modal-content">
+
+        <button class="close-button" onclick="closeChart()">
+            &times;
+        </button>
+
+        <h2 id="modalChartTitle"></h2>
+
+        <div class="modal-chart-container">
+            <img id="modalChartImage" src="" alt="Expanded Chart">
+        </div>
+
+        <div class="chart-details">
+
+            <h3>Chart Details</h3>
+
+            <p id="modalChartDescription"></p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function openChart(imagePath, chartTitle) {
+
+    const modal = document.getElementById("chartModal");
+
+    const image = document.getElementById("modalChartImage");
+
+    const title = document.getElementById("modalChartTitle");
+
+    const description =
+        document.getElementById("modalChartDescription");
+
+
+    // Set chart image
+
+    image.src = imagePath;
+
+
+    // Set title
+
+    title.textContent = chartTitle;
+
+
+    // Generate explanation
+
+    description.textContent =
+        getChartDescription(chartTitle);
+
+
+    // Show modal
+
+    modal.style.display = "flex";
+}
+
+
+function closeChart() {
+
+    const modal =
+        document.getElementById("chartModal");
+
+    modal.style.display = "none";
+}
+
+
+/* Close when clicking outside the modal */
+
+document.getElementById("chartModal").addEventListener(
+    "click",
+    function(event) {
+
+        if (event.target === this) {
+            closeChart();
+        }
+
+    }
+);
+
+
+/* Close using Escape key */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+            closeChart();
+        }
+
+    }
+);
+
+
+/* ================= CHART EXPLANATIONS ================= */
+
+function getChartDescription(title) {
+
+    const name = title.toLowerCase();
+
+
+    if (name.includes("hist")) {
+
+        return "This histogram shows the distribution of the selected numerical feature. It helps identify the typical range of values, the spread of the data, and whether the distribution is symmetric, skewed, or contains unusual values.";
+
+    }
+
+
+    if (name.includes("box")) {
+
+        return "This boxplot shows the distribution of the selected numerical feature. The box represents the middle 50% of the data, while the whiskers show the broader range. Points outside the whiskers may indicate potential outliers.";
+
+    }
+
+
+    if (name.includes("correlation")) {
+
+        return "This correlation heatmap shows the strength and direction of relationships between numerical features. Values close to +1 indicate a strong positive relationship, values close to -1 indicate a strong negative relationship, and values close to 0 indicate little linear relationship.";
+
+    }
+
+
+    if (name.includes("relationship")) {
+
+        return "This chart compares a numerical audio feature across different track genres. It helps identify differences in the distribution of the selected feature between genres.";
+
+    }
+
+
+    if (name.includes("explicit")) {
+
+        return "This countplot shows the number of explicit and non-explicit tracks in the dataset. It provides a quick view of how explicit content is distributed across the records.";
+
+    }
+
+
+    if (name.includes("track genre")) {
+
+        return "This countplot shows how many tracks belong to each genre. It helps identify the most common genres and whether some genres are represented more heavily than others.";
+
+    }
+
+
+    if (name.includes("missing")) {
+
+        return "This chart shows the number of missing values in each affected column. It helps identify columns that may require data cleaning or preprocessing.";
+
+    }
+
+
+    if (name.includes("pairplot")) {
+
+        return "This pairplot shows relationships between multiple numerical audio features. The diagonal displays the individual feature distributions, while the other plots show pairwise relationships between features.";
+
+    }
+
+
+    if (name.includes("energy vs popularity")) {
+
+        return "This scatter plot examines the relationship between track energy and popularity. It can help determine whether more energetic tracks tend to have higher or lower popularity.";
+
+    }
+
+
+    if (name.includes("danceability vs popularity")) {
+
+        return "This scatter plot examines the relationship between danceability and popularity. It helps visualize whether tracks with higher danceability tend to have different popularity levels.";
+
+    }
+
+
+    if (name.includes("loudness vs energy")) {
+
+        return "This scatter plot examines the relationship between loudness and energy. It helps identify whether louder tracks tend to have higher energy levels.";
+
+    }
+
+
+    if (name.includes("acousticness vs popularity")) {
+
+        return "This scatter plot examines the relationship between acousticness and popularity. It helps visualize whether acoustic tracks show a different popularity pattern.";
+
+    }
+
+
+    if (name.includes("valence vs popularity")) {
+
+        return "This scatter plot examines the relationship between valence and popularity. Valence represents the musical positiveness of a track, so this chart helps explore whether mood is associated with popularity.";
+
+    }
+
+
+    return "This visualization provides an exploratory view of the selected feature and can be used to identify patterns, distributions, relationships, and unusual observations in the dataset.";
+
+}
+
+</script>
 
 </body>
 </html>
