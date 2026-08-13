@@ -3,55 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify EDA Dashboard</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<header class="topbar">
-    <h1>Spotify Dataset - Exploratory Data Analysis</h1>
 </header>
 
-<div class="container">
 
     <aside class="sidebar">
 
-        <h3>Modules</h3>
 
-        <a href="{{ url_for('data_loading') }}">
             Dataset Summary
         </a>
 
-        <a href="{{ url_for('eda_page') }}" class="active">
             Exploratory Data Analysis
         </a>
 
-        <a class="disabled">
             Data Preprocessing
         </a>
 
-        <a class="disabled">
             Machine Learning
         </a>
 
-        <a class="disabled">
             Prediction
         </a>
 
     </aside>
 
-    <main class="content">
 
         {% if error %}
-
-        <div class="card error-card">
-
-            <h2>Error</h2>
-
-            <p>{{ error }}</p>
 
         </div>
 
@@ -61,47 +42,32 @@
 
         <div class="card">
 
-            <h2>Dataset Summary</h2>
 
-            <table class="summary-table">
 
                 <tr>
-                    <td>Total Rows</td>
-                    <td>{{ results.rows }}</td>
                 </tr>
 
                 <tr>
-                    <td>Total Columns</td>
-                    <td>{{ results.columns }}</td>
                 </tr>
 
                 <tr>
-                    <td>Duplicate Rows</td>
-                    <td>{{ results.duplicates }}</td>
                 </tr>
 
             </table>
 
         </div>
 
-        <div class="card">
 
-            <h2>Track Genre Distribution</h2>
 
-            <table class="summary-table">
 
                 <tr>
-                    <th>Genre</th>
                     <th>Count</th>
                 </tr>
 
-                {% for genre, count in results.track_genre_counts.items() %}
 
                 <tr>
 
-                    <td>{{ genre }}</td>
 
-                    <td>{{ count }}</td>
 
                 </tr>
 
@@ -111,11 +77,9 @@
 
         </div>
 
-        <div class="card">
 
             <h2>Explicit Content Distribution</h2>
 
-            <table class="summary-table">
 
                 <tr>
                     <th>Explicit</th>
@@ -125,11 +89,8 @@
                 {% for value, count in results.explicit_counts.items() %}
 
                 <tr>
-
                     <td>{{ value }}</td>
-
                     <td>{{ count }}</td>
-
                 </tr>
 
                 {% endfor %}
@@ -138,26 +99,19 @@
 
         </div>
 
-        <div class="card">
 
-            <h2>Generated Charts</h2>
 
             <div class="chart-grid">
 
                 {% for chart in results.charts %}
 
-                <div class="chart-card">
 
                     <h3>
-
-                        {{ chart.replace(".png","").replace("_"," ").title() }}
-
                     </h3>
 
                     <img
                         src="{{ url_for('static', filename='charts/' + chart) }}"
                         alt="{{ chart }}"
-                        loading="lazy"
                     >
 
                 </div>
