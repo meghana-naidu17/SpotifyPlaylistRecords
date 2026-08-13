@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Preprocessing — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="sp-header">
+
+  <div class="sp-header-left">
+    <span class="sp-logo-icon">
+      <i class="fa-brands fa-spotify"></i>
+    </span>
+    <span class="sp-logo-text">
+      <span>Spotify</span> Playlist Analytics
+    </span>
+  </div>
+
+  <nav class="sp-header-center">
+    <a href="{{ url_for('index') }}"            class="sp-nav-link">Dashboard</a>
+    <a href="{{ url_for('data_loading') }}"     class="sp-nav-link">Dataset Summary</a>
+    <a href="{{ url_for('eda_page') }}"         class="sp-nav-link">Analytics</a>
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-link active">Preprocessing</a>
+  </nav>
+
+  <div class="sp-header-right">
+    <div class="sp-theme-dropdown" id="themeDropdown">
+      <button class="sp-theme-btn" id="themeBtn" aria-label="Switch theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+        <span id="themeLabel">Spotify Dark</span>
+        <i class="fa-solid fa-chevron-down" style="font-size:10px;opacity:0.6;"></i>
+      </button>
+      <div class="sp-theme-menu" id="themeMenu">
+        <div class="sp-theme-option" data-theme="spotify-dark">
+          <span class="sp-theme-dot dot-spotify-dark"></span>Spotify Dark
+        </div>
+        <div class="sp-theme-option" data-theme="spotify-light">
+          <span class="sp-theme-dot dot-spotify-light"></span>Spotify Light
+        </div>
+        <div class="sp-theme-option" data-theme="midnight">
+          <span class="sp-theme-dot dot-midnight"></span>Midnight
+        </div>
+        <div class="sp-theme-option" data-theme="forest">
+          <span class="sp-theme-dot dot-forest"></span>Forest
+        </div>
+      </div>
+    </div>
+    <div class="sp-profile-btn" aria-label="Profile">
+      <i class="fa-solid fa-user"></i>
+    </div>
+  </div>
+
+</header>
+
+<!-- ============================================================
+     PAGE CONTENT
+     ============================================================ -->
+<main class="sp-page sp-page-wide">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Data Preprocessing</span>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Module 03</p>
+    <h1>Data Preprocessing</h1>
+    <p>IQR outlier detection and clipping, 70/30 train-test split,
+       Min-Max scaling and Standard scaling applied to all
+       numerical audio features.</p>
+  </div>
+
+  <!-- Error -->
+  {% if error %}
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if results %}
+
+  <!-- ===========================================================
+       STAT CARDS
+       =========================================================== -->
+  <div class="sp-stats-grid" style="margin-bottom:36px;">
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-music"></i></div>
+      <div class="sp-stat-value">{{ results.n_rows }}</div>
+      <div class="sp-stat-label">Total Tracks</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-wave-square"></i></div>
+      <div class="sp-stat-value">{{ results.numeric_cols | length }}</div>
+      <div class="sp-stat-label">Numeric Features</div>
+    </div>
+
+    {% if results.iqr %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+      <div class="sp-stat-value">{{ results.iqr.n_outliers }}</div>
+      <div class="sp-stat-label">Outliers Detected</div>
+    </div>
+    {% endif %}
+
+    {% if results.split %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-scissors"></i></div>
+      <div class="sp-stat-value">{{ results.split.train_rows }}</div>
+      <div class="sp-stat-label">Training Rows</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-vials"></i></div>
+      <div class="sp-stat-value">{{ results.split.test_rows }}</div>
+      <div class="sp-stat-label">Testing Rows</div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ===========================================================
+       STEP 1 — IQR OUTLIER DETECTION
+       =========================================================== -->
+  {% if results.iqr %}
+  <div class="sp-section">
+    <p class="sp-section-label">Step 1</p>
+    <h2>IQR Outlier Detection
+      <span style="font-size:13px;font-weight:500;color:var(--text-muted);margin-left:8px;">
+        Column: <strong style="color:var(--accent);">{{ results.iqr.column }}</strong>
+      </span>
+    </h2>
+
+    <!-- IQR stats two-col layout -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+
+      <!-- IQR Parameters -->
+      <div>
+        <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+                  color:var(--text-secondary);margin-bottom:12px;">IQR Parameters</p>
+        <table class="sp-summary-table">
+          <tr><td>Q1 (25th percentile)</td><td>{{ results.iqr.q1 }}</td></tr>
+          <tr><td>Q3 (75th percentile)</td><td>{{ results.iqr.q3 }}</td></tr>
+          <tr><td>IQR (Q3 − Q1)</td>       <td>{{ results.iqr.iqr }}</td></tr>
+          <tr><td>Lower Bound</td>          <td>{{ results.iqr.lower_bound }}</td></tr>
+          <tr><td>Upper Bound</td>          <td>{{ results.iqr.upper_bound }}</td></tr>
+          <tr>
+            <td>Outliers Found</td>
+            <td>
+              <span style="color:{% if results.iqr.n_outliers > 0 %}#ff6b6b{% else %}var(--accent){% endif %};
+                           font-weight:700;">
+                {{ results.iqr.n_outliers }}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Before vs After Clipping -->
+      <div>
+        <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+                  color:var(--text-secondary);margin-bottom:12px;">Before vs After Clipping</p>
+        <table class="sp-summary-table">
+          <tr>
+            <td>Min before clipping</td>
+            <td>{{ results.iqr.min_before }}</td>
+          </tr>
+          <tr>
+            <td>Max before clipping</td>
+            <td>{{ results.iqr.max_before }}</td>
+          </tr>
+          <tr>
+            <td>Min after clipping</td>
+            <td><span style="color:var(--accent);font-weight:700;">{{ results.iqr.min_after }}</span></td>
+          </tr>
+          <tr>
+            <td>Max after clipping</td>
+            <td><span style="color:var(--accent);font-weight:700;">{{ results.iqr.max_after }}</span></td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Clipping formula callout -->
+    <div style="background:var(--accent-dim);border:1px solid var(--border-hover);
+                border-radius:10px;padding:14px 18px;font-size:13px;color:var(--text-secondary);">
+      <i class="fa-solid fa-lightbulb" style="color:var(--accent);margin-right:8px;"></i>
+      Values outside
+      <strong style="color:var(--text-primary);">
+        [{{ results.iqr.lower_bound }}, {{ results.iqr.upper_bound }}]
+      </strong>
+      were clipped to the boundary. {{ results.iqr.n_outliers }} outlier(s) removed from
+      <strong style="color:var(--accent);">{{ results.iqr.column }}</strong>.
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===========================================================
+       STEP 2 — TRAIN-TEST SPLIT
+       =========================================================== -->
+  {% if results.split %}
+  <div class="sp-section">
+    <p class="sp-section-label">Step 2</p>
+    <h2>Train-Test Split</h2>
+
+    <!-- Visual split bar -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text-secondary);width:80px;">Training</span>
+        <div style="flex:1;background:var(--bg-tertiary);border-radius:99px;height:12px;overflow:hidden;">
+          <div style="width:{{ results.split.train_pct }}%;height:100%;
+                      background:var(--accent);border-radius:99px;
+                      transition:width 0.6s ease;"></div>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:var(--accent);width:60px;text-align:right;">
+          {{ results.split.train_pct }}%
+        </span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--text-secondary);width:80px;">Testing</span>
+        <div style="flex:1;background:var(--bg-tertiary);border-radius:99px;height:12px;overflow:hidden;">
+          <div style="width:{{ results.split.test_pct }}%;height:100%;
+                      background:var(--text-muted);border-radius:99px;
+                      transition:width 0.6s ease;"></div>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:var(--text-secondary);width:60px;text-align:right;">
+          {{ results.split.test_pct }}%
+        </span>
+      </div>
+    </div>
+
+    <table class="sp-summary-table">
+      <tr>
+        <td>Total Dataset</td>
+        <td>{{ results.split.total }} rows</td>
+      </tr>
+      <tr>
+        <td>Training Set (70%)</td>
+        <td><span style="color:var(--accent);font-weight:700;">{{ results.split.train_rows }} rows</span></td>
+      </tr>
+      <tr>
+        <td>Testing Set (30%)</td>
+        <td>{{ results.split.test_rows }} rows</td>
+      </tr>
+      <tr>
+        <td>Random State</td>
+        <td>42</td>
+      </tr>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ===========================================================
+       STEP 3 — ORIGINAL VALUES (before scaling)
+       =========================================================== -->
+  {% if results.before_scaling %}
+  <div class="sp-section">
+    <p class="sp-section-label">Step 3</p>
+    <h2>Training Data — Before Scaling
+      <span style="font-size:13px;font-weight:500;color:var(--text-muted);margin-left:8px;">
+        First 5 rows
+      </span>
+    </h2>
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in results.numeric_cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.before_scaling %}
+          <tr>
+            {% for col in results.numeric_cols %}
+            <td>{{ row[col] if row[col] is not none else '—' }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===========================================================
+       STEP 4 — MIN-MAX SCALING
+       =========================================================== -->
+  {% if results.minmax %}
+  <div class="sp-section">
+    <p class="sp-section-label">Step 4</p>
+    <h2>Min-Max Scaling
+      <span style="font-size:13px;font-weight:500;color:var(--text-muted);margin-left:8px;">
+        All values normalised to [0, 1]
+      </span>
+    </h2>
+
+    <div style="background:var(--accent-dim);border:1px solid var(--border-hover);
+                border-radius:10px;padding:14px 18px;font-size:13px;
+                color:var(--text-secondary);margin-bottom:20px;">
+      <i class="fa-solid fa-circle-info" style="color:var(--accent);margin-right:8px;"></i>
+      Scaler fitted on <strong style="color:var(--text-primary);">training set only</strong>,
+      then applied to test set — preventing data leakage.
+      Formula:&nbsp;
+      <code style="color:var(--accent);background:var(--bg-tertiary);
+                   padding:2px 6px;border-radius:4px;">
+        X' = (X − Xmin) / (Xmax − Xmin)
+      </code>
+    </div>
+
+    <!-- Training preview -->
+    <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+              color:var(--text-secondary);margin-bottom:10px;">
+      Training Set — First 5 Rows
+    </p>
+    <div class="sp-table-wrap" style="margin-bottom:24px;">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in results.numeric_cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.minmax.train_preview %}
+          <tr>
+            {% for col in results.numeric_cols %}
+            <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Testing preview -->
+    <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+              color:var(--text-secondary);margin-bottom:10px;">
+      Testing Set — First 5 Rows
+    </p>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in results.numeric_cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.minmax.test_preview %}
+          <tr>
+            {% for col in results.numeric_cols %}
+            <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===========================================================
+       STEP 5 — STANDARD SCALING
+       =========================================================== -->
+  {% if results.standard %}
+  <div class="sp-section">
+    <p class="sp-section-label">Step 5</p>
+    <h2>Standard Scaling
+      <span style="font-size:13px;font-weight:500;color:var(--text-muted);margin-left:8px;">
+        Values centred at mean=0, std=1
+      </span>
+    </h2>
+
+    <div style="background:var(--accent-dim);border:1px solid var(--border-hover);
+                border-radius:10px;padding:14px 18px;font-size:13px;
+                color:var(--text-secondary);margin-bottom:20px;">
+      <i class="fa-solid fa-circle-info" style="color:var(--accent);margin-right:8px;"></i>
+      Scaler fitted on <strong style="color:var(--text-primary);">training set only</strong>,
+      then applied to test set — preventing data leakage.
+      Formula:&nbsp;
+      <code style="color:var(--accent);background:var(--bg-tertiary);
+                   padding:2px 6px;border-radius:4px;">
+        X' = (X − μ) / σ
+      </code>
+    </div>
+
+    <!-- Training preview -->
+    <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+              color:var(--text-secondary);margin-bottom:10px;">
+      Training Set — First 5 Rows
+    </p>
+    <div class="sp-table-wrap" style="margin-bottom:24px;">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in results.numeric_cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.standard.train_preview %}
+          <tr>
+            {% for col in results.numeric_cols %}
+            <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Testing preview -->
+    <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+              color:var(--text-secondary);margin-bottom:10px;">
+      Testing Set — First 5 Rows
+    </p>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in results.numeric_cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.standard.test_preview %}
+          <tr>
+            {% for col in results.numeric_cols %}
+            <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===========================================================
+       SCALING COMPARISON — summary stats side by side
+       =========================================================== -->
+  {% if results.minmax and results.standard %}
+  <div class="sp-section">
+    <p class="sp-section-label">Comparison</p>
+    <h2>Scaling Summary — Training Set Statistics</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- Min-Max stats -->
+      <div>
+        <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+                  color:var(--accent);margin-bottom:10px;">Min-Max Scaled</p>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Mean</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for col in results.numeric_cols %}
+              <tr>
+                <td>{{ col }}</td>
+                <td>{{ results.minmax.train_stats[col]['min'] if col in results.minmax.train_stats else '—' }}</td>
+                <td>{{ results.minmax.train_stats[col]['max'] if col in results.minmax.train_stats else '—' }}</td>
+                <td>{{ results.minmax.train_stats[col]['mean'] if col in results.minmax.train_stats else '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Standard stats -->
+      <div>
+        <p style="font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+                  color:var(--text-secondary);margin-bottom:10px;">Standard Scaled</p>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Mean</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for col in results.numeric_cols %}
+              <tr>
+                <td>{{ col }}</td>
+                <td>{{ results.standard.train_stats[col]['min'] if col in results.standard.train_stats else '—' }}</td>
+                <td>{{ results.standard.train_stats[col]['max'] if col in results.standard.train_stats else '—' }}</td>
+                <td>{{ results.standard.train_stats[col]['mean'] if col in results.standard.train_stats else '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}<!-- end if results -->
+
+</main>
+
+<!-- Footer -->
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT — Theme switcher
+     ============================================================ -->
+<script>
+  const THEME_KEY = 'sp-analytics-theme';
+  const THEME_LABELS = {
+    'spotify-dark':  'Spotify Dark',
+    'spotify-light': 'Spotify Light',
+    'midnight':      'Midnight',
+    'forest':        'Forest',
+  };
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+    const label = document.getElementById('themeLabel');
+    if (label) label.textContent = THEME_LABELS[theme] || theme;
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.theme === theme);
+    });
+  }
+
+  const themeBtn  = document.getElementById('themeBtn');
+  const themeMenu = document.getElementById('themeMenu');
+
+  if (themeBtn && themeMenu) {
+    themeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('open');
+    });
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        applyTheme(opt.dataset.theme);
+        themeMenu.classList.remove('open');
+      });
+    });
+    document.addEventListener('click', () => themeMenu.classList.remove('open'));
+  }
+
+  applyTheme(localStorage.getItem(THEME_KEY) || 'spotify-dark');
+</script>
+
+</body>
+</html>
