@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from load_data import get_data_summary
 from playlist_eda import run_eda
+from preprocessing_data import run_preprocessing
 
 app = Flask(__name__)
 
@@ -25,7 +26,6 @@ def data_loading():
             summary=None,
             error=str(e)
         )
-
 @app.route("/eda")
 def eda_page():
     try:
@@ -40,6 +40,24 @@ def eda_page():
         return render_template(
             "eda.html",
             active="eda",
+            results=None,
+            error=str(e)
+        )
+
+@app.route("/preprocessing")
+def preprocessing_page():
+    try:
+        results = run_preprocessing()
+        return render_template(
+            "preprocessing.html",
+            active="preprocessing",
+            results=results,
+            error=None
+        )
+    except Exception as e:
+        return render_template(
+            "preprocessing.html",
+            active="preprocessing",
             results=None,
             error=str(e)
         )

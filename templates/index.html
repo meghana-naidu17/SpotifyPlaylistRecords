@@ -1,245 +1,446 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="spotify-dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Playlist Records Dashboard</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% if active == "data-loading" %}Dataset Summary — {% endif %}Spotify Playlist Analytics
+  </title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header class="topbar">
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="sp-header">
 
-    <div class="logo">
-        <i class="fa-brands fa-spotify"></i>
-        Spotify Playlist Records Dashboard
+  <!-- Left: Logo -->
+  <div class="sp-header-left">
+    <span class="sp-logo-icon">
+      <i class="fa-brands fa-spotify"></i>
+    </span>
+    <span class="sp-logo-text">
+      <span>Spotify</span> Playlist Analytics
+    </span>
+  </div>
+
+  <!-- Center: Nav links -->
+  <nav class="sp-header-center">
+    <a href="{{ url_for('index') }}"
+       class="sp-nav-link {% if active == 'none' %}active{% endif %}">
+      Dashboard
+    </a>
+    <a href="{{ url_for('data_loading') }}"
+       class="sp-nav-link {% if active == 'data-loading' %}active{% endif %}">
+      Dataset Summary
+    </a>
+    <a href="{{ url_for('eda_page') }}"
+       class="sp-nav-link">
+      Analytics
+    </a>
+    <a href="{{ url_for('preprocessing_page') }}"
+       class="sp-nav-link">
+      Preprocessing
+    </a>
+  </nav>
+
+  <!-- Right: Theme switcher + profile -->
+  <div class="sp-header-right">
+
+    <div class="sp-theme-dropdown" id="themeDropdown">
+      <button class="sp-theme-btn" id="themeBtn" aria-label="Switch theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+        <span id="themeLabel">Spotify Dark</span>
+        <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+      </button>
+
+      <div class="sp-theme-menu" id="themeMenu">
+        <div class="sp-theme-option" data-theme="spotify-dark">
+          <span class="sp-theme-dot dot-spotify-dark"></span>
+          Spotify Dark
+        </div>
+        <div class="sp-theme-option" data-theme="spotify-light">
+          <span class="sp-theme-dot dot-spotify-light"></span>
+          Spotify Light
+        </div>
+        <div class="sp-theme-option" data-theme="midnight">
+          <span class="sp-theme-dot dot-midnight"></span>
+          Midnight
+        </div>
+        <div class="sp-theme-option" data-theme="forest">
+          <span class="sp-theme-dot dot-forest"></span>
+          Forest
+        </div>
+      </div>
     </div>
 
+    <div class="sp-profile-btn" aria-label="Profile">
+      <i class="fa-solid fa-user"></i>
+    </div>
+
+  </div>
 </header>
 
-<div class="container">
-
-    <!-- Sidebar -->
-
-    <aside class="sidebar">
-
-        <h2>Modules</h2>
-
-        <a href="{{ url_for('data_loading') }}"
-           class="{% if active=='data-loading' %}active{% endif %}">
-            <i class="fa-solid fa-database"></i>
-            Dataset Summary
-        </a>
-
-       <a href="{{ url_for('eda_page') }}"
-   class="{% if active=='eda' %}active{% endif %}">
-    📊 Exploratory Data Analysis
-</a>
-
-        <a class="disabled">
-            <i class="fa-solid fa-filter"></i>
-            Data Preprocessing
-        </a>
-
-        <a class="disabled">
-            <i class="fa-solid fa-brain"></i>
-            Machine Learning
-        </a>
-
-        <a class="disabled">
-            <i class="fa-solid fa-bullseye"></i>
-            Prediction
-        </a>
-
-    </aside>
-
-    <!-- Main Content -->
-
-    <main class="content">
-
-        {% if active=="none" %}
-
-        <section class="hero">
-
-            <h1>Spotify Playlist Records Dashboard</h1>
-
-            <p>
-                Analyze songs, artists, genres, playlists,
-                popularity, and audio features using
-                Exploratory Data Analysis and Machine Learning.
-            </p>
-
-        </section>
-
-        {% endif %}
-
-        {% if active=="data-loading" %}
-
-        <!-- Summary Cards -->
-
-        <div class="cards">
-
-            <div class="card">
-                <h3>Total Rows</h3>
-                <p>{{ summary.n_rows }}</p>
-            </div>
-
-            <div class="card">
-                <h3>Total Columns</h3>
-                <p>{{ summary.n_columns }}</p>
-            </div>
-
-            <div class="card">
-                <h3>Total Cells</h3>
-                <p>{{ summary.total_cells }}</p>
-            </div>
-
-            <div class="card">
-                <h3>Duplicate Rows</h3>
-                <p>{{ summary.duplicate_rows }}</p>
-            </div>
-
-        </div>
-
-        <!-- Dataset Summary -->
-
-        <div class="table-card">
-
-            <h2>Dataset Summary</h2>
-
-            <table class="summary-table">
-
-                <tr>
-                    <td>Total Rows</td>
-                    <td>{{ summary.n_rows }}</td>
-                </tr>
-
-                <tr>
-                    <td>Total Columns</td>
-                    <td>{{ summary.n_columns }}</td>
-                </tr>
-
-                <tr>
-                    <td>Total Cells</td>
-                    <td>{{ summary.total_cells }}</td>
-                </tr>
-
-                <tr>
-                    <td>Duplicate Rows</td>
-                    <td>{{ summary.duplicate_rows }}</td>
-                </tr>
-
-                <tr>
-                    <td>Memory Usage</td>
-                    <td>{{ summary.memory_usage }} KB</td>
-                </tr>
-
-            </table>
-
-        </div>
-
-        <!-- Column Information -->
-
-        <div class="table-card">
-
-            <h2>Column Information</h2>
-
-            <div class="table-wrapper">
-
-                <table class="data-table">
-
-                    <thead>
-
-                    <tr>
-
-                        <th>Column</th>
-                        <th>Datatype</th>
-                        <th>Missing</th>
-                        <th>Missing %</th>
-                        <th>Unique</th>
-
-                    </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                    {% for col in summary.columns %}
-
-                    <tr>
-
-                        <td>{{ col }}</td>
-                        <td>{{ summary.dtypes[col] }}</td>
-                        <td>{{ summary.missing_counts[col] }}</td>
-                        <td>{{ summary.missing_percentages[col] }}%</td>
-                        <td>{{ summary.unique_values[col] }}</td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-        <!-- Dataset Preview -->
-
-        <div class="table-card">
-
-            <h2>Dataset Preview</h2>
-
-            <div class="table-wrapper">
-
-                <table class="data-table">
-
-                    <thead>
-
-                    <tr>
-
-                        {% for col in summary.columns %}
-                        <th>{{ col }}</th>
-                        {% endfor %}
-
-                    </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                    {% for row in summary.preview %}
-
-                    <tr>
-
-                        {% for col in summary.columns %}
-                        <td>{{ row[col] }}</td>
-                        {% endfor %}
-
-                    </tr>
-
-                    {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-        {% endif %}
-
-    </main>
-
-</div>
+<!-- ============================================================
+     PAGE CONTENT
+     ============================================================ -->
+<main class="sp-page">
+
+  <!-- -------------------------------------------------------
+       HOME DASHBOARD  (active == "none")
+       ------------------------------------------------------- -->
+  {% if active == "none" %}
+
+  <!-- Hero -->
+  <section class="sp-hero">
+    <p class="sp-hero-greeting">Good evening</p>
+    <h1 class="sp-hero-title">Your Playlist Analytics</h1>
+    <p class="sp-hero-sub">
+      Explore, analyze and understand your music data. Dive into
+      distributions, correlations and audio feature patterns across
+      your Spotify playlist.
+    </p>
+  </section>
+
+  <!-- Navigation Cards -->
+  <div class="sp-section-header" style="margin-bottom:16px;">
+    <h2 class="sp-section-title">Modules</h2>
+  </div>
+
+  <div class="sp-nav-cards">
+
+    <!-- Dataset Summary — active -->
+    <a href="{{ url_for('data_loading') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon">📊</span>
+      <div class="sp-nav-card-title">Dataset Summary</div>
+      <div class="sp-nav-card-desc">
+        Shape, columns, missing values and dataset preview.
+      </div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
+
+    <!-- EDA — active -->
+    <a href="{{ url_for('eda_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon">📈</span>
+      <div class="sp-nav-card-title">Exploratory Data Analysis</div>
+      <div class="sp-nav-card-desc">
+        Distributions, boxplots, heatmaps and feature relationships.
+      </div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
+
+    <!-- Data Preprocessing — active -->
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon">⚙️</span>
+      <div class="sp-nav-card-title">Data Preprocessing</div>
+      <div class="sp-nav-card-desc">
+        Outlier handling, scaling, encoding and train-test split.
+      </div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
+
+    <!-- Machine Learning — coming soon -->
+    <div class="sp-nav-card disabled" onclick="showComingSoon('Machine Learning')">
+      <span class="sp-nav-card-icon">🤖</span>
+      <div class="sp-nav-card-title">Machine Learning</div>
+      <div class="sp-nav-card-desc">
+        Model training, evaluation and performance metrics.
+      </div>
+      <span class="sp-nav-card-badge">Coming Soon</span>
+    </div>
+
+    <!-- Prediction — coming soon -->
+    <div class="sp-nav-card disabled" onclick="showComingSoon('Prediction')">
+      <span class="sp-nav-card-icon">🎯</span>
+      <div class="sp-nav-card-title">Prediction</div>
+      <div class="sp-nav-card-desc">
+        Predict track popularity and audio feature outcomes.
+      </div>
+      <span class="sp-nav-card-badge">Coming Soon</span>
+    </div>
+
+  </div>
+
+  <!-- Coming Soon toast -->
+  <div class="sp-coming-soon-toast" id="comingSoonToast">
+    <i class="fa-solid fa-clock"></i>
+    <span id="comingSoonText">Coming Soon</span>
+  </div>
+
+  {% endif %}
+
+  <!-- -------------------------------------------------------
+       DATASET SUMMARY  (active == "data-loading")
+       ------------------------------------------------------- -->
+  {% if active == "data-loading" %}
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Dataset Summary</span>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Module 01</p>
+    <h1>Dataset Summary</h1>
+    <p>An overview of the raw Spotify playlist dataset — shape, column types,
+       missing values and a live preview of the records.</p>
+  </div>
+
+  {% if error %}
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if summary %}
+
+  <!-- Stat Cards -->
+  <div class="sp-stats-grid" style="margin-bottom:32px;">
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-music"></i></div>
+      <div class="sp-stat-value">{{ summary.n_rows }}</div>
+      <div class="sp-stat-label">Tracks</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-table-columns"></i></div>
+      <div class="sp-stat-value">{{ summary.n_columns }}</div>
+      <div class="sp-stat-label">Features</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-copy"></i></div>
+      <div class="sp-stat-value">{{ summary.duplicate_rows }}</div>
+      <div class="sp-stat-label">Duplicates</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div class="sp-stat-value">
+        {% set total_missing = namespace(val=0) %}
+        {% for col in summary.columns %}
+          {% set total_missing.val = total_missing.val + summary.missing_counts[col] %}
+        {% endfor %}
+        {{ total_missing.val }}
+      </div>
+      <div class="sp-stat-label">Missing Values</div>
+    </div>
+
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-database"></i></div>
+      <div class="sp-stat-value">{{ summary.total_cells }}</div>
+      <div class="sp-stat-label">Total Cells</div>
+    </div>
+
+  </div>
+
+  <!-- Dataset Summary Table -->
+  <div class="sp-section">
+    <p class="sp-section-label">Overview</p>
+    <h2>Dataset Summary</h2>
+
+    <table class="sp-summary-table">
+      <tr>
+        <td>Total Rows</td>
+        <td>{{ summary.n_rows }}</td>
+      </tr>
+      <tr>
+        <td>Total Columns</td>
+        <td>{{ summary.n_columns }}</td>
+      </tr>
+      <tr>
+        <td>Total Cells</td>
+        <td>{{ summary.total_cells }}</td>
+      </tr>
+      <tr>
+        <td>Duplicate Rows</td>
+        <td>{{ summary.duplicate_rows }}</td>
+      </tr>
+      <tr>
+        <td>Memory Usage</td>
+        <td>{{ summary.memory_usage }} KB</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Column Information -->
+  <div class="sp-section">
+    <p class="sp-section-label">Schema</p>
+    <h2>Column Information</h2>
+
+    <div class="sp-table-wrap sp-table-max">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Column</th>
+            <th>Datatype</th>
+            <th>Missing</th>
+            <th>Missing %</th>
+            <th>Unique</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for col in summary.columns %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ col }}</strong></td>
+            <td>
+              <span style="
+                background: var(--accent-dim);
+                color: var(--accent);
+                padding: 2px 8px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+              ">{{ summary.dtypes[col] }}</span>
+            </td>
+            <td>
+              {% if summary.missing_counts[col] > 0 %}
+                <span style="color:#ff6b6b; font-weight:700;">
+                  {{ summary.missing_counts[col] }}
+                </span>
+              {% else %}
+                <span style="color: var(--text-muted);">0</span>
+              {% endif %}
+            </td>
+            <td>{{ summary.missing_percentages[col] }}%</td>
+            <td>{{ summary.unique_values[col] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Dataset Preview -->
+  <div class="sp-section">
+    <p class="sp-section-label">Preview</p>
+    <h2>Dataset Preview
+      <span style="font-size:13px; font-weight:500; color:var(--text-muted); margin-left:8px;">
+        First 10 rows
+      </span>
+    </h2>
+
+    <div class="sp-table-wrap sp-table-max">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            {% for col in summary.columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in summary.preview %}
+          <tr>
+            {% for col in summary.columns %}
+            <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% endif %}<!-- end if summary -->
+
+  {% endif %}<!-- end if active == "data-loading" -->
+
+</main>
+
+<!-- Footer -->
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT — Theme switcher + Coming Soon toast
+     ============================================================ -->
+<script>
+  /* ---- Theme system ---- */
+  const THEME_KEY  = 'sp-analytics-theme';
+  const THEME_LABELS = {
+    'spotify-dark':  'Spotify Dark',
+    'spotify-light': 'Spotify Light',
+    'midnight':      'Midnight',
+    'forest':        'Forest',
+  };
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+
+    // Update label
+    const label = document.getElementById('themeLabel');
+    if (label) label.textContent = THEME_LABELS[theme] || theme;
+
+    // Mark selected option
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.theme === theme);
+    });
+  }
+
+  function loadSavedTheme() {
+    const saved = localStorage.getItem(THEME_KEY) || 'spotify-dark';
+    applyTheme(saved);
+  }
+
+  // Toggle menu
+  const themeBtn  = document.getElementById('themeBtn');
+  const themeMenu = document.getElementById('themeMenu');
+
+  if (themeBtn && themeMenu) {
+    themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('open');
+    });
+
+    // Option click
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        applyTheme(opt.dataset.theme);
+        themeMenu.classList.remove('open');
+      });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', () => {
+      themeMenu.classList.remove('open');
+    });
+  }
+
+  // Apply saved theme immediately on page load
+  loadSavedTheme();
+
+  /* ---- Coming Soon toast ---- */
+  let toastTimer = null;
+
+  function showComingSoon(moduleName) {
+    const toast    = document.getElementById('comingSoonToast');
+    const textSpan = document.getElementById('comingSoonText');
+    if (!toast) return;
+
+    if (textSpan) textSpan.textContent = moduleName + ' — Coming Soon';
+
+    clearTimeout(toastTimer);
+    toast.classList.add('show');
+
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
+  }
+</script>
 
 </body>
 </html>

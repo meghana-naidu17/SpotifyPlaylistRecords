@@ -1,178 +1,412 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="spotify-dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify EDA Dashboard</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exploratory Data Analysis — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-<header class="topbar">
-    <h1>Spotify Dataset - Exploratory Data Analysis</h1>
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="sp-header">
+
+  <!-- Left: Logo -->
+  <div class="sp-header-left">
+    <span class="sp-logo-icon">
+      <i class="fa-brands fa-spotify"></i>
+    </span>
+    <span class="sp-logo-text">
+      <span>Spotify</span> Playlist Analytics
+    </span>
+  </div>
+
+  <!-- Center: Nav links -->
+  <nav class="sp-header-center">
+    <a href="{{ url_for('index') }}" class="sp-nav-link">
+      Dashboard
+    </a>
+    <a href="{{ url_for('data_loading') }}" class="sp-nav-link">
+      Dataset Summary
+    </a>
+    <a href="{{ url_for('eda_page') }}" class="sp-nav-link active">
+      Analytics
+    </a>
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-link">
+      Preprocessing
+    </a>
+  </nav>
+
+  <!-- Right: Theme switcher + profile -->
+  <div class="sp-header-right">
+
+    <div class="sp-theme-dropdown" id="themeDropdown">
+      <button class="sp-theme-btn" id="themeBtn" aria-label="Switch theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+        <span id="themeLabel">Spotify Dark</span>
+        <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+      </button>
+
+      <div class="sp-theme-menu" id="themeMenu">
+        <div class="sp-theme-option" data-theme="spotify-dark">
+          <span class="sp-theme-dot dot-spotify-dark"></span>
+          Spotify Dark
+        </div>
+        <div class="sp-theme-option" data-theme="spotify-light">
+          <span class="sp-theme-dot dot-spotify-light"></span>
+          Spotify Light
+        </div>
+        <div class="sp-theme-option" data-theme="midnight">
+          <span class="sp-theme-dot dot-midnight"></span>
+          Midnight
+        </div>
+        <div class="sp-theme-option" data-theme="forest">
+          <span class="sp-theme-dot dot-forest"></span>
+          Forest
+        </div>
+      </div>
+    </div>
+
+    <div class="sp-profile-btn" aria-label="Profile">
+      <i class="fa-solid fa-user"></i>
+    </div>
+
+  </div>
 </header>
 
-<div class="container">
+<!-- ============================================================
+     PAGE CONTENT
+     ============================================================ -->
+<main class="sp-page sp-page-wide">
 
-    <aside class="sidebar">
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Exploratory Data Analysis</span>
+  </nav>
 
-        <h3>Modules</h3>
+  <!-- Page Title -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Module 02</p>
+    <h1>Exploratory Data Analysis</h1>
+    <p>Explore the Spotify playlist dataset using statistical summaries,
+       distributions, and visualizations. Understand feature relationships
+       and spot patterns before modelling.</p>
+  </div>
 
-        <a href="{{ url_for('data_loading') }}">
-            Dataset Summary
-        </a>
+  <!-- Error -->
+  {% if error %}
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ error }}
+  </div>
+  {% endif %}
 
-        <a href="{{ url_for('eda_page') }}" class="active">
-            Exploratory Data Analysis
-        </a>
+  {% if results %}
 
-        <a class="disabled">
-            Data Preprocessing
-        </a>
+  <!-- ---- Stat Cards ---- -->
+  <div class="sp-stats-grid" style="margin-bottom:36px;">
 
-        <a class="disabled">
-            Machine Learning
-        </a>
+    {% if results.rows is defined %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-music"></i></div>
+      <div class="sp-stat-value">{{ results.rows }}</div>
+      <div class="sp-stat-label">Tracks</div>
+    </div>
+    {% endif %}
 
-        <a class="disabled">
-            Prediction
-        </a>
+    {% if results.columns is defined %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-table-columns"></i></div>
+      <div class="sp-stat-value">{{ results.columns }}</div>
+      <div class="sp-stat-label">Features</div>
+    </div>
+    {% endif %}
 
-    </aside>
+    {% if results.duplicates is defined %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-copy"></i></div>
+      <div class="sp-stat-value">{{ results.duplicates }}</div>
+      <div class="sp-stat-label">Duplicates</div>
+    </div>
+    {% endif %}
 
-    <main class="content">
+    {% if results.missing is defined %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div class="sp-stat-value">
+        {% set total_miss = namespace(v=0) %}
+        {% for col, cnt in results.missing.items() %}
+          {% set total_miss.v = total_miss.v + cnt %}
+        {% endfor %}
+        {{ total_miss.v }}
+      </div>
+      <div class="sp-stat-label">Missing Values</div>
+    </div>
+    {% endif %}
 
-        {% if error %}
+    {% if results.numeric_columns is defined %}
+    <div class="sp-stat-card">
+      <div class="sp-stat-icon"><i class="fa-solid fa-wave-square"></i></div>
+      <div class="sp-stat-value">{{ results.numeric_columns | length }}</div>
+      <div class="sp-stat-label">Numeric Features</div>
+    </div>
+    {% endif %}
 
-        <div class="card error-card">
+  </div>
 
-            <h2>Error</h2>
+  <!-- ---- Dataset Information ---- -->
+  {% if results.n_rows is defined or results.n_columns is defined or results.duplicate_rows is defined %}
+  <div class="sp-section">
+    <p class="sp-section-label">Overview</p>
+    <h2>Dataset Information</h2>
 
-            <p>{{ error }}</p>
+    <table class="sp-summary-table">
+      {% if results.n_rows is defined %}
+      <tr>
+        <td>Number of Rows</td>
+        <td>{{ results.n_rows }}</td>
+      </tr>
+      {% endif %}
+      {% if results.n_columns is defined %}
+      <tr>
+        <td>Number of Columns</td>
+        <td>{{ results.n_columns }}</td>
+      </tr>
+      {% endif %}
+      {% if results.duplicate_rows is defined %}
+      <tr>
+        <td>Duplicate Rows</td>
+        <td>{{ results.duplicate_rows }}</td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+  {% endif %}
 
-        </div>
+  <!-- ---- Missing Values ---- -->
+  {% if results.missing_counts is defined %}
+  <div class="sp-section">
+    <p class="sp-section-label">Data Quality</p>
+    <h2>Missing Values</h2>
 
+    <div class="sp-table-wrap" style="max-height: 360px; overflow-y: auto;">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Missing Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for column, count in results.missing_counts.items() %}
+          <tr>
+            <td>{{ column }}</td>
+            <td>
+              {% if count > 0 %}
+                <span style="color:#ff6b6b; font-weight:700;">{{ count }}</span>
+              {% else %}
+                <span style="color: var(--text-muted);">0</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ---- Unique Values ---- -->
+  {% if results.unique_values is defined %}
+  <div class="sp-section">
+    <p class="sp-section-label">Cardinality</p>
+    <h2>Unique Values per Column</h2>
+
+    <div class="sp-table-wrap" style="max-height: 360px; overflow-y: auto;">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Unique Values</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for column, count in results.unique_values.items() %}
+          <tr>
+            <td>{{ column }}</td>
+            <td>
+              <span class="accent-val">{{ count }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ---- Explicit Content Distribution ---- -->
+  {% if results.explicit_counts is defined %}
+  <div class="sp-section">
+    <p class="sp-section-label">Content</p>
+    <h2>Explicit Content Distribution</h2>
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Explicit</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for value, count in results.explicit_counts.items() %}
+          <tr>
+            <td>{{ value }}</td>
+            <td>{{ count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ---- Dataset Preview ---- -->
+  {% if results.preview is defined %}
+  <div class="sp-section">
+    <p class="sp-section-label">Preview</p>
+    <h2>Dataset Preview
+      <span style="font-size:13px; font-weight:500; color:var(--text-muted); margin-left:8px;">
+        First rows
+      </span>
+    </h2>
+
+    <div class="sp-table-wrap sp-table-max">
+      <table class="sp-table">
+        {% if results.preview | length > 0 %}
+        <thead>
+          <tr>
+            {% for column in results.preview[0].keys() %}
+            <th>{{ column }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.preview %}
+          <tr>
+            {% for value in row.values() %}
+            <td>{{ value }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
         {% endif %}
+      </table>
+    </div>
+  </div>
+  {% endif %}
 
-        {% if results %}
+  <!-- ---- EDA Visualizations ---- -->
+  {% if results.charts is defined and results.charts | length > 0 %}
+  <div style="margin-bottom: 28px;">
+    <div class="sp-section-header" style="margin-bottom: 20px;">
+      <h2 class="sp-section-title">EDA Visualizations</h2>
+      <span class="sp-section-sub">{{ results.charts | length }} charts</span>
+    </div>
 
-        <div class="card">
+    <div class="sp-chart-grid">
+      {% for chart in results.charts %}
 
-            <h2>Dataset Summary</h2>
-
-            <table class="summary-table">
-
-                <tr>
-                    <td>Total Rows</td>
-                    <td>{{ results.rows }}</td>
-                </tr>
-
-                <tr>
-                    <td>Total Columns</td>
-                    <td>{{ results.columns }}</td>
-                </tr>
-
-                <tr>
-                    <td>Duplicate Rows</td>
-                    <td>{{ results.duplicates }}</td>
-                </tr>
-
-            </table>
-
+      {# Make correlation heatmap and genre chart full-width #}
+      {% if 'heatmap' in chart or 'genre' in chart %}
+      <div class="sp-chart-card wide">
+      {% else %}
+      <div class="sp-chart-card">
+      {% endif %}
+        <div class="sp-chart-card-title">
+          {{ chart | replace('.png','') | replace('_', ' ') | title }}
         </div>
+        <img
+          src="{{ url_for('static', filename='charts/' + chart) }}"
+          alt="{{ chart }}"
+          loading="lazy"
+        >
+      </div>
 
-        <div class="card">
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
-            <h2>Track Genre Distribution</h2>
+  {% endif %}<!-- end if results -->
 
-            <table class="summary-table">
+</main>
 
-                <tr>
-                    <th>Genre</th>
-                    <th>Count</th>
-                </tr>
+<!-- Footer -->
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
 
-                {% for genre, count in results.track_genre_counts.items() %}
+<!-- ============================================================
+     JAVASCRIPT — Theme switcher (shared)
+     ============================================================ -->
+<script>
+  const THEME_KEY  = 'sp-analytics-theme';
+  const THEME_LABELS = {
+    'spotify-dark':  'Spotify Dark',
+    'spotify-light': 'Spotify Light',
+    'midnight':      'Midnight',
+    'forest':        'Forest',
+  };
 
-                <tr>
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
 
-                    <td>{{ genre }}</td>
+    const label = document.getElementById('themeLabel');
+    if (label) label.textContent = THEME_LABELS[theme] || theme;
 
-                    <td>{{ count }}</td>
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.classList.toggle('selected', opt.dataset.theme === theme);
+    });
+  }
 
-                </tr>
+  function loadSavedTheme() {
+    const saved = localStorage.getItem(THEME_KEY) || 'spotify-dark';
+    applyTheme(saved);
+  }
 
-                {% endfor %}
+  const themeBtn  = document.getElementById('themeBtn');
+  const themeMenu = document.getElementById('themeMenu');
 
-            </table>
+  if (themeBtn && themeMenu) {
+    themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('open');
+    });
 
-        </div>
+    document.querySelectorAll('.sp-theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        applyTheme(opt.dataset.theme);
+        themeMenu.classList.remove('open');
+      });
+    });
 
-        <div class="card">
+    document.addEventListener('click', () => {
+      themeMenu.classList.remove('open');
+    });
+  }
 
-            <h2>Explicit Content Distribution</h2>
-
-            <table class="summary-table">
-
-                <tr>
-                    <th>Explicit</th>
-                    <th>Count</th>
-                </tr>
-
-                {% for value, count in results.explicit_counts.items() %}
-
-                <tr>
-
-                    <td>{{ value }}</td>
-
-                    <td>{{ count }}</td>
-
-                </tr>
-
-                {% endfor %}
-
-            </table>
-
-        </div>
-
-        <div class="card">
-
-            <h2>Generated Charts</h2>
-
-            <div class="chart-grid">
-
-                {% for chart in results.charts %}
-
-                <div class="chart-card">
-
-                    <h3>
-
-                        {{ chart.replace(".png","").replace("_"," ").title() }}
-
-                    </h3>
-
-                    <img
-                        src="{{ url_for('static', filename='charts/' + chart) }}"
-                        alt="{{ chart }}"
-                        loading="lazy"
-                    >
-
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-        </div>
-
-        {% endif %}
-
-    </main>
-
-</div>
+  loadSavedTheme();
+</script>
 
 </body>
 </html>
