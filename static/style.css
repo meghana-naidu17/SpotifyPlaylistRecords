@@ -98,6 +98,36 @@
   --chart-filter:   none;
 }
 
+/* --- Sunflower Sunrise --- */
+[data-theme="sunflower"] {
+  --bg-primary:     #fffde7;
+  --bg-secondary:   #ffffff;
+  --bg-tertiary:    #fff9c4;
+  --card-bg:        #ffffff;
+  --card-hover:     #fffdf0;
+  --text-primary:   #3e2700;
+  --text-secondary: #795548;
+  --text-muted:     #bcaaa4;
+  --accent:         #ff8f00;
+  --accent-hover:   #ffa000;
+  --accent-dim:     rgba(255, 160, 0, 0.13);
+  --accent-glow:    rgba(255, 160, 0, 0.28);
+  --border:         rgba(255, 160, 0, 0.18);
+  --border-hover:   rgba(255, 143, 0, 0.55);
+  --shadow:         0 4px 24px rgba(180, 100, 0, 0.15);
+  --shadow-card:    0 2px 12px rgba(180, 100, 0, 0.10);
+  --shadow-hover:   0 8px 32px rgba(180, 100, 0, 0.22);
+  --header-bg:      #fff8e1;
+  --table-stripe:   rgba(255, 160, 0, 0.05);
+  --table-hover:    rgba(255, 160, 0, 0.09);
+  --scrollbar-track:#fff9c4;
+  --scrollbar-thumb:#ffcc80;
+  --hero-gradient:  linear-gradient(135deg, #fff59d 0%, #ffe082 40%, #fffde7 100%);
+  --tag-bg:         rgba(255, 143, 0, 0.13);
+  --disabled-opacity: 0.42;
+  --chart-filter:   none;
+}
+
 /* --- Forest --- */
 [data-theme="forest"] {
   --bg-primary:     #0d1a0f;
@@ -359,6 +389,7 @@ th, td {
 .dot-spotify-light { background: #17a349; border: 1px solid #ccc; }
 .dot-midnight      { background: #7c6af7; }
 .dot-forest        { background: #4caf50; }
+.dot-sunflower     { background: linear-gradient(135deg, #fff59d, #ffa000); border: 1px solid #ffcc02; }
 
 /* Profile icon */
 .sp-profile-btn {
@@ -911,6 +942,86 @@ th, td {
   grid-column: 1 / -1;
 }
 
+/* Chart description toggle */
+.sp-chart-desc-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 7px 14px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.sp-chart-desc-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.sp-chart-desc-btn.open {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.sp-chart-desc-btn i.toggle-icon {
+  font-size: 10px;
+  transition: transform 0.25s ease;
+}
+
+.sp-chart-desc-btn.open i.toggle-icon {
+  transform: rotate(180deg);
+}
+
+.sp-chart-desc-panel {
+  display: none;
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  animation: fadeInUp 0.2s ease;
+}
+
+.sp-chart-desc-panel.open {
+  display: block;
+}
+
+.sp-chart-desc-panel p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.sp-chart-desc-panel strong {
+  color: var(--text-primary);
+}
+
+.sp-chart-desc-panel .sp-desc-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sp-chart-desc-panel .sp-desc-row i {
+  color: var(--accent);
+  font-size: 11px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
 /* ============================================================
    ERROR BLOCK
    ============================================================ */
@@ -1020,6 +1131,226 @@ th, td {
 .sp-chart-card:nth-child(2) { animation-delay: 0.10s; }
 .sp-chart-card:nth-child(3) { animation-delay: 0.15s; }
 .sp-chart-card:nth-child(4) { animation-delay: 0.20s; }
+
+/* ============================================================
+   PREPROCESSING TABS
+   ============================================================ */
+
+.sp-tabs-bar {
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 28px;
+  overflow-x: auto;
+  padding-bottom: 0;
+  scrollbar-width: none;
+}
+.sp-tabs-bar::-webkit-scrollbar { display: none; }
+
+.sp-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px 6px 0 0;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.sp-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.sp-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.sp-tab-btn i {
+  font-size: 15px;
+}
+
+.sp-tab-panel {
+  display: none;
+  animation: fadeInUp 0.25s ease;
+}
+
+.sp-tab-panel.active {
+  display: block;
+}
+
+/* Sub-option pills (Encoding types / Missing value methods) */
+.sp-sub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.sp-sub-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.sp-sub-tab-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: var(--accent-dim);
+}
+
+.sp-sub-tab-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.sp-sub-tab-btn i {
+  font-size: 13px;
+}
+
+.sp-sub-panel {
+  display: none;
+  animation: fadeInUp 0.22s ease;
+}
+
+.sp-sub-panel.active {
+  display: block;
+}
+
+/* Info callout box */
+.sp-callout {
+  display: flex;
+  gap: 14px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-hover);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.sp-callout-icon {
+  font-size: 20px;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sp-callout-body { flex: 1; }
+
+.sp-callout-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.sp-callout-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Warning callout */
+.sp-callout.warn {
+  background: rgba(255, 100, 60, 0.08);
+  border-color: rgba(255, 100, 60, 0.3);
+}
+.sp-callout.warn .sp-callout-icon { color: #ff6b3d; }
+
+/* Success callout */
+.sp-callout.success {
+  background: var(--accent-dim);
+  border-color: var(--border-hover);
+}
+
+/* Tag chips */
+.sp-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.sp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 99px;
+  background: var(--tag-bg);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border-hover);
+}
+
+/* Split bar */
+.sp-split-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sp-split-bar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.sp-split-bar-track {
+  flex: 1;
+  height: 12px;
+  background: var(--bg-tertiary);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.sp-split-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.6s ease;
+}
+
+.sp-split-bar-fill.muted {
+  background: var(--text-muted);
+}
+
+.sp-split-bar-pct {
+  font-size: 13px;
+  font-weight: 800;
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.sp-split-bar-pct.muted { color: var(--text-secondary); }
 
 /* ============================================================
    MOBILE HEADER TOGGLE

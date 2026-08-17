@@ -35,41 +35,192 @@ NUM_COLS = [
     "time_signature",
 ]
 
-
-# ============================================================
-# CATEGORICAL COLUMNS
-# Change these according to your dataset
-# ============================================================
-
-CATEGORICAL_COLS = [
-    "track_genre"
-]
+CATEGORICAL_COLS = ["track_genre"]
+ORDINAL_COLS     = []
+TARGET_COL       = "popularity"
+IQR_COL          = "danceability"
 
 
 # ============================================================
-# ORDINAL COLUMNS
-# Only use this when categories have a meaningful order
+# HELPER — missing values analysis
 # ============================================================
 
-ORDINAL_COLS = [
-    # Example:
-    # "rating"
-]
+def _missing_value_analysis(df, numeric_cols):
+    """
+    Returns a dict with per-column missing stats and
+    results of four handling strategies:
+      1. row-wise deletion
+      2. column-wise deletion
+      3. mean imputation
+      4. median imputation
+    """
 
+    total_rows = len(df)
 
-# ============================================================
-# TARGET COLUMN
-# Change this if your dataset has another target
-# ============================================================
+    # Per-column missing info
+    col_info = {}
+    for col in df.columns:
+        n_miss = int(df[col].isnull().sum())
+        col_info[col] = {
+            "missing": n_miss,
+            "pct":     round(n_miss / total_rows * 100, 4),
+            "dtype":   str(df[col].dtype),
+        }
 
-TARGET_COL = "popularity"
+    missing_cols = {c: v for c, v in col_info.items() if v["missing"] > 0}
+    total_missing_cells = sum(v["missing"] for v in col_info.values())
+    rows_with_any_missing = int(df.isnull().any(axis=1).sum())
 
+    # ---- 1. Row-wise deletion ----
+    df_rowdrop = df.dropna()
+    rows_dropped  = total_rows - len(df_rowdrop)
+    rowdrop_pct   = round(rows_dropped / total_rows * 100, 4)
+    rowdrop_applicable = rows_dropped < total_rows * 0.05  # < 5% loss
 
-# ============================================================
-# IQR COLUMN
-# ============================================================
+    rowdrop_result = {
+        "applicable":     rowdrop_applicable,
+        "rows_before":    total_rows,
+        "rows_after":     int(len(df_rowdrop)),
+        "rows_dropped":   rows_dropped,
+        "pct_dropped":    rowdrop_pct,
+        "reason": (
+            f"Only {rows_dropped} row(s) ({rowdrop_pct}%) contain missing values. "
+            "Dropping them causes negligible data loss — row-wise deletion is safe."
+            if rowdrop_applicable else
+            f"{rows_dropped} rows ({rowdrop_pct}%) would be lost. "
+            "This is too high a data loss for row-wise deletion to be appropriate."
+        ),
+        "preview": df_rowdrop.head(3).fillna("").astype(str).to_dict(orient="records"),
+    }
 
-IQR_COL = "danceability"
+    # ---- 2. Column-wise deletion ----
+    # Drop columns where missing% > 30% (industry rule of thumb)
+    THRESHOLD = 30.0
+    cols_to_drop = [
+        c for c, v in col_info.items()
+        if v["missing"] > 0 and v["pct"] > THRESHOLD
+    ]
+    cols_not_dropped = [
+        c for c, v in col_info.items()
+        if v["missing"] > 0 and v["pct"] <= THRESHOLD
+    ]
+    coldrop_applicable = len(cols_to_drop) > 0
+
+    per_col_reasons = {}
+    for c, v in col_info.items():
+        if v["missing"] == 0:
+            continue
+        if v["pct"] > THRESHOLD:
+            per_col_reasons[c] = {
+                "drop": True,
+                "reason": f"{v['pct']}% missing — exceeds {THRESHOLD}% threshold. Column dropped."
+            }
+        else:
+            per_col_reasons[c] = {
+                "drop": False,
+                "reason": (
+                    f"Only {v['pct']}% missing ({v['missing']} value(s)). "
+                    f"Below {THRESHOLD}% threshold — column retained, use imputation instead."
+                )
+            }
+
+    coldrop_result = {
+        "applicable":      coldrop_applicable,
+        "threshold_pct":   THRESHOLD,
+        "cols_dropped":    cols_to_drop,
+        "cols_retained":   cols_not_dropped,
+        "per_col_reasons": per_col_reasons,
+        "reason": (
+            f"Columns with >{THRESHOLD}% missing data: {cols_to_drop}. These were dropped." 
+            if coldrop_applicable else
+            f"No column exceeds the {THRESHOLD}% missing threshold. "
+            "Column-wise deletion is NOT applied — all columns are retained. "
+            "Use row-wise deletion or imputation to handle the small number of missing values."
+        ),
+    }
+
+    # ---- 3. Mean imputation (numeric columns only) ----
+    mean_results = []
+    df_mean = df.copy()
+    for col in numeric_cols:
+        n = int(df_mean[col].isnull().sum())
+        if n > 0:
+            mean_val = round(float(df_mean[col].mean()), 4)
+            df_mean[col] = df_mean[col].fillna(mean_val)
+            mean_results.append({
+                "column":    col,
+                "n_filled":  n,
+                "fill_value": mean_val,
+                "applicable": True,
+                "reason":    f"Numeric column — {n} missing value(s) replaced with mean ({mean_val})."
+            })
+
+    # Non-numeric cols with missing values
+    for col, v in col_info.items():
+        if v["missing"] > 0 and col not in numeric_cols:
+            mean_results.append({
+                "column":    col,
+                "n_filled":  v["missing"],
+                "fill_value": None,
+                "applicable": False,
+                "reason":    (
+                    f"Non-numeric column (dtype: {v['dtype']}) — mean imputation is not applicable. "
+                    "Use mode imputation or a placeholder string instead."
+                )
+            })
+
+    mean_imputation = {
+        "results": mean_results,
+        "preview": df_mean[numeric_cols].head(5).round(4).to_dict(orient="records")
+                   if numeric_cols else [],
+    }
+
+    # ---- 4. Median imputation (numeric columns only) ----
+    median_results = []
+    df_median = df.copy()
+    for col in numeric_cols:
+        n = int(df_median[col].isnull().sum())
+        if n > 0:
+            median_val = round(float(df_median[col].median()), 4)
+            df_median[col] = df_median[col].fillna(median_val)
+            median_results.append({
+                "column":    col,
+                "n_filled":  n,
+                "fill_value": median_val,
+                "applicable": True,
+                "reason":    f"Numeric column — {n} missing value(s) replaced with median ({median_val})."
+            })
+
+    for col, v in col_info.items():
+        if v["missing"] > 0 and col not in numeric_cols:
+            median_results.append({
+                "column":    col,
+                "n_filled":  v["missing"],
+                "fill_value": None,
+                "applicable": False,
+                "reason":    (
+                    f"Non-numeric column (dtype: {v['dtype']}) — median imputation is not applicable. "
+                    "Use mode imputation or a placeholder string instead."
+                )
+            })
+
+    median_imputation = {
+        "results": median_results,
+        "preview": df_median[numeric_cols].head(5).round(4).to_dict(orient="records")
+                   if numeric_cols else [],
+    }
+
+    return {
+        "total_rows":          total_rows,
+        "total_missing_cells": total_missing_cells,
+        "rows_with_missing":   rows_with_any_missing,
+        "col_info":            col_info,
+        "missing_cols":        missing_cols,
+        "rowdrop":             rowdrop_result,
+        "coldrop":             coldrop_result,
+        "mean_imputation":     mean_imputation,
+        "median_imputation":   median_imputation,
+    }
 
 
 def run_preprocessing():
@@ -701,5 +852,13 @@ def run_preprocessing():
         )
     )
 
+    # ========================================================
+    # 13. MISSING VALUES ANALYSIS
+    # ========================================================
+
+    results["missing_analysis"] = _missing_value_analysis(
+        load_data(),   # fresh copy of original df
+        numeric_cols
+    )
 
     return results
