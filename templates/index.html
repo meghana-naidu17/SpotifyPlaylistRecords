@@ -101,7 +101,7 @@
 
   <!-- Hero -->
   <section class="sp-hero">
-    <p class="sp-hero-greeting">Good evening</p>
+    <h1 id="dynamicGreeting">Good Evening</h1>
     <h1 class="sp-hero-title">Your Playlist Analytics</h1>
     <p class="sp-hero-sub">
       Explore, analyze and understand your music data. Dive into
@@ -381,6 +381,30 @@
     'forest':        'Forest',
     'sunflower':     'Sunflower Sunrise',
   };
+
+
+function updateGreeting() {
+    const hour = new Date().getHours();
+    const greeting = document.getElementById("dynamicGreeting");
+
+    if (!greeting) return;
+
+    if (hour >= 5 && hour < 12) {
+        greeting.textContent = "Good Morning";
+    }
+    else if (hour >= 12 && hour < 17) {
+        greeting.textContent = "Good Afternoon";
+    }
+    else if (hour >= 17 && hour < 21) {
+        greeting.textContent = "Good Evening";
+    }
+    else {
+        greeting.textContent = "Good Night";
+    }
+}
+
+updateGreeting();
+setInterval(updateGreeting, 60000);
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
