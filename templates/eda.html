@@ -438,276 +438,240 @@ const CHART_DESCRIPTIONS = {
 
   /* ---- HISTOGRAMS ---- */
   'hist_popularity.png': {
-    type: 'Histogram + KDE',
-    feature: 'Popularity',
-    html: `<strong>Popularity</strong> is a 0–100 integer score assigned by Spotify based on recent play counts.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The distribution tends to be left-skewed — most tracks have moderate-to-low popularity, with fewer highly popular tracks.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The KDE curve shows the estimated probability density, smoothing over the histogram bins.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> A spike near 0 suggests many obscure or catalogue tracks. If using popularity as a target variable, consider whether to treat it as continuous or bin it into classes.</span></div>`
+    type: 'Bar Chart', feature: 'Popularity',
+    html: `<strong>What is Popularity?</strong> Spotify gives every song a score from 0 to 100 based on how many people are listening to it right now. 100 means a chart-topping hit, 0 means almost nobody plays it.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Each bar shows how many songs fall into that popularity range. A tall bar near 0 means a lot of songs in this dataset barely get played.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The smooth curve on top shows the overall shape, so you can see at a glance where most songs are grouped.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs in this dataset are not very famous. Only a small number are truly popular hits.</span></div>`
   },
   'hist_duration_ms.png': {
-    type: 'Histogram + KDE',
-    feature: 'Duration (ms)',
-    html: `<strong>Duration</strong> is the track length in milliseconds (1 second = 1000 ms).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most tracks cluster between ~150,000 ms (2.5 min) and ~300,000 ms (5 min).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A long right tail indicates a small number of very long tracks (e.g. live recordings, ambient music).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Duration is a strong candidate for outlier clipping before modelling — extreme durations can distort distance-based models.</span></div>`
+    type: 'Bar Chart', feature: 'Song Length',
+    html: `<strong>What is Duration?</strong> This shows how long each song is. Think of it as song length — most songs are between 2.5 and 5 minutes long.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The tallest bars are in the middle — that is where most normal-length songs sit.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Bars on the far right are very short but present — those are unusually long songs like live recordings or ambient tracks that go on for 10+ minutes.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> A typical song here is about 3–4 minutes. A small number of songs are much longer than that.</span></div>`
   },
   'hist_danceability.png': {
-    type: 'Histogram + KDE',
-    feature: 'Danceability',
-    html: `<strong>Danceability</strong> (0.0–1.0) describes how suitable a track is for dancing, based on tempo, rhythm stability, beat strength and regularity.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Values close to 1.0 indicate highly danceable tracks; values near 0.0 indicate less danceable ones.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The distribution is typically bell-shaped and centred around 0.5–0.7.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Danceability is one of the most discriminative features for genre classification — electronic and pop genres score highest.</span></div>`
+    type: 'Bar Chart', feature: 'Danceability',
+    html: `<strong>What is Danceability?</strong> Spotify rates how easy it is to dance to a song on a scale from 0 to 1. A score close to 1 means it has a strong beat and rhythm that makes you want to move. A score near 0 means it is slow, irregular, or hard to dance to.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most songs in the dataset have a medium-to-high danceability score — the bars are tallest somewhere in the middle.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Very few songs have an extremely low score — most songs have at least some danceable quality.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Pop and electronic songs tend to score highest here. Classical and spoken word score lowest.</span></div>`
   },
   'hist_energy.png': {
-    type: 'Histogram + KDE',
-    feature: 'Energy',
-    html: `<strong>Energy</strong> (0.0–1.0) is a perceptual measure of intensity and activity — fast, loud, noisy tracks score high.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Highly correlated with loudness. Rock and metal genres dominate high energy ranges.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Classical and acoustic tracks typically cluster near 0.0–0.3.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Energy and loudness together can act as a proxy for genre — consider their correlation in the heatmap.</span></div>`
+    type: 'Bar Chart', feature: 'Energy',
+    html: `<strong>What is Energy?</strong> Energy measures how intense and powerful a song feels, on a scale from 0 to 1. Loud, fast, heavy songs score high. Soft, quiet, mellow songs score low.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The bars spread fairly evenly — this dataset includes songs from very calm to very intense.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Rock and metal songs push the score toward 1. Acoustic and classical songs sit near 0.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Energy and loudness go hand in hand — louder songs almost always feel more energetic too.</span></div>`
   },
   'hist_key.png': {
-    type: 'Histogram + KDE',
-    feature: 'Key',
-    html: `<strong>Key</strong> represents the musical key of the track using standard Pitch Class notation: 0=C, 1=C♯/D♭, 2=D, ..., 11=B. A value of -1 means no key was detected.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The distribution is roughly uniform across keys, meaning no single key strongly dominates.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>C (0) and G (7) are traditionally the most common keys in Western music.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Key is a nominal (categorical) variable encoded as an integer — treat it with one-hot encoding rather than as a continuous feature in regression models.</span></div>`
+    type: 'Bar Chart', feature: 'Musical Key',
+    html: `<strong>What is Key?</strong> This shows which musical key each song is written in. Keys are numbered 0 to 11, where 0 = C, 2 = D, 4 = E, and so on up to 11 = B.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The bars are roughly equal in height — songs in this dataset are spread across all 12 keys fairly evenly.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>No single key dominates. Every key has a decent number of songs.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> The musical key on its own doesn't tell us much about whether a song is popular or not.</span></div>`
   },
   'hist_loudness.png': {
-    type: 'Histogram + KDE',
-    feature: 'Loudness',
-    html: `<strong>Loudness</strong> is the overall loudness in decibels (dB), typically ranging from −60 dB to 0 dB. Higher (less negative) values mean louder tracks.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most tracks cluster between −10 dB and −5 dB due to modern loudness normalisation standards.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Strongly positively correlated with Energy — louder tracks are generally more energetic.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Loudness and energy exhibit near-linear correlation (~0.75+). Including both in a model can introduce multicollinearity — consider dropping one.</span></div>`
+    type: 'Bar Chart', feature: 'Loudness',
+    html: `<strong>What is Loudness?</strong> This measures how loud a song is overall, in decibels (dB). The values are negative — closer to 0 means louder, further away (like −30) means quieter.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most songs in the dataset cluster between −10 and −5, meaning most songs are fairly loud. That is normal for modern music.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A few bars on the far left represent very quiet songs — think soft classical pieces or ambient music.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Louder songs tend to also feel more energetic. The two are closely connected.</span></div>`
   },
   'hist_mode.png': {
-    type: 'Histogram + KDE',
-    feature: 'Mode',
-    html: `<strong>Mode</strong> indicates the modality of the track: <strong>1 = Major</strong>, <strong>0 = Minor</strong>.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Major keys are generally perceived as happy/bright; minor keys as sad/melancholic.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Binary variable — the histogram shows only two bars. Most popular music uses major keys.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Mode is a binary categorical feature. It needs encoding (e.g. leave as-is for tree models; consider one-hot for linear models).</span></div>`
+    type: 'Bar Chart', feature: 'Major or Minor',
+    html: `<strong>What is Mode?</strong> Every song is in either a major key or a minor key. Major keys sound happy and bright. Minor keys sound sad or moody. This chart just shows how many songs are in each.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>There are only two bars — one for Major (1) and one for Minor (0). That is all this chart shows.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>More songs tend to be in Major keys — most pop and upbeat music uses major.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> About 60% of songs are in a major key. Sad or emotional songs are more likely to be minor.</span></div>`
   },
   'hist_speechiness.png': {
-    type: 'Histogram + KDE',
-    feature: 'Speechiness',
-    html: `<strong>Speechiness</strong> (0.0–1.0) detects the presence of spoken words. Values above 0.66 are mostly speech (podcasts, spoken word); 0.33–0.66 are music + speech; below 0.33 are purely musical.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Extremely right-skewed — the vast majority of tracks have very low speechiness.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Rap and hip-hop genres push this value higher than other genres.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The extreme skew means log-transforming speechiness before modelling may improve model fit for algorithms sensitive to distribution shape.</span></div>`
+    type: 'Bar Chart', feature: 'How Much Speech',
+    html: `<strong>What is Speechiness?</strong> This measures how much spoken word is in a song — from 0 (pure music, no talking) to 1 (basically just talking, like a podcast or audiobook).
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Almost all bars are piled up near 0. That means the vast majority of songs are pure music with little or no talking.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A tiny number of songs have higher scores — those are mostly rap tracks or spoken word recordings.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs in this dataset are musical, not talky. Rap and hip-hop are the exceptions with higher speechiness.</span></div>`
   },
   'hist_acousticness.png': {
-    type: 'Histogram + KDE',
-    feature: 'Acousticness',
-    html: `<strong>Acousticness</strong> (0.0–1.0) is a confidence measure of whether the track is acoustic. 1.0 = highly confident the track is acoustic.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Bimodal distribution is common — one peak near 0 (electronic/produced) and one near 1 (acoustic).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Strongly negatively correlated with energy — acoustic tracks tend to be less intense.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> A bimodal distribution suggests this feature alone could separate acoustic genres from electronic ones — useful as a standalone classifier feature.</span></div>`
+    type: 'Bar Chart', feature: 'Acoustic vs Electronic',
+    html: `<strong>What is Acousticness?</strong> This measures how "natural" or unplugged a song sounds — from 0 (heavily produced, electronic) to 1 (pure acoustic, like a guitar and voice in a room).
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>You might see two peaks — one near 0 (electronic/produced songs) and one near 1 (acoustic songs). This is because the dataset has both types.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Songs with a score near 0 use lots of electronic production. Songs near 1 sound raw and natural.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This feature can easily separate acoustic genres (folk, classical) from electronic ones (EDM, pop).</span></div>`
   },
   'hist_instrumentalness.png': {
-    type: 'Histogram + KDE',
-    feature: 'Instrumentalness',
-    html: `<strong>Instrumentalness</strong> (0.0–1.0) predicts whether a track contains no vocals. Values above 0.5 are considered instrumental; values close to 1.0 have virtually no vocal content.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Extremely right-skewed — most tracks are vocal. The distribution is heavily concentrated near 0.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Classical, jazz and ambient genres push this value highest.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> This feature is very sparse — log-transform or binary-threshold (0/1) encoding may be more effective than using the raw value in models.</span></div>`
+    type: 'Bar Chart', feature: 'Songs Without Vocals',
+    html: `<strong>What is Instrumentalness?</strong> This measures the chance that a song has no singing at all — from 0 (definitely has vocals) to 1 (purely instrumental, no voice).
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Nearly all bars are crammed near 0 — almost every song in this dataset has a singer. That is totally normal.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The tiny bars near 1 represent instrumental songs — classical pieces, ambient music, or jazz instrumentals.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Vocal songs dominate this dataset. Purely instrumental songs are rare but present.</span></div>`
   },
   'hist_liveness.png': {
-    type: 'Histogram + KDE',
-    feature: 'Liveness',
-    html: `<strong>Liveness</strong> (0.0–1.0) detects the presence of an audience in the recording. Higher values indicate a higher probability the track was recorded live.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Values above 0.8 strongly suggest a live performance. Most studio tracks score below 0.3.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Right-skewed — most tracks are studio recordings.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Liveness rarely correlates strongly with popularity — live tracks can be both very popular and very niche.</span></div>`
+    type: 'Bar Chart', feature: 'Live vs Studio',
+    html: `<strong>What is Liveness?</strong> This measures the chance that a song was recorded live in front of an audience, not in a studio. Score near 0 = clean studio recording. Score near 1 = you can hear crowd noise or live atmosphere.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most bars are on the left side near 0 — the vast majority of songs are studio recordings.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A few songs score above 0.8 — those are genuine live concert recordings.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Almost all songs here were made in a studio. Live recordings are a small minority.</span></div>`
   },
   'hist_valence.png': {
-    type: 'Histogram + KDE',
-    feature: 'Valence',
-    html: `<strong>Valence</strong> (0.0–1.0) describes the musical positiveness of a track. High valence = happy/euphoric/cheerful; low valence = sad/angry/tense.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Approximately uniform distribution — the dataset spans the full emotional spectrum.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Correlated with danceability — happier tracks tend to be more danceable.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Valence is highly interpretable for mood-based analysis — consider using it as a clustering dimension to group tracks by emotional tone.</span></div>`
+    type: 'Bar Chart', feature: 'Mood / Happiness',
+    html: `<strong>What is Valence?</strong> Valence measures the mood of a song — from 0 (sad, dark, angry) to 1 (happy, cheerful, uplifting). Think of it as an emotional temperature.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The bars are fairly spread out from 0 to 1 — there is a good mix of happy and sad songs in this dataset.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Happy songs also tend to be more danceable. Sad songs tend to be slower and more acoustic.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This dataset has songs across the full mood range — from tear-jerkers to feel-good bangers.</span></div>`
   },
   'hist_tempo.png': {
-    type: 'Histogram + KDE',
-    feature: 'Tempo',
-    html: `<strong>Tempo</strong> is the estimated beats per minute (BPM) of the track. Typical music ranges from ~60 BPM (slow ballad) to ~200 BPM (very fast).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Most tracks cluster between 90–140 BPM, with peaks near common dance tempos (120–128 BPM for house music).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Tempo estimation can sometimes be off by a factor of 2 (e.g. 90 BPM vs 180 BPM for the same track).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Normalise tempo before using in distance-based models. BPM has a natural clustering around genre-typical ranges.</span></div>`
+    type: 'Bar Chart', feature: 'Speed (BPM)',
+    html: `<strong>What is Tempo?</strong> Tempo is the speed of the song measured in beats per minute (BPM). A slow ballad might be 60 BPM. A fast dance track could be 140+ BPM.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The tallest bars are between 90 and 140 BPM — that is the sweet spot for most pop, rock, and dance music.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Very slow songs (below 70) and very fast songs (above 180) exist but are much rarer.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs move at a comfortable, medium pace. Extreme tempos (very slow or very fast) are unusual.</span></div>`
   },
   'hist_time_signature.png': {
-    type: 'Histogram + KDE',
-    feature: 'Time Signature',
-    html: `<strong>Time Signature</strong> estimates the number of beats per bar (measure). Values are integers: 3 (waltz), 4 (common time), 5, 6, or 7.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Overwhelmingly dominated by 4/4 time — the standard for almost all pop, rock, and electronic music.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>3/4 (waltz) is the second most common. 5 and 7 are rare, found mostly in jazz and progressive genres.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Very low variance feature — the near-constant value of 4 means this feature contributes little discriminative power for most models.</span></div>`
+    type: 'Bar Chart', feature: 'Beats per Bar',
+    html: `<strong>What is Time Signature?</strong> This tells you how many beats are in each musical bar. The most common is 4 — meaning 4 beats per bar — which is the standard for almost all popular music.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>One bar (at the number 4) is massively taller than all others. Nearly every song in the dataset uses 4 beats per bar.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A tiny number of songs use 3 (like waltz music) or 5 (found in some jazz or unusual compositions).</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Almost every song counts in 4s. This feature is basically the same for all songs so it doesn't help much in analysis.</span></div>`
   },
 
   /* ---- BOXPLOTS ---- */
   'box_popularity.png': {
-    type: 'Boxplot',
-    feature: 'Popularity',
-    html: `The boxplot shows the <strong>5-number summary</strong> for Popularity: minimum, Q1, median, Q3, maximum, and outliers as individual points.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box spans the Interquartile Range (IQR = Q3 − Q1), containing the middle 50% of values.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Whiskers extend to 1.5×IQR. Points beyond whiskers are statistical outliers.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> A long upper whisker suggests a skewed distribution with a small tail of highly popular tracks. The median line position relative to the box reveals skewness direction.</span></div>`
+    type: 'Box Plot', feature: 'Popularity',
+    html: `<strong>What does this box show?</strong> A box plot is a way to see how spread out the popularity scores are. The box in the middle covers the range where most songs fall. The line inside the box is the middle value (median). The dots outside are songs that are unusually high or low.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>If the box is small, most songs have similar popularity scores. If it is large, scores are all over the place.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Dots sticking out at the top are the rare, very popular songs — the ones people can't stop playing.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> A few songs are super popular, but most are clustered in a moderate range. The outlier dots at the top are the real hits.</span></div>`
   },
   'box_duration_ms.png': {
-    type: 'Boxplot',
-    feature: 'Duration (ms)',
-    html: `Boxplot of track <strong>Duration in milliseconds</strong>.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Significant upper outliers are expected — very long tracks (> 600,000 ms / 10 min) appear as dots beyond the upper whisker.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The IQR box typically covers ~150,000–300,000 ms (2.5–5 min).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Outlier tracks distort the mean — the median is a better central tendency measure for duration. IQR clipping was applied in preprocessing.</span></div>`
+    type: 'Box Plot', feature: 'Song Length',
+    html: `<strong>What does this box show?</strong> The box shows where most song lengths fall. The dots sticking out at the top are unusually long songs — much longer than a typical track.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box is between roughly 2.5 and 5 minutes — that is the normal range for most songs.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dots far above the box are songs lasting 10+ minutes. Think long live recordings, DJ sets, or extended ambient tracks.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> The majority of songs are a normal length. The outlier dots above are the oddly long ones worth noting.</span></div>`
   },
   'box_danceability.png': {
-    type: 'Boxplot',
-    feature: 'Danceability',
-    html: `Boxplot of <strong>Danceability</strong> across all tracks.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A compact IQR box around 0.5–0.7 indicates consistency across the dataset.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Lower outliers represent very undanceable tracks (spoken word, classical).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Relatively normally distributed with few extreme outliers — suitable for use in models without transformation.</span></div>`
+    type: 'Box Plot', feature: 'Danceability',
+    html: `<strong>What does this box show?</strong> This shows how danceable scores are spread across all songs. A small, compact box means most songs have a similar danceability score. Dots outside the box are unusual.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box sits roughly between 0.5 and 0.7 — most songs are moderately to very danceable.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The low dots below the box are songs with almost no danceability — think slow classical pieces or spoken poetry.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs in this dataset have a decent danceability score. Very undanceable songs are outliers.</span></div>`
   },
   'box_energy.png': {
-    type: 'Boxplot',
-    feature: 'Energy',
-    html: `Boxplot of <strong>Energy</strong> across all tracks.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Energy is fairly uniformly spread — the IQR box is wide, reflecting genre diversity in the dataset.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Few extreme outliers since energy is bounded [0, 1].</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Compare this boxplot's spread against acousticness — they tend to be inversely distributed.</span></div>`
+    type: 'Box Plot', feature: 'Energy',
+    html: `<strong>What does this box show?</strong> The box shows the spread of energy levels. A wide box means songs vary a lot in intensity. A narrow box means they are similar.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box is fairly wide — energy varies a lot in this dataset because it includes everything from soft acoustic songs to heavy metal.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Very few dots stick out as outliers since energy can range from 0 to 1 and songs genuinely span that whole range.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> The dataset covers a wide range of energy levels. There is no single "typical" energy — it depends heavily on the genre.</span></div>`
   },
   'box_key.png': {
-    type: 'Boxplot',
-    feature: 'Key',
-    html: `Boxplot of <strong>Key</strong> (0–11, Pitch Class notation).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Since key is a nominal categorical variable encoded as integers, the boxplot shows spread but not meaningful order.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The distribution is roughly uniform — all 12 keys appear with similar frequency.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Interpreting this boxplot as continuous is misleading. Prefer the histogram or a bar chart of value counts for key analysis.</span></div>`
+    type: 'Box Plot', feature: 'Musical Key',
+    html: `<strong>What does this box show?</strong> Keys are numbered 0–11 to represent all 12 musical keys. Since they are just labels (not real numbers you add or average), this box plot is mainly useful for seeing the spread.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box covers roughly the middle of the 0–11 range because songs are spread across all keys roughly equally.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>There are not many extreme outlier dots because all keys are common.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Musical key is spread evenly — no key is dramatically over or underrepresented.</span></div>`
   },
   'box_loudness.png': {
-    type: 'Boxplot',
-    feature: 'Loudness',
-    html: `Boxplot of <strong>Loudness</strong> in dB (negative values — closer to 0 means louder).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The bulk of tracks fall between approximately −10 dB and −4 dB.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Extreme lower outliers (very quiet tracks, e.g. −40 dB or below) are worth investigating or removing.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The "loudness war" in music production means modern tracks cluster near 0 dB. Older or classical tracks may have much lower loudness values.</span></div>`
+    type: 'Box Plot', feature: 'Loudness',
+    html: `<strong>What does this box show?</strong> The box shows where most loudness values fall. Remember: louder songs have values closer to 0, quieter songs have very negative values like −30 or −40.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box sits between roughly −10 and −5, meaning most songs are at a similar, moderately loud level.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dots far below the box are very quiet songs — these could be soft classical pieces or very lightly produced ambient recordings.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most modern songs are mixed to sound about the same volume. The quiet outliers at the bottom are noticeably softer than everything else.</span></div>`
   },
   'box_mode.png': {
-    type: 'Boxplot',
-    feature: 'Mode',
-    html: `Boxplot of <strong>Mode</strong> (0 = Minor, 1 = Major) — a binary variable.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>For a binary feature, the boxplot is not the best visualisation — it will show a box at either 0 or 1 with the median at whichever class is more common.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Major mode (1) is more common in the dataset, reflecting the dominance of major-key songs in popular music.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The count chart is more informative for binary features. Treat mode as a categorical variable — not ordinal.</span></div>`
+    type: 'Box Plot', feature: 'Major or Minor',
+    html: `<strong>What does this box show?</strong> Since Mode is just two values — 0 (minor) or 1 (major) — this box doesn't look like a usual box. It is very flat because there are only two options.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box is squished because all songs are either 0 or 1 — there is nothing in between.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The middle line of the box shows whether major or minor is more common. If the line is at 1, major songs dominate.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This type of chart is not the best for yes/no features. The bar chart of explicit content is a better example of how to visualise this kind of data.</span></div>`
   },
   'box_speechiness.png': {
-    type: 'Boxplot',
-    feature: 'Speechiness',
-    html: `Boxplot of <strong>Speechiness</strong> (0.0–1.0).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The IQR box is heavily compressed near 0, with a long upper tail of outliers — reflecting the sparse nature of this feature.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Rap and hip-hop tracks appear as high-value outliers (0.3–0.9).</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The extreme right skew and sparse distribution makes speechiness a good candidate for log transformation: log(1 + speechiness).</span></div>`
+    type: 'Box Plot', feature: 'How Much Speech',
+    html: `<strong>What does this box show?</strong> The box will look very small and squished near the bottom. That is because almost all songs have very low speechiness (close to 0). The dots above are the exceptions.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The tiny box near 0 means nearly all songs have very little talking in them — they are normal music tracks.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dots floating high above are the outliers — rap songs with lots of rapping, or spoken word tracks.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Songs with heavy speech (rap, spoken word) stand out clearly as dots far above the rest of the pack.</span></div>`
   },
   'box_acousticness.png': {
-    type: 'Boxplot',
-    feature: 'Acousticness',
-    html: `Boxplot of <strong>Acousticness</strong> (0.0–1.0).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Bimodal in nature — a boxplot may show a median near 0 with many high-value outliers, or vice versa depending on genre mix.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The boxplot alone doesn't reveal the bimodal shape — compare with the histogram.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The wide IQR indicates high variance. Consider stratifying analysis by genre to see acousticness patterns within genre groups.</span></div>`
+    type: 'Box Plot', feature: 'Acoustic vs Electronic',
+    html: `<strong>What does this box show?</strong> The box shows the spread of how acoustic songs sound. Because the dataset includes both electronic and acoustic genres, you might see a wide box or a split distribution.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A wide box means the dataset is mixed — some songs are fully electronic, some are fully acoustic, and many are in between.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Dots at the top are heavily acoustic songs — guitar-and-voice style recordings with no electronic production at all.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This feature tells you a lot about a song's style. High = unplugged and natural. Low = studio-produced and electronic.</span></div>`
   },
   'box_instrumentalness.png': {
-    type: 'Boxplot',
-    feature: 'Instrumentalness',
-    html: `Boxplot of <strong>Instrumentalness</strong> (0.0–1.0).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box and median are compressed near 0 — most tracks have negligible instrumentalness.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A long tail of upper outliers represents purely instrumental tracks.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Consider binarising instrumentalness (0 vs 1 threshold at 0.5) rather than using the raw value, given the extreme L-shaped distribution.</span></div>`
+    type: 'Box Plot', feature: 'Songs Without Vocals',
+    html: `<strong>What does this box show?</strong> Just like speechiness, this box will be very tiny and compressed near the bottom because almost all songs have singers.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The tiny box near 0 shows that almost every song has vocals. This is completely normal — most popular music has a singer.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The few dots near the top are pure instrumentals — classical pieces, jazz solos, or ambient soundscapes without any singing.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Instrumental songs are rare outliers in this dataset. If you see a dot near 1, that song has no singing at all.</span></div>`
   },
   'box_liveness.png': {
-    type: 'Boxplot',
-    feature: 'Liveness',
-    html: `Boxplot of <strong>Liveness</strong> (0.0–1.0).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The IQR box is low (0.1–0.25) with a tail of higher values representing live recordings.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Tracks above 0.8 are very likely live performances.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Liveness has low predictive power for popularity. It could however be a useful feature for a "is this a live recording?" binary classifier.</span></div>`
+    type: 'Box Plot', feature: 'Live vs Studio',
+    html: `<strong>What does this box show?</strong> The box shows how many songs sound like they were recorded live versus in a studio. Most songs sound clean and studio-made, so the box sits low.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box sits low — between about 0.1 and 0.25 — because most songs are clean studio recordings.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dots above 0.8 are songs that clearly sound live — you can probably hear crowd noise or a concert atmosphere.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Studio recordings are the norm. Live recordings are the exception, clearly visible as the high outlier dots.</span></div>`
   },
   'box_valence.png': {
-    type: 'Boxplot',
-    feature: 'Valence',
-    html: `Boxplot of <strong>Valence</strong> (0.0–1.0), the musical positiveness.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Valence has a relatively wide, symmetric IQR — the dataset covers the full emotional range evenly.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Few extreme outliers since valence is bounded and roughly uniformly distributed.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Valence combined with energy forms the classic mood quadrant: high energy + high valence = euphoric; low energy + low valence = melancholic.</span></div>`
+    type: 'Box Plot', feature: 'Mood / Happiness',
+    html: `<strong>What does this box show?</strong> The box shows the spread of song moods — from sad (0) to happy (1). A wide box means there is a good mix of moods in the dataset.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box is fairly wide — the dataset has plenty of both happy and sad songs.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>There are not many extreme outliers because mood genuinely spans the full range — no song is weirdly outside normal.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This dataset has a healthy mix of cheerful and melancholic music. Mood is evenly spread.</span></div>`
   },
   'box_tempo.png': {
-    type: 'Boxplot',
-    feature: 'Tempo',
-    html: `Boxplot of <strong>Tempo</strong> in BPM.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The IQR typically covers 90–140 BPM, with whiskers extending to ~60 and ~200 BPM.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Extreme outliers at both ends — very slow classical pieces and very fast metal/punk tracks.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Tempo outliers are legitimate (not data errors) but should be clipped before use in distance-based models to prevent distortion.</span></div>`
+    type: 'Box Plot', feature: 'Speed (BPM)',
+    html: `<strong>What does this box show?</strong> The box shows the range of song speeds. The middle line is the most common speed. Dots outside are unusually slow or unusually fast songs.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box sits roughly between 90 and 140 BPM — that is the comfortable range for most songs people enjoy.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Dots at the very top (above 180 BPM) are extremely fast songs — think intense electronic or metal tracks. Dots at the bottom are very slow, dreamy pieces.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs are at a comfortable medium pace. Extremely fast or slow songs are outliers worth noting.</span></div>`
   },
   'box_time_signature.png': {
-    type: 'Boxplot',
-    feature: 'Time Signature',
-    html: `Boxplot of <strong>Time Signature</strong> (3, 4, 5, 6, or 7 beats per bar).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Virtually all tracks are in 4/4 time — the box will be a narrow line at 4 with occasional outliers at 3 or 5.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The near-zero variance makes this a near-constant feature.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> A near-zero variance feature adds almost no information to a model. Consider dropping it or using it only in genre-specific subsets where odd time signatures appear.</span></div>`
+    type: 'Box Plot', feature: 'Beats per Bar',
+    html: `<strong>What does this box show?</strong> Since almost every song uses 4 beats per bar, this box will look extremely flat — basically a squished line at 4.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The box is almost flat at 4 because nearly all songs count in groups of 4.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A few dots below at 3 are waltz-style songs. The occasional dot at 5 is an unusual or jazz-influenced track.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> This feature is almost the same for every song. It won't help much when comparing songs to each other.</span></div>`
   },
 
   /* ---- SPECIAL CHARTS ---- */
   'correlation_heatmap.png': {
-    type: 'Correlation Heatmap',
-    feature: 'All Numeric Features',
-    html: `The <strong>correlation heatmap</strong> shows the Pearson correlation coefficient between every pair of numeric features, ranging from <strong>−1</strong> (perfect negative) to <strong>+1</strong> (perfect positive).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Energy ↔ Loudness:</strong> Strong positive correlation (~0.75). Louder tracks are almost always more energetic.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Energy ↔ Acousticness:</strong> Strong negative correlation (~−0.70). Acoustic tracks tend to be less intense.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Valence ↔ Danceability:</strong> Moderate positive correlation. Happier songs tend to be more danceable.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Popularity:</strong> Weakly correlated with most features — popularity is complex and not easily predicted by audio features alone.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Highly correlated feature pairs (|r| > 0.7) risk multicollinearity in linear models. Consider removing one from each correlated pair — e.g. drop loudness and keep energy.</span></div>`
+    type: 'Heatmap', feature: 'All Features',
+    html: `<strong>What is this chart?</strong> This is a grid that shows how closely related every pair of song features are to each other. Each coloured square represents two features — the colour tells you whether they tend to go up together, go in opposite directions, or have nothing to do with each other.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Dark green / warm colour = go together:</strong> For example, Energy and Loudness — loud songs are almost always energetic too.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Dark blue / cool colour = go opposite:</strong> Energy and Acousticness — the more acoustic a song, the less energetic it usually sounds.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span><strong>Pale or neutral colour = no real connection:</strong> Most features have little to do with Popularity — being danceable doesn't make a song popular on its own.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Energy and Loudness move together strongly. Energy and Acousticness are opposites. Popularity is barely connected to any single feature — it is hard to predict.</span></div>`
   },
   'count_explicit.png': {
-    type: 'Count Bar Chart',
-    feature: 'Explicit',
-    html: `<strong>Explicit content flag</strong> — True if the track has been marked as explicit (contains profanity or adult content), False otherwise.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The majority of tracks are non-explicit. Explicit tracks are a small minority of the 114,000-track dataset.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Explicit tracks tend to skew toward rap, hip-hop and certain pop sub-genres.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> This is a binary class imbalance — if predicting explicit content, use class-weighted models or oversampling (SMOTE) to handle the imbalance.</span></div>`
+    type: 'Bar Chart', feature: 'Explicit Songs',
+    html: `<strong>What does this chart show?</strong> This simply counts how many songs are marked as explicit (containing strong language or adult content) versus those that are not.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The "False" bar is much taller — the vast majority of songs in this dataset are clean, non-explicit tracks.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The "True" bar represents songs with explicit content — these tend to be rap, hip-hop, or certain pop tracks.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> Most songs here are family-friendly. Explicit songs are a smaller minority, mostly concentrated in specific genres.</span></div>`
   },
   'count_track_genre.png': {
-    type: 'Horizontal Bar Chart',
-    feature: 'Track Genre (Top 20)',
-    html: `<strong>Top 20 most frequent track genres</strong> in the dataset, sorted by track count.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dataset contains 114 unique genres. Each genre has exactly 1,000 tracks — the dataset is perfectly balanced by genre.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>This chart shows only the top 20 by count, which in this balanced dataset means they should all be equal.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> A perfectly balanced genre dataset is ideal for multi-class classification — no need for class weighting. Genre is the primary target candidate for classification tasks.</span></div>`
+    type: 'Bar Chart', feature: 'Top 20 Genres',
+    html: `<strong>What does this chart show?</strong> This shows the 20 most common music genres in the dataset, with a bar for each genre. The longer the bar, the more songs of that genre are in the dataset.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dataset has 114 different genres. Each genre has exactly 1,000 songs — so all bars should be roughly the same height.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>This chart gives you a feel for the variety of music in the dataset — everything from pop and rock to niche genres.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> The dataset is nicely balanced — no single genre has way more songs than others. That makes it fair to compare genres against each other.</span></div>`
   },
   'relationship_popularity_danceability.png': {
-    type: 'Scatter Plot',
-    feature: 'Popularity vs Danceability',
-    html: `<strong>Scatter plot</strong> of Popularity (y-axis) against Danceability (x-axis), with each point representing a single track.
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The relationship is weak — high danceability does not guarantee high popularity. The scatter is diffuse.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A horizontal band of points near popularity=0 represents catalogue or obscure tracks across all danceability levels.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Points are semi-transparent (alpha=0.5) to show density where many tracks overlap.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> Popularity is weakly explained by any single audio feature. A predictive model for popularity likely needs all features plus metadata (artist, release date, genre) for meaningful accuracy.</span></div>`
+    type: 'Scatter Plot', feature: 'Popularity vs Danceability',
+    html: `<strong>What does this chart show?</strong> Every dot is one song. The further right the dot, the more danceable the song. The higher up the dot, the more popular the song. If danceable songs were always popular, all the dots would form a line going up to the right.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>The dots are scattered all over the place — there is no clear pattern. This means being danceable does not automatically make a song popular.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>There is a thick band of dots at the very bottom — those are songs with basically zero popularity, regardless of how danceable they are.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> A catchy, danceable beat does not guarantee a hit. Popularity depends on much more than just how good a song is to dance to.</span></div>`
   },
   'relationship_popularity_energy.png': {
-    type: 'Scatter Plot',
-    feature: 'Popularity vs Energy',
-    html: `<strong>Scatter plot</strong> of Popularity (y-axis) against Energy (x-axis).
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Similar to danceability, energy shows a weak relationship with popularity — the points are broadly scattered.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>A slight trend may be visible: moderate energy (0.4–0.7) correlates with higher popularity in certain genres.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Very high energy tracks (> 0.9) do not consistently achieve high popularity — indicating diminishing returns.</span></div>
-      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Insight:</strong> The correlation between popularity and energy is near-zero. Energy is better used as a genre/mood discriminator than a popularity predictor.</span></div>`
+    type: 'Scatter Plot', feature: 'Popularity vs Energy',
+    html: `<strong>What does this chart show?</strong> Every dot is one song. The further right, the more intense and energetic the song. The higher up, the more popular. If energetic songs were more popular, you would see a trend upward to the right.
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Just like danceability, the dots are spread randomly — high energy songs are not reliably more popular than low energy ones.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-circle-dot"></i><span>Very intense songs (far right) do not all become popular — some are hits, most are not.</span></div>
+      <div class="sp-desc-row"><i class="fa-solid fa-lightbulb"></i><span><strong>Key takeaway:</strong> A loud, energetic song won't automatically be a hit. Popularity is complex and cannot be predicted by energy alone.</span></div>`
   }
 };
 
