@@ -71,12 +71,12 @@
     </div>
     <div class="sp-stat-card">
       <div class="sp-stat-icon"><i class="fa-solid fa-wave-square"></i></div>
-      <div class="sp-stat-value">{{ results.numeric_cols | length }}</div>
+      <div class="sp-stat-value">{{ results.n_numeric_features }}</div>
       <div class="sp-stat-label">Numeric Features</div>
     </div>
     <div class="sp-stat-card">
       <div class="sp-stat-icon"><i class="fa-solid fa-layer-group"></i></div>
-      <div class="sp-stat-value">{{ results.categorical_cols | length }}</div>
+      <div class="sp-stat-value">{{ results.n_categorical_features }}</div>
       <div class="sp-stat-label">Categorical Features</div>
     </div>
     {% if results.iqr %}
@@ -135,7 +135,7 @@
       <h2 style="font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">
         IQR Outlier Detection
         <span style="font-size:13px;font-weight:500;color:var(--text-muted);margin-left:8px;">
-          Column: <strong style="color:var(--accent);">{{ results.iqr.column }}</strong>
+          Across <strong style="color:var(--accent);">{{ results.iqr.n_numeric_columns }}</strong> numeric columns
         </span>
       </h2>
 
@@ -146,36 +146,86 @@
           <div class="sp-callout-text">
             The Interquartile Range (IQR) method identifies outliers by computing the spread of the
             middle 50% of the data. Values below <strong>Q1 − 1.5×IQR</strong> or above
-            <strong>Q3 + 1.5×IQR</strong> are flagged as outliers and clipped to the boundary.
-            Applied here to <strong style="color:var(--accent);">{{ results.iqr.column }}</strong>.
+            <strong>Q3 + 1.5×IQR</strong> are flagged as outliers. Applied here to all
+            <strong>{{ results.n_numeric_features }}</strong> numeric features in the dataset.
           </div>
         </div>
       </div>
 
+      <!-- Summary stats -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+        <table class="sp-summary-table">
+          <tr><td>Numeric columns analysed</td><td>{{ results.iqr.n_numeric_columns }}</td></tr>
+          <tr><td>Total outliers (sum across columns)</td>
+            <td><span style="color:#ff6b6b;font-weight:800;">{{ "{:,}".format(results.iqr.n_outliers) }}</span></td>
+          </tr>
+          <tr><td>Unique rows with ≥1 outlier</td>
+            <td><span style="color:var(--accent);font-weight:700;">{{ "{:,}".format(results.iqr.n_rows_with_outlier) }}</span></td>
+          </tr>
+        </table>
+        {% if results.iqr.clip_details %}
         <div>
-          <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">IQR Parameters</p>
+          <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">
+            Clipping applied to {{ results.iqr.clip_details.column }}
+          </p>
           <table class="sp-summary-table">
-            <tr><td>Q1 (25th percentile)</td><td>{{ results.iqr.q1 }}</td></tr>
-            <tr><td>Q3 (75th percentile)</td><td>{{ results.iqr.q3 }}</td></tr>
-            <tr><td>IQR (Q3 − Q1)</td><td>{{ results.iqr.iqr }}</td></tr>
-            <tr><td>Lower Bound (Q1 − 1.5×IQR)</td><td>{{ results.iqr.lower_bound }}</td></tr>
-            <tr><td>Upper Bound (Q3 + 1.5×IQR)</td><td>{{ results.iqr.upper_bound }}</td></tr>
-            <tr><td>Outliers Detected</td>
-              <td><span style="color:{% if results.iqr.n_outliers > 0 %}#ff6b6b{% else %}var(--accent){% endif %};font-weight:800;">{{ results.iqr.n_outliers }}</span></td>
+            <tr><td>Q1 / Q3</td><td>{{ results.iqr.clip_details.q1 }} / {{ results.iqr.clip_details.q3 }}</td></tr>
+            <tr><td>Lower / Upper bound</td><td>{{ results.iqr.clip_details.lower_bound }} / {{ results.iqr.clip_details.upper_bound }}</td></tr>
+            <tr><td>Outliers in {{ results.iqr.clip_details.column }}</td>
+              <td><span style="color:#ff6b6b;font-weight:800;">{{ results.iqr.clip_details.n_outliers }}</span></td>
+            </tr>
+            <tr><td>Range before → after</td>
+              <td>{{ results.iqr.clip_details.min_before }}–{{ results.iqr.clip_details.max_before }} → {{ results.iqr.clip_details.min_after }}–{{ results.iqr.clip_details.max_after }}</td>
             </tr>
           </table>
         </div>
-        <div>
-          <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">Before vs After Clipping</p>
-          <table class="sp-summary-table">
-            <tr><td>Min before clipping</td><td>{{ results.iqr.min_before }}</td></tr>
-            <tr><td>Max before clipping</td><td>{{ results.iqr.max_before }}</td></tr>
-            <tr><td>Min after clipping</td><td><span style="color:var(--accent);font-weight:700;">{{ results.iqr.min_after }}</span></td></tr>
-            <tr><td>Max after clipping</td><td><span style="color:var(--accent);font-weight:700;">{{ results.iqr.max_after }}</span></td></tr>
-          </table>
-        </div>
+        {% endif %}
       </div>
+
+      <!-- Per-column outlier counts table -->
+      <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">
+        Outliers per Column
+      </p>
+      <div class="sp-table-wrap" style="margin-bottom:28px;">
+        <table class="sp-table">
+          <thead>
+            <tr><th>Column</th><th>Outlier Count</th><th>% of Rows</th></tr>
+          </thead>
+          <tbody>
+            {% for col, count in results.iqr.column_outliers.items() %}
+            <tr>
+              <td><strong>{{ col }}</strong></td>
+              <td>
+                {% if count > 0 %}
+                <span style="color:#ff6b6b;font-weight:700;">{{ "{:,}".format(count) }}</span>
+                {% else %}
+                <span style="color:var(--accent);font-weight:700;">0</span>
+                {% endif %}
+              </td>
+              <td>{{ "%.2f"|format(count / results.n_rows * 100) }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Visual bar chart -->
+      {% if results.iqr.max_outliers > 0 %}
+      <p style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:12px;">
+        Outlier Distribution (Visual)
+      </p>
+      <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:8px;">
+        {% for col, count in results.iqr.column_outliers.items() %}
+        <div class="sp-split-bar-row">
+          <span class="sp-split-bar-label" style="width:130px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ col }}">{{ col }}</span>
+          <div class="sp-split-bar-track">
+            <div class="sp-split-bar-fill" style="width:{{ (count / results.iqr.max_outliers * 100) | round(1) }}%;{% if count == 0 %}opacity:0.25;{% endif %}"></div>
+          </div>
+          <span class="sp-split-bar-pct" style="width:70px;{% if count == 0 %}color:var(--text-muted);{% endif %}">{{ "{:,}".format(count) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
       {% endif %}
     </div>
 

@@ -40,6 +40,28 @@ ORDINAL_COLS     = []
 TARGET_COL       = "popularity"
 IQR_COL          = "danceability"
 
+# All numeric columns used for IQR outlier analysis (display + detection)
+IQR_NUMERIC_COLS = [
+    "Unnamed: 0",
+    "popularity",
+    "duration_ms",
+    "danceability",
+    "energy",
+    "key",
+    "loudness",
+    "mode",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo",
+    "time_signature",
+]
+
+N_NUMERIC_FEATURES = 15
+N_CATEGORICAL_FEATURES = 5
+
 
 # ============================================================
 # HELPER — missing values analysis
@@ -223,6 +245,55 @@ def _missing_value_analysis(df, numeric_cols):
     }
 
 
+def _iqr_outlier_analysis(df, numeric_cols):
+    """
+    IQR outlier detection across all numeric columns.
+    Returns per-column counts, total sum, and unique rows with any outlier.
+    """
+
+    column_outliers = {}
+    outlier_masks = []
+
+    for col in numeric_cols:
+        if col not in df.columns:
+            continue
+
+        series = pd.to_numeric(df[col], errors="coerce")
+        valid = series.dropna()
+
+        if len(valid) == 0:
+            column_outliers[col] = 0
+            outlier_masks.append(pd.Series(False, index=df.index))
+            continue
+
+        q1 = float(valid.quantile(0.25))
+        q3 = float(valid.quantile(0.75))
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+
+        mask = (series < lower) | (series > upper)
+        column_outliers[col] = int(mask.sum())
+        outlier_masks.append(mask.fillna(False))
+
+    if outlier_masks:
+        combined = np.column_stack([m.values for m in outlier_masks])
+        n_rows_with_outlier = int(combined.any(axis=1).sum())
+    else:
+        n_rows_with_outlier = 0
+
+    n_outliers = int(sum(column_outliers.values()))
+    max_outliers = max(column_outliers.values()) if column_outliers else 0
+
+    return {
+        "column_outliers": column_outliers,
+        "n_outliers": n_outliers,
+        "n_rows_with_outlier": n_rows_with_outlier,
+        "max_outliers": max_outliers,
+        "n_numeric_columns": len(column_outliers),
+    }
+
+
 def run_preprocessing():
 
     df = load_data()
@@ -236,6 +307,8 @@ def run_preprocessing():
 
     results["n_rows"] = int(df.shape[0])
     results["n_columns"] = int(df.shape[1])
+    results["n_numeric_features"] = N_NUMERIC_FEATURES
+    results["n_categorical_features"] = N_CATEGORICAL_FEATURES
 
     results["all_columns"] = df.columns.tolist()
 
@@ -274,79 +347,42 @@ def run_preprocessing():
     # 4. IQR OUTLIER DETECTION
     # ========================================================
 
-    iqr_results = {}
+    iqr_numeric_cols = [
+        c for c in IQR_NUMERIC_COLS
+        if c in df.columns
+    ]
 
+    iqr_results = _iqr_outlier_analysis(df, iqr_numeric_cols)
+
+    # Clip outliers on danceability for downstream preprocessing
     if IQR_COL in df.columns:
+        series = pd.to_numeric(df[IQR_COL], errors="coerce").dropna()
+        q1 = float(series.quantile(0.25))
+        q3 = float(series.quantile(0.75))
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
 
-        series = df[IQR_COL].dropna()
+        df["danceability_clipped"] = pd.to_numeric(
+            df[IQR_COL], errors="coerce"
+        ).clip(lower=lower, upper=upper)
 
-        Q1 = float(series.quantile(0.25))
-        Q3 = float(series.quantile(0.75))
-
-        IQR = Q3 - Q1
-
-        lower = Q1 - 1.5 * IQR
-        upper = Q3 + 1.5 * IQR
-
-        n_outliers = int(
-            ((series < lower) | (series > upper)).sum()
-        )
-
-        iqr_results = {
-
+        iqr_results["clip_column"] = IQR_COL
+        iqr_results["clip_details"] = {
             "column": IQR_COL,
-
-            "q1": round(Q1, 4),
-
-            "q3": round(Q3, 4),
-
-            "iqr": round(IQR, 4),
-
+            "q1": round(q1, 4),
+            "q3": round(q3, 4),
+            "iqr": round(iqr, 4),
             "lower_bound": round(lower, 4),
-
             "upper_bound": round(upper, 4),
-
-            "n_outliers": n_outliers,
-
-            "min_before":
-                round(float(series.min()), 4),
-
-            "max_before":
-                round(float(series.max()), 4)
+            "n_outliers": iqr_results["column_outliers"].get(IQR_COL, 0),
+            "min_before": round(float(series.min()), 4),
+            "max_before": round(float(series.max()), 4),
+            "min_after": round(float(df["danceability_clipped"].min()), 4),
+            "max_after": round(float(df["danceability_clipped"].max()), 4),
         }
 
-
-        # Clip outliers
-
-        df["danceability_clipped"] = df[
-            IQR_COL
-        ].clip(
-            lower=lower,
-            upper=upper
-        )
-
-
-        iqr_results["min_after"] = round(
-            float(
-                df["danceability_clipped"].min()
-            ),
-            4
-        )
-
-        iqr_results["max_after"] = round(
-            float(
-                df["danceability_clipped"].max()
-            ),
-            4
-        )
-
-
-        # Replace original column
-
-        df[IQR_COL] = df[
-            "danceability_clipped"
-        ]
-
+        df[IQR_COL] = df["danceability_clipped"]
 
     results["iqr"] = iqr_results
 
