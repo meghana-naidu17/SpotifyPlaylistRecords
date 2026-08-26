@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>
+    Logistic Regression — Spotify Playlist Analytics
+  </title>
+
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+
+<body>
+
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+
+<header class="sp-header">
+
+  <div class="sp-header-left">
+
+    <span class="sp-logo-icon">
+      <i class="fa-brands fa-spotify"></i>
+    </span>
+
+    <span class="sp-logo-text">
+      <span>Spotify</span> Playlist Analytics
+    </span>
+
+  </div>
+
+
+  <nav class="sp-header-center">
+
+    <a href="{{ url_for('index') }}"
+       class="sp-nav-link">
+      Dashboard
+    </a>
+
+    <a href="{{ url_for('data_loading') }}"
+       class="sp-nav-link">
+      Dataset Summary
+    </a>
+
+    <a href="{{ url_for('eda_page') }}"
+       class="sp-nav-link">
+      Analytics
+    </a>
+
+    <a href="{{ url_for('preprocessing_page') }}"
+       class="sp-nav-link">
+      Preprocessing
+    </a>
+
+    <a href="{{ url_for('logistic_regression_page') }}"
+       class="sp-nav-link active">
+      Logistic Regression
+    </a>
+
+  </nav>
+
+
+  <div class="sp-header-right">
+
+    <div class="sp-theme-dropdown"
+         id="themeDropdown">
+
+      <button class="sp-theme-btn"
+              id="themeBtn">
+
+        <i class="fa-solid fa-circle-half-stroke"></i>
+
+        <span id="themeLabel">
+          Spotify Dark
+        </span>
+
+        <i class="fa-solid fa-chevron-down"
+           style="font-size:10px; opacity:0.6;">
+        </i>
+
+      </button>
+
+
+      <div class="sp-theme-menu"
+           id="themeMenu">
+
+        <div class="sp-theme-option"
+             data-theme="spotify-dark">
+
+          <span class="sp-theme-dot dot-spotify-dark"></span>
+
+          Spotify Dark
+
+        </div>
+
+
+        <div class="sp-theme-option"
+             data-theme="spotify-light">
+
+          <span class="sp-theme-dot dot-spotify-light"></span>
+
+          Spotify Light
+
+        </div>
+
+
+        <div class="sp-theme-option"
+             data-theme="midnight">
+
+          <span class="sp-theme-dot dot-midnight"></span>
+
+          Midnight
+
+        </div>
+
+
+        <div class="sp-theme-option"
+             data-theme="forest">
+
+          <span class="sp-theme-dot dot-forest"></span>
+
+          Forest
+
+        </div>
+
+
+        <div class="sp-theme-option"
+             data-theme="sunflower">
+
+          <span class="sp-theme-dot dot-sunflower"></span>
+
+          Sunflower Sunrise
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="sp-profile-btn">
+
+      <i class="fa-solid fa-user"></i>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+
+<!-- ============================================================
+     PAGE
+     ============================================================ -->
+
+<main class="sp-page">
+
+
+  <!-- Breadcrumb -->
+
+  <nav class="sp-breadcrumb">
+
+    <a href="{{ url_for('index') }}">
+
+      <i class="fa-solid fa-house"></i>
+
+      Home
+
+    </a>
+
+    <i class="fa-solid fa-chevron-right"></i>
+
+    <span>
+      Machine Learning
+    </span>
+
+    <i class="fa-solid fa-chevron-right"></i>
+
+    <span>
+      Logistic Regression
+    </span>
+
+  </nav>
+
+
+
+  <!-- ==========================================================
+       TITLE
+       ========================================================== -->
+
+  <div class="sp-page-title-block">
+
+    <p class="sp-label">
+      Machine Learning
+    </p>
+
+    <h1>
+      Logistic Regression
+    </h1>
+
+    <p>
+      Predict whether a Spotify track is explicit or
+      not explicit using audio features and Logistic Regression.
+    </p>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       ERROR
+       ========================================================== -->
+
+  {% if error %}
+
+  <div class="sp-error">
+
+    <i class="fa-solid fa-triangle-exclamation"></i>
+
+    {{ error }}
+
+  </div>
+
+  {% endif %}
+
+
+
+  {% if results %}
+
+
+  <!-- ==========================================================
+       MODEL OVERVIEW
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Model Overview
+    </p>
+
+    <h2>
+      Logistic Regression Classification
+    </h2>
+
+
+    <div class="sp-callout success">
+
+      <div class="sp-callout-icon">
+
+        <i class="fa-solid fa-robot"></i>
+
+      </div>
+
+
+      <div class="sp-callout-body">
+
+        <div class="sp-callout-title">
+
+          Binary Classification
+
+        </div>
+
+
+        <div class="sp-callout-text">
+
+          The model predicts whether a Spotify track
+          is <strong>Explicit</strong> or
+          <strong>Not Explicit</strong> using
+          14 numerical audio features.
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       DATASET CALCULATIONS
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Dataset Calculations
+    </p>
+
+    <h2>
+      Training and Testing Data
+    </h2>
+
+
+    <table class="sp-summary-table">
+
+
+      <tr>
+
+        <td>
+          Total Records Used
+        </td>
+
+        <td>
+          {{ results.training_records + results.testing_records }}
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Training Records
+        </td>
+
+        <td>
+          {{ results.training_records }}
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Testing Records
+        </td>
+
+        <td>
+          {{ results.testing_records }}
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Train-Test Split
+        </td>
+
+        <td>
+          80% Training / 20% Testing
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Number of Features
+        </td>
+
+        <td>
+          {{ results.feature_count }}
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Not Explicit Records
+        </td>
+
+        <td>
+          {{ results.not_explicit_count }}
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Explicit Records
+        </td>
+
+        <td>
+          {{ results.explicit_count }}
+        </td>
+
+      </tr>
+
+
+    </table>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       FEATURES
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Input Features
+    </p>
+
+    <h2>
+      Features Used for Logistic Regression
+    </h2>
+
+
+    <div class="sp-tag-list">
+
+      {% for feature in results.features %}
+
+      <span class="sp-tag">
+
+        <i class="fa-solid fa-wave-square"></i>
+
+        {{ feature }}
+
+      </span>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       ACCURACY
+       ========================================================== -->
+
+  <div class="sp-stats-grid">
+
+
+    <!-- Training Accuracy -->
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-graduation-cap"></i>
+
+      </div>
+
+
+      <div class="sp-stat-value">
+
+        {{ results.train_accuracy }}%
+
+      </div>
+
+
+      <div class="sp-stat-label">
+
+        Training Accuracy
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Testing Accuracy -->
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-bullseye"></i>
+
+      </div>
+
+
+      <div class="sp-stat-value">
+
+        {{ results.test_accuracy }}%
+
+      </div>
+
+
+      <div class="sp-stat-label">
+
+        Testing Accuracy
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Training Records -->
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-database"></i>
+
+      </div>
+
+
+      <div class="sp-stat-value">
+
+        {{ results.training_records }}
+
+      </div>
+
+
+      <div class="sp-stat-label">
+
+        Training Records
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Testing Records -->
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-vial"></i>
+
+      </div>
+
+
+      <div class="sp-stat-value">
+
+        {{ results.testing_records }}
+
+      </div>
+
+
+      <div class="sp-stat-label">
+
+        Testing Records
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       SCALING COMPARISON
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Model Calculation
+    </p>
+
+    <h2>
+      Logistic Regression Scaling Comparison
+    </h2>
+
+
+    <div class="sp-table-wrap">
+
+      <table class="sp-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Scaling Method
+            </th>
+
+            <th>
+              Training Accuracy
+            </th>
+
+            <th>
+              Testing Accuracy
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          {% for item in results.scaling_comparison %}
+
+          <tr>
+
+            <td>
+
+              <strong>
+                {{ item.method }}
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              {{ item.training_accuracy }}%
+
+            </td>
+
+
+            <td>
+
+              {{ item.testing_accuracy }}%
+
+            </td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       CALCULATION EXPLANATION
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Calculations
+    </p>
+
+    <h2>
+      How the Model Calculates the Prediction
+    </h2>
+
+
+    <div class="sp-callout">
+
+      <div class="sp-callout-icon">
+
+        <i class="fa-solid fa-calculator"></i>
+
+      </div>
+
+
+      <div class="sp-callout-body">
+
+        <div class="sp-callout-title">
+
+          Logistic Regression Equation
+
+        </div>
+
+
+        <div class="sp-callout-text">
+
+          Logistic Regression calculates a weighted
+          combination of the input features and converts
+          it into a probability using the sigmoid function.
+
+        </div>
+
+
+        <div class="sp-desc-row">
+
+          <i class="fa-solid fa-arrow-right"></i>
+
+          <span>
+
+            Linear score:
+            <strong>
+              z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
+            </strong>
+
+          </span>
+
+        </div>
+
+
+        <div class="sp-desc-row">
+
+          <i class="fa-solid fa-arrow-right"></i>
+
+          <span>
+
+            Probability:
+            <strong>
+              P = 1 / (1 + e⁻ᶻ)
+            </strong>
+
+          </span>
+
+        </div>
+
+
+        <div class="sp-desc-row">
+
+          <i class="fa-solid fa-arrow-right"></i>
+
+          <span>
+
+            If the predicted probability is at least
+            0.5, the track is classified as
+            <strong>Explicit</strong>; otherwise it is
+            classified as <strong>Not Explicit</strong>.
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       CONFUSION MATRIX
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Evaluation
+    </p>
+
+    <h2>
+      Confusion Matrix
+    </h2>
+
+
+    <div class="sp-chart-card">
+
+      <img
+        src="{{ url_for(
+          'static',
+          filename=results.confusion_chart
+        ) }}"
+        alt="Logistic Regression Confusion Matrix">
+
+    </div>
+
+
+    {% if results.confusion_matrix %}
+
+    <div style="margin-top:20px;">
+
+      <div class="sp-table-wrap">
+
+        <table class="sp-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Actual / Predicted
+              </th>
+
+              <th>
+                Not Explicit
+              </th>
+
+              <th>
+                Explicit
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr>
+
+              <td>
+                <strong>
+                  Not Explicit
+                </strong>
+              </td>
+
+              <td>
+                {{ results.confusion_matrix[0][0] }}
+              </td>
+
+              <td>
+                {{ results.confusion_matrix[0][1] }}
+              </td>
+
+            </tr>
+
+
+            <tr>
+
+              <td>
+                <strong>
+                  Explicit
+                </strong>
+              </td>
+
+              <td>
+                {{ results.confusion_matrix[1][0] }}
+              </td>
+
+              <td>
+                {{ results.confusion_matrix[1][1] }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       CLASSIFICATION REPORT
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Evaluation Metrics
+    </p>
+
+    <h2>
+      Classification Report
+    </h2>
+
+
+    <div class="sp-table-wrap">
+
+      <table class="sp-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Precision
+            </th>
+
+            <th>
+              Recall
+            </th>
+
+            <th>
+              F1 Score
+            </th>
+
+            <th>
+              Support
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+
+          <tr>
+
+            <td>
+              <strong>
+                Not Explicit
+              </strong>
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Not Explicit"]["precision"]
+              ) }}
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Not Explicit"]["recall"]
+              ) }}
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Not Explicit"]["f1-score"]
+              ) }}
+            </td>
+
+            <td>
+              {{ results.classification_report["Not Explicit"]["support"] }}
+            </td>
+
+          </tr>
+
+
+          <tr>
+
+            <td>
+              <strong>
+                Explicit
+              </strong>
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Explicit"]["precision"]
+              ) }}
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Explicit"]["recall"]
+              ) }}
+            </td>
+
+            <td>
+              {{ "%.4f"|format(
+                results.classification_report["Explicit"]["f1-score"]
+              ) }}
+            </td>
+
+            <td>
+              {{ results.classification_report["Explicit"]["support"] }}
+            </td>
+
+          </tr>
+
+
+          <tr>
+
+            <td>
+              <strong>
+                Accuracy
+              </strong>
+            </td>
+
+            <td colspan="3">
+              {{ results.test_accuracy }}%
+            </td>
+
+            <td>
+              {{ results.testing_records }}
+            </td>
+
+          </tr>
+
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==========================================================
+       SCALING CHART
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Comparison
+    </p>
+
+    <h2>
+      Scaling Method Comparison
+    </h2>
+
+
+    <div class="sp-chart-card">
+
+      <img
+        src="{{ url_for(
+          'static',
+          filename=results.scaling_chart
+        ) }}"
+        alt="Logistic Regression Scaling Comparison">
+
+    </div>
+
+  </div>
+
+
+  {% endif %}
+
+
+</main>
+
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+
+<footer class="sp-footer">
+
+  Built with
+
+  <span>
+    ♥
+  </span>
+
+  using Flask &amp; Spotify Design Language
+
+</footer>
+
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+const THEME_KEY = "sp-analytics-theme";
+
+
+const THEME_LABELS = {
+
+  "spotify-dark": "Spotify Dark",
+
+  "spotify-light": "Spotify Light",
+
+  "midnight": "Midnight",
+
+  "forest": "Forest",
+
+  "sunflower": "Sunflower Sunrise"
+
+};
+
+
+
+function applyTheme(theme) {
+
+  document.documentElement
+    .setAttribute(
+      "data-theme",
+      theme
+    );
+
+
+  localStorage.setItem(
+    THEME_KEY,
+    theme
+  );
+
+
+  const label =
+    document.getElementById(
+      "themeLabel"
+    );
+
+
+  if (label) {
+
+    label.textContent =
+      THEME_LABELS[theme] || theme;
+
+  }
+
+
+  document
+    .querySelectorAll(
+      ".sp-theme-option"
+    )
+    .forEach(
+      option => {
+
+        option.classList.toggle(
+          "selected",
+          option.dataset.theme === theme
+        );
+
+      }
+    );
+
+}
+
+
+
+function loadSavedTheme() {
+
+  const savedTheme =
+    localStorage.getItem(
+      THEME_KEY
+    ) || "spotify-dark";
+
+
+  applyTheme(
+    savedTheme
+  );
+
+}
+
+
+
+const themeBtn =
+  document.getElementById(
+    "themeBtn"
+  );
+
+
+const themeMenu =
+  document.getElementById(
+    "themeMenu"
+  );
+
+
+if (themeBtn && themeMenu) {
+
+  themeBtn.addEventListener(
+    "click",
+    function(event) {
+
+      event.stopPropagation();
+
+      themeMenu.classList.toggle(
+        "open"
+      );
+
+    }
+  );
+
+
+  document
+    .querySelectorAll(
+      ".sp-theme-option"
+    )
+    .forEach(
+      option => {
+
+        option.addEventListener(
+          "click",
+          function() {
+
+            applyTheme(
+              option.dataset.theme
+            );
+
+            themeMenu.classList.remove(
+              "open"
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  document.addEventListener(
+    "click",
+    function() {
+
+      themeMenu.classList.remove(
+        "open"
+      );
+
+    }
+  );
+
+}
+
+
+loadSavedTheme();
+
+</script>
+
+
+</body>
+
+</html>
