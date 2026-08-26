@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="spotify-dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>
-    {% if active == "data-loading" %}Dataset Summary — {% endif %}Spotify Playlist Analytics
+    {% if active == "data-loading" %}
+      Dataset Summary —
+    {% elif active == "logistic-regression" %}
+      Logistic Regression —
+    {% endif %}
+    Spotify Playlist Analytics
   </title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
@@ -16,461 +26,1695 @@
 <!-- ============================================================
      HEADER
      ============================================================ -->
+
 <header class="sp-header">
 
   <!-- Left: Logo -->
   <div class="sp-header-left">
+
     <span class="sp-logo-icon">
       <i class="fa-brands fa-spotify"></i>
     </span>
+
     <span class="sp-logo-text">
       <span>Spotify</span> Playlist Analytics
     </span>
+
   </div>
 
-  <!-- Center: Nav links -->
+
+  <!-- Center: Navigation -->
   <nav class="sp-header-center">
+
     <a href="{{ url_for('index') }}"
        class="sp-nav-link {% if active == 'none' %}active{% endif %}">
       Dashboard
     </a>
+
     <a href="{{ url_for('data_loading') }}"
        class="sp-nav-link {% if active == 'data-loading' %}active{% endif %}">
       Dataset Summary
     </a>
+
     <a href="{{ url_for('eda_page') }}"
        class="sp-nav-link">
       Analytics
     </a>
+
     <a href="{{ url_for('preprocessing_page') }}"
-       class="sp-nav-link">
+       class="sp-nav-link {% if active == 'preprocessing' %}active{% endif %}">
       Preprocessing
     </a>
+
+    <a href="{{ url_for('logistic_regression_page') }}"
+       class="sp-nav-link {% if active == 'logistic-regression' %}active{% endif %}">
+      Logistic Regression
+    </a>
+
   </nav>
 
-  <!-- Right: Theme switcher + profile -->
+
+  <!-- Right: Theme + Profile -->
   <div class="sp-header-right">
 
     <div class="sp-theme-dropdown" id="themeDropdown">
-      <button class="sp-theme-btn" id="themeBtn" aria-label="Switch theme">
+
+      <button class="sp-theme-btn"
+              id="themeBtn"
+              aria-label="Switch theme">
+
         <i class="fa-solid fa-circle-half-stroke"></i>
-        <span id="themeLabel">Spotify Dark</span>
-        <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+
+        <span id="themeLabel">
+          Spotify Dark
+        </span>
+
+        <i class="fa-solid fa-chevron-down"
+           style="font-size:10px; opacity:0.6;">
+        </i>
+
       </button>
 
+
       <div class="sp-theme-menu" id="themeMenu">
-        <div class="sp-theme-option" data-theme="spotify-dark">
+
+        <div class="sp-theme-option"
+             data-theme="spotify-dark">
+
           <span class="sp-theme-dot dot-spotify-dark"></span>
           Spotify Dark
+
         </div>
-        <div class="sp-theme-option" data-theme="spotify-light">
+
+        <div class="sp-theme-option"
+             data-theme="spotify-light">
+
           <span class="sp-theme-dot dot-spotify-light"></span>
           Spotify Light
+
         </div>
-        <div class="sp-theme-option" data-theme="midnight">
+
+        <div class="sp-theme-option"
+             data-theme="midnight">
+
           <span class="sp-theme-dot dot-midnight"></span>
           Midnight
+
         </div>
-        <div class="sp-theme-option" data-theme="forest">
+
+        <div class="sp-theme-option"
+             data-theme="forest">
+
           <span class="sp-theme-dot dot-forest"></span>
           Forest
+
         </div>
-        <div class="sp-theme-option" data-theme="sunflower">
+
+        <div class="sp-theme-option"
+             data-theme="sunflower">
+
           <span class="sp-theme-dot dot-sunflower"></span>
           Sunflower Sunrise
+
         </div>
+
       </div>
+
     </div>
 
-    <div class="sp-profile-btn" aria-label="Profile">
+
+    <div class="sp-profile-btn"
+         aria-label="Profile">
+
       <i class="fa-solid fa-user"></i>
+
     </div>
 
   </div>
+
 </header>
+
 
 <!-- ============================================================
      PAGE CONTENT
      ============================================================ -->
+
 <main class="sp-page">
 
-  <!-- -------------------------------------------------------
-       HOME DASHBOARD  (active == "none")
-       ------------------------------------------------------- -->
-  {% if active == "none" %}
+
+<!-- ============================================================
+     HOME DASHBOARD
+     ============================================================ -->
+
+{% if active == "none" %}
 
   <!-- Hero -->
+
   <section class="sp-hero">
-    <h1 id="dynamicGreeting">Good Evening</h1>
-    <h1 class="sp-hero-title">Your Playlist Analytics</h1>
+
+    <h1 id="dynamicGreeting">
+      Good Evening
+    </h1>
+
+    <h1 class="sp-hero-title">
+      Your Playlist Analytics
+    </h1>
+
     <p class="sp-hero-sub">
-      Explore, analyze and understand your music data. Dive into
-      distributions, correlations and audio feature patterns across
-      your Spotify playlist.
+
+      Explore, analyze and understand your music data.
+      Dive into distributions, correlations and audio
+      feature patterns across your Spotify playlist.
+
     </p>
+
   </section>
 
-  <!-- Navigation Cards -->
-  <div class="sp-section-header" style="margin-bottom:16px;">
-    <h2 class="sp-section-title">Modules</h2>
+
+  <!-- Modules -->
+
+  <div class="sp-section-header"
+       style="margin-bottom:16px;">
+
+    <h2 class="sp-section-title">
+      Modules
+    </h2>
+
   </div>
+
 
   <div class="sp-nav-cards">
 
-    <!-- Dataset Summary — active -->
-    <a href="{{ url_for('data_loading') }}" class="sp-nav-card" style="text-decoration:none;">
-      <span class="sp-nav-card-icon">📊</span>
-      <div class="sp-nav-card-title">Dataset Summary</div>
-      <div class="sp-nav-card-desc">
-        Shape, columns, missing values and dataset preview.
+
+    <!-- ====================================================
+         DATASET SUMMARY
+         ==================================================== -->
+
+    <a href="{{ url_for('data_loading') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon">
+        📊
+      </span>
+
+      <div class="sp-nav-card-title">
+        Dataset Summary
       </div>
-      <span class="sp-nav-card-badge">Available</span>
+
+      <div class="sp-nav-card-desc">
+
+        Shape, columns, missing values
+        and dataset preview.
+
+      </div>
+
+      <span class="sp-nav-card-badge">
+        Available
+      </span>
+
     </a>
 
-    <!-- EDA — active -->
-    <a href="{{ url_for('eda_page') }}" class="sp-nav-card" style="text-decoration:none;">
-      <span class="sp-nav-card-icon">📈</span>
-      <div class="sp-nav-card-title">Exploratory Data Analysis</div>
-      <div class="sp-nav-card-desc">
-        Distributions, boxplots, heatmaps and feature relationships.
+
+    <!-- ====================================================
+         EDA
+         ==================================================== -->
+
+    <a href="{{ url_for('eda_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon">
+        📈
+      </span>
+
+      <div class="sp-nav-card-title">
+        Exploratory Data Analysis
       </div>
-      <span class="sp-nav-card-badge">Available</span>
+
+      <div class="sp-nav-card-desc">
+
+        Distributions, boxplots,
+        heatmaps and feature relationships.
+
+      </div>
+
+      <span class="sp-nav-card-badge">
+        Available
+      </span>
+
     </a>
 
-    <!-- Data Preprocessing — active -->
-    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-card" style="text-decoration:none;">
-      <span class="sp-nav-card-icon">⚙️</span>
-      <div class="sp-nav-card-title">Data Preprocessing</div>
-      <div class="sp-nav-card-desc">
-        Outlier handling, scaling, encoding and train-test split.
+
+    <!-- ====================================================
+         DATA PREPROCESSING
+         ==================================================== -->
+
+    <a href="{{ url_for('preprocessing_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon">
+        ⚙️
+      </span>
+
+      <div class="sp-nav-card-title">
+        Data Preprocessing
       </div>
-      <span class="sp-nav-card-badge">Available</span>
+
+      <div class="sp-nav-card-desc">
+
+        Outlier handling, scaling,
+        encoding and train-test split.
+
+      </div>
+
+      <span class="sp-nav-card-badge">
+        Available
+      </span>
+
     </a>
 
-    <!-- Machine Learning — coming soon -->
-    <div class="sp-nav-card disabled" onclick="showComingSoon('Machine Learning')">
-      <span class="sp-nav-card-icon">🤖</span>
-      <div class="sp-nav-card-title">Machine Learning</div>
-      <div class="sp-nav-card-desc">
-        Model training, evaluation and performance metrics.
-      </div>
-      <span class="sp-nav-card-badge">Coming Soon</span>
-    </div>
 
-    <!-- Prediction — coming soon -->
-    <div class="sp-nav-card disabled" onclick="showComingSoon('Prediction')">
-      <span class="sp-nav-card-icon">🎯</span>
-      <div class="sp-nav-card-title">Prediction</div>
-      <div class="sp-nav-card-desc">
-        Predict track popularity and audio feature outcomes.
-      </div>
-      <span class="sp-nav-card-badge">Coming Soon</span>
-    </div>
+   <!-- ====================================================
+     LOGISTIC REGRESSION
+     ==================================================== -->
+
+<a href="{{ url_for('logistic_regression_page') }}"
+   class="sp-nav-card"
+   style="text-decoration:none;">
+
+  <span class="sp-nav-card-icon">
+    🤖
+  </span>
+
+  <div class="sp-nav-card-title">
+    Logistic Regression
+  </div>
+
+  <div class="sp-nav-card-desc">
+
+    Predict whether Spotify tracks
+    are explicit or non-explicit.
 
   </div>
 
-  <!-- Coming Soon toast -->
-  <div class="sp-coming-soon-toast" id="comingSoonToast">
+  <span class="sp-nav-card-badge">
+    Available
+  </span>
+
+</a>
+
+
+    <!-- ====================================================
+         PREDICTION
+         ==================================================== -->
+
+    <div class="sp-nav-card disabled"
+         onclick="showComingSoon('Prediction')">
+
+      <span class="sp-nav-card-icon">
+        🎯
+      </span>
+
+      <div class="sp-nav-card-title">
+        Prediction
+      </div>
+
+      <div class="sp-nav-card-desc">
+
+        Predict track popularity and
+        audio feature outcomes.
+
+      </div>
+
+      <span class="sp-nav-card-badge">
+        Coming Soon
+      </span>
+
+    </div>
+
+
+  </div>
+
+
+  <!-- Coming Soon Toast -->
+
+  <div class="sp-coming-soon-toast"
+       id="comingSoonToast">
+
     <i class="fa-solid fa-clock"></i>
-    <span id="comingSoonText">Coming Soon</span>
+
+    <span id="comingSoonText">
+      Coming Soon
+    </span>
+
   </div>
 
-  {% endif %}
 
-  <!-- -------------------------------------------------------
-       DATASET SUMMARY  (active == "data-loading")
-       ------------------------------------------------------- -->
-  {% if active == "data-loading" %}
+{% endif %}
+
+
+
+<!-- ============================================================
+     DATASET SUMMARY
+     ============================================================ -->
+
+{% if active == "data-loading" %}
+
 
   <!-- Breadcrumb -->
+
   <nav class="sp-breadcrumb">
-    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+
+    <a href="{{ url_for('index') }}">
+
+      <i class="fa-solid fa-house"></i>
+
+      Home
+
+    </a>
+
     <i class="fa-solid fa-chevron-right"></i>
-    <span>Dataset Summary</span>
+
+    <span>
+      Dataset Summary
+    </span>
+
   </nav>
 
+
   <!-- Page Title -->
+
   <div class="sp-page-title-block">
-    <p class="sp-label">Module 01</p>
-    <h1>Dataset Summary</h1>
-    <p>An overview of the raw Spotify playlist dataset — shape, column types,
-       missing values and a live preview of the records.</p>
+
+    <p class="sp-label">
+      Module 01
+    </p>
+
+    <h1>
+      Dataset Summary
+    </h1>
+
+    <p>
+
+      An overview of the raw Spotify playlist dataset —
+      shape, column types, missing values and a live
+      preview of the records.
+
+    </p>
+
   </div>
 
+
+  <!-- Error -->
+
   {% if error %}
-  <div class="sp-error">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    {{ error }}
-  </div>
+
+    <div class="sp-error">
+
+      <i class="fa-solid fa-triangle-exclamation"></i>
+
+      {{ error }}
+
+    </div>
+
   {% endif %}
+
 
   {% if summary %}
 
-  <!-- Stat Cards -->
-  <div class="sp-stats-grid" style="margin-bottom:32px;">
 
-    <div class="sp-stat-card">
-      <div class="sp-stat-icon"><i class="fa-solid fa-music"></i></div>
-      <div class="sp-stat-value">{{ summary.n_rows }}</div>
-      <div class="sp-stat-label">Tracks</div>
-    </div>
+    <!-- Statistics -->
 
-    <div class="sp-stat-card">
-      <div class="sp-stat-icon"><i class="fa-solid fa-table-columns"></i></div>
-      <div class="sp-stat-value">{{ summary.n_columns }}</div>
-      <div class="sp-stat-label">Features</div>
-    </div>
+    <div class="sp-stats-grid"
+         style="margin-bottom:32px;">
 
-    <div class="sp-stat-card">
-      <div class="sp-stat-icon"><i class="fa-solid fa-copy"></i></div>
-      <div class="sp-stat-value">{{ summary.duplicate_rows }}</div>
-      <div class="sp-stat-label">Duplicates</div>
-    </div>
 
-    <div class="sp-stat-card">
-      <div class="sp-stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
-      <div class="sp-stat-value">
-        {% set total_missing = namespace(val=0) %}
-        {% for col in summary.columns %}
-          {% set total_missing.val = total_missing.val + summary.missing_counts[col] %}
-        {% endfor %}
-        {{ total_missing.val }}
+      <div class="sp-stat-card">
+
+        <div class="sp-stat-icon">
+
+          <i class="fa-solid fa-music"></i>
+
+        </div>
+
+        <div class="sp-stat-value">
+          {{ summary.n_rows }}
+        </div>
+
+        <div class="sp-stat-label">
+          Tracks
+        </div>
+
       </div>
-      <div class="sp-stat-label">Missing Values</div>
-    </div>
 
-    <div class="sp-stat-card">
-      <div class="sp-stat-icon"><i class="fa-solid fa-database"></i></div>
-      <div class="sp-stat-value">{{ summary.total_cells }}</div>
-      <div class="sp-stat-label">Total Cells</div>
-    </div>
 
-  </div>
+      <div class="sp-stat-card">
 
-  <!-- Dataset Summary Table -->
-  <div class="sp-section">
-    <p class="sp-section-label">Overview</p>
-    <h2>Dataset Summary</h2>
+        <div class="sp-stat-icon">
 
-    <table class="sp-summary-table">
-      <tr>
-        <td>Total Rows</td>
-        <td>{{ summary.n_rows }}</td>
-      </tr>
-      <tr>
-        <td>Total Columns</td>
-        <td>{{ summary.n_columns }}</td>
-      </tr>
-      <tr>
-        <td>Total Cells</td>
-        <td>{{ summary.total_cells }}</td>
-      </tr>
-      <tr>
-        <td>Duplicate Rows</td>
-        <td>{{ summary.duplicate_rows }}</td>
-      </tr>
-      <tr>
-        <td>Memory Usage</td>
-        <td>{{ summary.memory_usage }} KB</td>
-      </tr>
-    </table>
-  </div>
+          <i class="fa-solid fa-table-columns"></i>
 
-  <!-- Column Information -->
-  <div class="sp-section">
-    <p class="sp-section-label">Schema</p>
-    <h2>Column Information</h2>
+        </div>
 
-    <div class="sp-table-wrap sp-table-max">
-      <table class="sp-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Column</th>
-            <th>Datatype</th>
-            <th>Missing</th>
-            <th>Missing %</th>
-            <th>Unique</th>
-          </tr>
-        </thead>
-        <tbody>
+        <div class="sp-stat-value">
+          {{ summary.n_columns }}
+        </div>
+
+        <div class="sp-stat-label">
+          Features
+        </div>
+
+      </div>
+
+
+      <div class="sp-stat-card">
+
+        <div class="sp-stat-icon">
+
+          <i class="fa-solid fa-copy"></i>
+
+        </div>
+
+        <div class="sp-stat-value">
+          {{ summary.duplicate_rows }}
+        </div>
+
+        <div class="sp-stat-label">
+          Duplicates
+        </div>
+
+      </div>
+
+
+      <div class="sp-stat-card">
+
+        <div class="sp-stat-icon">
+
+          <i class="fa-solid fa-circle-xmark"></i>
+
+        </div>
+
+        <div class="sp-stat-value">
+
+          {% set total_missing = namespace(val=0) %}
+
           {% for col in summary.columns %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td><strong>{{ col }}</strong></td>
-            <td>
-              <span style="
-                background: var(--accent-dim);
-                color: var(--accent);
-                padding: 2px 8px;
-                border-radius: 6px;
-                font-size: 11px;
-                font-weight: 700;
-              ">{{ summary.dtypes[col] }}</span>
-            </td>
-            <td>
-              {% if summary.missing_counts[col] > 0 %}
-                <span style="color:#ff6b6b; font-weight:700;">
-                  {{ summary.missing_counts[col] }}
-                </span>
-              {% else %}
-                <span style="color: var(--text-muted);">0</span>
-              {% endif %}
-            </td>
-            <td>{{ summary.missing_percentages[col] }}%</td>
-            <td>{{ summary.unique_values[col] }}</td>
-          </tr>
+
+            {% set total_missing.val =
+               total_missing.val +
+               summary.missing_counts[col] %}
+
           {% endfor %}
-        </tbody>
-      </table>
+
+          {{ total_missing.val }}
+
+        </div>
+
+        <div class="sp-stat-label">
+          Missing Values
+        </div>
+
+      </div>
+
+
+      <div class="sp-stat-card">
+
+        <div class="sp-stat-icon">
+
+          <i class="fa-solid fa-database"></i>
+
+        </div>
+
+        <div class="sp-stat-value">
+          {{ summary.total_cells }}
+        </div>
+
+        <div class="sp-stat-label">
+          Total Cells
+        </div>
+
+      </div>
+
+
     </div>
+
+
+
+    <!-- Dataset Overview -->
+
+    <div class="sp-section">
+
+      <p class="sp-section-label">
+        Overview
+      </p>
+
+      <h2>
+        Dataset Summary
+      </h2>
+
+
+      <table class="sp-summary-table">
+
+        <tr>
+
+          <td>
+            Total Rows
+          </td>
+
+          <td>
+            {{ summary.n_rows }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Total Columns
+          </td>
+
+          <td>
+            {{ summary.n_columns }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Total Cells
+          </td>
+
+          <td>
+            {{ summary.total_cells }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Duplicate Rows
+          </td>
+
+          <td>
+            {{ summary.duplicate_rows }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Memory Usage
+          </td>
+
+          <td>
+            {{ summary.memory_usage }} KB
+          </td>
+
+        </tr>
+
+      </table>
+
+    </div>
+
+
+
+    <!-- Column Information -->
+
+    <div class="sp-section">
+
+      <p class="sp-section-label">
+        Schema
+      </p>
+
+      <h2>
+        Column Information
+      </h2>
+
+
+      <div class="sp-table-wrap sp-table-max">
+
+        <table class="sp-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Column
+              </th>
+
+              <th>
+                Datatype
+              </th>
+
+              <th>
+                Missing
+              </th>
+
+              <th>
+                Missing %
+              </th>
+
+              <th>
+                Unique
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            {% for col in summary.columns %}
+
+            <tr>
+
+              <td>
+                {{ loop.index }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ col }}
+                </strong>
+              </td>
+
+
+              <td>
+
+                <span style="
+                  background: var(--accent-dim);
+                  color: var(--accent);
+                  padding: 2px 8px;
+                  border-radius: 6px;
+                  font-size: 11px;
+                  font-weight: 700;
+                ">
+
+                  {{ summary.dtypes[col] }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                {% if summary.missing_counts[col] > 0 %}
+
+                  <span style="
+                    color:#ff6b6b;
+                    font-weight:700;
+                  ">
+
+                    {{ summary.missing_counts[col] }}
+
+                  </span>
+
+                {% else %}
+
+                  <span style="
+                    color: var(--text-muted);
+                  ">
+
+                    0
+
+                  </span>
+
+                {% endif %}
+
+              </td>
+
+
+              <td>
+
+                {{ summary.missing_percentages[col] }}%
+
+              </td>
+
+
+              <td>
+
+                {{ summary.unique_values[col] }}
+
+              </td>
+
+            </tr>
+
+            {% endfor %}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Dataset Preview -->
+
+    <div class="sp-section">
+
+      <p class="sp-section-label">
+        Preview
+      </p>
+
+      <h2>
+
+        Dataset Preview
+
+        <span style="
+          font-size:13px;
+          font-weight:500;
+          color:var(--text-muted);
+          margin-left:8px;
+        ">
+
+          First 10 rows
+
+        </span>
+
+      </h2>
+
+
+      <div class="sp-table-wrap sp-table-max">
+
+        <table class="sp-table">
+
+          <thead>
+
+            <tr>
+
+              {% for col in summary.columns %}
+
+              <th>
+                {{ col }}
+              </th>
+
+              {% endfor %}
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            {% for row in summary.preview %}
+
+            <tr>
+
+              {% for col in summary.columns %}
+
+              <td>
+                {{ row[col] }}
+              </td>
+
+              {% endfor %}
+
+            </tr>
+
+            {% endfor %}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+
+  {% endif %}
+
+
+{% endif %}
+
+
+
+<!-- ============================================================
+     LOGISTIC REGRESSION
+     ============================================================ -->
+
+{% if active == "logistic-regression" %}
+
+
+  <!-- Breadcrumb -->
+
+  <nav class="sp-breadcrumb">
+
+    <a href="{{ url_for('index') }}">
+
+      <i class="fa-solid fa-house"></i>
+
+      Home
+
+    </a>
+
+    <i class="fa-solid fa-chevron-right"></i>
+
+    <span>
+      Machine Learning
+    </span>
+
+    <i class="fa-solid fa-chevron-right"></i>
+
+    <span>
+      Logistic Regression
+    </span>
+
+  </nav>
+
+
+
+  <!-- Page Title -->
+
+  <div class="sp-page-title-block">
+
+    <p class="sp-label">
+      Machine Learning
+    </p>
+
+    <h1>
+      Logistic Regression
+    </h1>
+
+    <p>
+
+      Predict whether a Spotify track is explicit
+      or not explicit using audio features and
+      Logistic Regression.
+
+    </p>
+
   </div>
 
-  <!-- Dataset Preview -->
+
+
+  <!-- Error -->
+
+  {% if error %}
+
+    <div class="sp-error">
+
+      <i class="fa-solid fa-triangle-exclamation"></i>
+
+      {{ error }}
+
+    </div>
+
+  {% endif %}
+
+
+
+  <!-- Model Information -->
+
   <div class="sp-section">
-    <p class="sp-section-label">Preview</p>
-    <h2>Dataset Preview
-      <span style="font-size:13px; font-weight:500; color:var(--text-muted); margin-left:8px;">
-        First 10 rows
-      </span>
+
+    <p class="sp-section-label">
+      Model
+    </p>
+
+    <h2>
+      Logistic Regression
     </h2>
 
-    <div class="sp-table-wrap sp-table-max">
-      <table class="sp-table">
-        <thead>
-          <tr>
-            {% for col in summary.columns %}
-            <th>{{ col }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in summary.preview %}
-          <tr>
-            {% for col in summary.columns %}
-            <td>{{ row[col] }}</td>
-            {% endfor %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <div class="sp-callout">
+
+      <div class="sp-callout-icon">
+
+        <i class="fa-solid fa-robot"></i>
+
+      </div>
+
+
+      <div class="sp-callout-body">
+
+        <div class="sp-callout-title">
+
+          Binary Classification
+
+        </div>
+
+        <div class="sp-callout-text">
+
+          Logistic Regression is used to classify
+          Spotify tracks into two classes:
+
+          <strong>Explicit</strong>
+
+          and
+
+          <strong>Non-Explicit</strong>.
+
+        </div>
+
+      </div>
+
     </div>
+
+
   </div>
 
-  {% endif %}<!-- end if summary -->
 
-  {% endif %}<!-- end if active == "data-loading" -->
+
+  <!-- Model Statistics -->
+
+  {% if model_accuracy is defined
+        or accuracy is defined
+        or train_rows is defined
+        or test_rows is defined %}
+
+
+  <div class="sp-stats-grid">
+
+
+    {% if accuracy is defined %}
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-bullseye"></i>
+
+      </div>
+
+      <div class="sp-stat-value">
+
+        {{ accuracy }}%
+
+      </div>
+
+      <div class="sp-stat-label">
+
+        Accuracy
+
+      </div>
+
+    </div>
+
+    {% elif model_accuracy is defined %}
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-bullseye"></i>
+
+      </div>
+
+      <div class="sp-stat-value">
+
+        {{ model_accuracy }}%
+
+      </div>
+
+      <div class="sp-stat-label">
+
+        Accuracy
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    {% if train_rows is defined %}
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-database"></i>
+
+      </div>
+
+      <div class="sp-stat-value">
+
+        {{ train_rows }}
+
+      </div>
+
+      <div class="sp-stat-label">
+
+        Training Rows
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    {% if test_rows is defined %}
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-vial"></i>
+
+      </div>
+
+      <div class="sp-stat-value">
+
+        {{ test_rows }}
+
+      </div>
+
+      <div class="sp-stat-label">
+
+        Testing Rows
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    {% if feature_count is defined %}
+
+    <div class="sp-stat-card">
+
+      <div class="sp-stat-icon">
+
+        <i class="fa-solid fa-table-columns"></i>
+
+      </div>
+
+      <div class="sp-stat-value">
+
+        {{ feature_count }}
+
+      </div>
+
+      <div class="sp-stat-label">
+
+        Features
+
+      </div>
+
+    </div>
+
+    {% endif %}
+
+
+  </div>
+
+  {% endif %}
+
+
+
+  <!-- Model Details -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Classification
+    </p>
+
+    <h2>
+      Prediction Target
+    </h2>
+
+
+    <table class="sp-summary-table">
+
+      <tr>
+
+        <td>
+          Target
+        </td>
+
+        <td>
+          Explicit
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Model
+        </td>
+
+        <td>
+          Logistic Regression
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Problem Type
+        </td>
+
+        <td>
+          Binary Classification
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Class 0
+        </td>
+
+        <td>
+          Non-Explicit
+        </td>
+
+      </tr>
+
+
+      <tr>
+
+        <td>
+          Class 1
+        </td>
+
+        <td>
+          Explicit
+        </td>
+
+      </tr>
+
+    </table>
+
+  </div>
+
+
+
+  <!-- Results -->
+
+  {% if classification_report is defined %}
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Evaluation
+    </p>
+
+    <h2>
+      Classification Report
+    </h2>
+
+
+    <div class="sp-table-wrap">
+
+      <table class="sp-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Precision
+            </th>
+
+            <th>
+              Recall
+            </th>
+
+            <th>
+              F1 Score
+            </th>
+
+            <th>
+              Support
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          {% for label, values in classification_report.items() %}
+
+            {% if values is mapping
+                  and 'precision' in values %}
+
+            <tr>
+
+              <td>
+                <strong>
+                  {{ label }}
+                </strong>
+              </td>
+
+              <td>
+                {{ "%.4f"|format(values.precision) }}
+              </td>
+
+              <td>
+                {{ "%.4f"|format(values.recall) }}
+              </td>
+
+              <td>
+                {{ "%.4f"|format(values['f1-score']) }}
+              </td>
+
+              <td>
+                {{ values.support }}
+              </td>
+
+            </tr>
+
+            {% endif %}
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  {% endif %}
+
+
+
+  <!-- Explanation -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Explanation
+    </p>
+
+    <h2>
+      How Logistic Regression Works
+    </h2>
+
+
+    <div class="sp-callout success">
+
+      <div class="sp-callout-icon">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+      </div>
+
+
+      <div class="sp-callout-body">
+
+        <div class="sp-callout-title">
+
+          Spotify Track Classification
+
+        </div>
+
+        <div class="sp-callout-text">
+
+          The model learns the relationship between
+          Spotify audio features and the explicit-status
+          target. After training, it estimates the
+          probability that a track belongs to the
+          explicit class and converts that probability
+          into a binary prediction.
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+{% endif %}
+
+
 
 </main>
 
-<!-- Footer -->
-<footer class="sp-footer">
-  Built with <span>♥</span> using Flask &amp; Spotify Design Language
-</footer>
 
 <!-- ============================================================
-     JAVASCRIPT — Theme switcher + Coming Soon toast
+     FOOTER
      ============================================================ -->
+
+<footer class="sp-footer">
+
+  Built with
+
+  <span>
+    ♥
+  </span>
+
+  using Flask &amp; Spotify Design Language
+
+</footer>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
 <script>
-  /* ---- Theme system ---- */
-  const THEME_KEY  = 'sp-analytics-theme';
+
+  /* ==========================================================
+     THEME SYSTEM
+     ========================================================== */
+
+  const THEME_KEY = 'sp-analytics-theme';
+
+
   const THEME_LABELS = {
-    'spotify-dark':  'Spotify Dark',
-    'spotify-light': 'Spotify Light',
-    'midnight':      'Midnight',
-    'forest':        'Forest',
-    'sunflower':     'Sunflower Sunrise',
+
+    'spotify-dark':
+      'Spotify Dark',
+
+    'spotify-light':
+      'Spotify Light',
+
+    'midnight':
+      'Midnight',
+
+    'forest':
+      'Forest',
+
+    'sunflower':
+      'Sunflower Sunrise'
+
   };
 
 
-function updateGreeting() {
-    const hour = new Date().getHours();
-    const greeting = document.getElementById("dynamicGreeting");
 
-    if (!greeting) return;
+  /* ==========================================================
+     GREETING
+     ========================================================== */
+
+  function updateGreeting() {
+
+    const hour =
+      new Date().getHours();
+
+    const greeting =
+      document.getElementById(
+        "dynamicGreeting"
+      );
+
+
+    if (!greeting) {
+      return;
+    }
+
 
     if (hour >= 5 && hour < 12) {
-      
-        greeting.textContent = "Good Morning";
-    }
-    else if (hour >= 12 && hour < 17) {
-        greeting.textContent = "Good Afternoon";
-    }
-    else if (hour >= 17 && hour < 21) {
-        greeting.textContent = "Good Evening";
-    }
-    else {
-        greeting.textContent = "Good Night";
-    }
-}
 
-updateGreeting();
-setInterval(updateGreeting, 60000);
+      greeting.textContent =
+        "Good Morning";
+
+    }
+
+    else if (hour >= 12 && hour < 17) {
+
+      greeting.textContent =
+        "Good Afternoon";
+
+    }
+
+    else if (hour >= 17 && hour < 21) {
+
+      greeting.textContent =
+        "Good Evening";
+
+    }
+
+    else {
+
+      greeting.textContent =
+        "Good Night";
+
+    }
+
+  }
+
+
+  updateGreeting();
+
+
+  setInterval(
+    updateGreeting,
+    60000
+  );
+
+
+
+  /* ==========================================================
+     APPLY THEME
+     ========================================================== */
 
   function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem(THEME_KEY, theme);
 
-    // Update label
-    const label = document.getElementById('themeLabel');
-    if (label) label.textContent = THEME_LABELS[theme] || theme;
+    document.documentElement
+      .setAttribute(
+        'data-theme',
+        theme
+      );
 
-    // Mark selected option
-    document.querySelectorAll('.sp-theme-option').forEach(opt => {
-      opt.classList.toggle('selected', opt.dataset.theme === theme);
-    });
+
+    localStorage.setItem(
+      THEME_KEY,
+      theme
+    );
+
+
+    const label =
+      document.getElementById(
+        'themeLabel'
+      );
+
+
+    if (label) {
+
+      label.textContent =
+        THEME_LABELS[theme] || theme;
+
+    }
+
+
+    document
+      .querySelectorAll(
+        '.sp-theme-option'
+      )
+      .forEach(
+
+        opt => {
+
+          opt.classList.toggle(
+            'selected',
+            opt.dataset.theme === theme
+          );
+
+        }
+
+      );
+
   }
+
+
+
+  /* ==========================================================
+     LOAD SAVED THEME
+     ========================================================== */
 
   function loadSavedTheme() {
-    const saved = localStorage.getItem(THEME_KEY) || 'spotify-dark';
+
+    const saved =
+      localStorage.getItem(
+        THEME_KEY
+      ) || 'spotify-dark';
+
+
     applyTheme(saved);
+
   }
 
-  // Toggle menu
-  const themeBtn  = document.getElementById('themeBtn');
-  const themeMenu = document.getElementById('themeMenu');
+
+
+  /* ==========================================================
+     THEME DROPDOWN
+     ========================================================== */
+
+  const themeBtn =
+    document.getElementById(
+      'themeBtn'
+    );
+
+
+  const themeMenu =
+    document.getElementById(
+      'themeMenu'
+    );
+
 
   if (themeBtn && themeMenu) {
-    themeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      themeMenu.classList.toggle('open');
-    });
 
-    // Option click
-    document.querySelectorAll('.sp-theme-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        applyTheme(opt.dataset.theme);
-        themeMenu.classList.remove('open');
-      });
-    });
 
-    // Close on outside click
-    document.addEventListener('click', () => {
-      themeMenu.classList.remove('open');
-    });
+    themeBtn.addEventListener(
+      'click',
+      function(e) {
+
+        e.stopPropagation();
+
+        themeMenu.classList.toggle(
+          'open'
+        );
+
+      }
+    );
+
+
+    document
+      .querySelectorAll(
+        '.sp-theme-option'
+      )
+      .forEach(
+
+        opt => {
+
+          opt.addEventListener(
+            'click',
+            function() {
+
+              applyTheme(
+                opt.dataset.theme
+              );
+
+              themeMenu.classList.remove(
+                'open'
+              );
+
+            }
+          );
+
+        }
+
+      );
+
+
+    document.addEventListener(
+      'click',
+      function() {
+
+        themeMenu.classList.remove(
+          'open'
+        );
+
+      }
+    );
+
   }
 
-  // Apply saved theme immediately on page load
+
+
   loadSavedTheme();
 
-  /* ---- Coming Soon toast ---- */
+
+
+  /* ==========================================================
+     COMING SOON TOAST
+     ========================================================== */
+
   let toastTimer = null;
 
+
   function showComingSoon(moduleName) {
-    const toast    = document.getElementById('comingSoonToast');
-    const textSpan = document.getElementById('comingSoonText');
-    if (!toast) return;
 
-    if (textSpan) textSpan.textContent = moduleName + ' — Coming Soon';
+    const toast =
+      document.getElementById(
+        'comingSoonToast'
+      );
 
-    clearTimeout(toastTimer);
-    toast.classList.add('show');
 
-    toastTimer = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2800);
+    const textSpan =
+      document.getElementById(
+        'comingSoonText'
+      );
+
+
+    if (!toast) {
+      return;
+    }
+
+
+    if (textSpan) {
+
+      textSpan.textContent =
+        moduleName +
+        ' — Coming Soon';
+
+    }
+
+
+    clearTimeout(
+      toastTimer
+    );
+
+
+    toast.classList.add(
+      'show'
+    );
+
+
+    toastTimer =
+      setTimeout(
+
+        function() {
+
+          toast.classList.remove(
+            'show'
+          );
+
+        },
+
+        2800
+
+      );
+
   }
+
 </script>
 
+
 </body>
+
 </html>
