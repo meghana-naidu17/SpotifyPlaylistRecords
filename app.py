@@ -4,6 +4,8 @@ from load_data import get_data_summary
 from playlist_eda import run_eda
 from preprocessing_data import run_preprocessing
 from logistic_regression import run_logistic_regression
+from linear_regression import run_linear_regression
+
 
 
 # =========================================================
@@ -133,6 +135,32 @@ def logistic_regression_page():
         return render_template(
             "logistic_regression.html",
             active="logistic-regression",
+            results=None,
+            error=str(e)
+        )
+# =========================================================
+# LINEAR REGRESSION
+# =========================================================
+
+@app.route("/linear-regression")
+def linear_regression_page():
+
+    try:
+
+        results = run_linear_regression()
+
+        return render_template(
+            "linear_regression.html",
+            active="linear-regression",
+            results=results,
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "linear_regression.html",
+            active="linear-regression",
             results=None,
             error=str(e)
         )

@@ -71,6 +71,11 @@
       Logistic Regression
     </a>
 
+    <a href="{{ url_for('linear_regression_page') }}"
+       class="sp-nav-link {% if active == 'linear-regression' %}active{% endif %}">
+      Linear Regression
+    </a>
+
   </nav>
 
 
@@ -325,6 +330,34 @@
 
 </a>
 
+    <!-- ====================================================
+         LINEAR REGRESSION
+         ==================================================== -->
+
+    <a href="{{ url_for('linear_regression_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon">
+        📈
+      </span>
+
+      <div class="sp-nav-card-title">
+        Linear Regression
+      </div>
+
+      <div class="sp-nav-card-desc">
+
+        Analyze audio feature linear relations
+        with simple and multiple regression models.
+
+      </div>
+
+      <span class="sp-nav-card-badge">
+        Available
+      </span>
+
+    </a>
 
     <!-- ====================================================
          PREDICTION
