@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linear Regression — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  
+  <style>
+    .sp-desc-row {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .sp-desc-row i {
+      margin-right: 10px;
+      color: var(--primary-color, #1db954);
+    }
+    .equation-box {
+      font-family: "Courier New", Courier, monospace;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color, #1db954);
+      margin: 15px 0;
+      font-size: 16px;
+      overflow-x: auto;
+    }
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="sp-header">
+  <div class="sp-header-left">
+    <span class="sp-logo-icon">
+      <i class="fa-brands fa-spotify"></i>
+    </span>
+    <span class="sp-logo-text">
+      <span>Spotify</span> Playlist Analytics
+    </span>
+  </div>
+
+  <nav class="sp-header-center">
+    <a href="{{ url_for('index') }}" class="sp-nav-link">Dashboard</a>
+    <a href="{{ url_for('data_loading') }}" class="sp-nav-link">Dataset Summary</a>
+    <a href="{{ url_for('eda_page') }}" class="sp-nav-link">Analytics</a>
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-link">Preprocessing</a>
+    <a href="{{ url_for('logistic_regression_page') }}" class="sp-nav-link">Logistic Regression</a>
+    <a href="{{ url_for('linear_regression_page') }}" class="sp-nav-link active">Linear Regression</a>
+  </nav>
+
+  <div class="sp-header-right">
+    <div class="sp-theme-dropdown" id="themeDropdown">
+      <button class="sp-theme-btn" id="themeBtn">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+        <span id="themeLabel">Spotify Dark</span>
+        <i class="fa-solid fa-chevron-down" style="font-size:10px; opacity:0.6;"></i>
+      </button>
+
+      <div class="sp-theme-menu" id="themeMenu">
+        <div class="sp-theme-option" data-theme="spotify-dark">
+          <span class="sp-theme-dot dot-spotify-dark"></span>
+          Spotify Dark
+        </div>
+        <div class="sp-theme-option" data-theme="spotify-light">
+          <span class="sp-theme-dot dot-spotify-light"></span>
+          Spotify Light
+        </div>
+        <div class="sp-theme-option" data-theme="midnight">
+          <span class="sp-theme-dot dot-midnight"></span>
+          Midnight
+        </div>
+        <div class="sp-theme-option" data-theme="forest">
+          <span class="sp-theme-dot dot-forest"></span>
+          Forest
+        </div>
+        <div class="sp-theme-option" data-theme="sunflower">
+          <span class="sp-theme-dot dot-sunflower"></span>
+          Sunflower Sunrise
+        </div>
+      </div>
+    </div>
+
+    <div class="sp-profile-btn">
+      <i class="fa-solid fa-user"></i>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     PAGE CONTENT
+     ============================================================ -->
+<main class="sp-page">
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}">
+      <i class="fa-solid fa-house"></i>
+      Home
+    </a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Machine Learning</span>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Linear Regression</span>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Machine Learning</p>
+    <h1>Linear Regression</h1>
+    <p>
+      Explore simple and multiple linear regression models predicting audio properties (loudness) based on track features (energy, acousticness, tempo) with visual cost optimization analysis.
+    </p>
+  </div>
+
+  <!-- Error -->
+  {% if error %}
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if results %}
+
+  <!-- ==========================================================
+       MODEL OVERVIEW
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Model Overview</p>
+    <h2>Continuous Feature Prediction</h2>
+    <div class="sp-callout success">
+      <div class="sp-callout-icon">
+        <i class="fa-solid fa-calculator"></i>
+      </div>
+      <div class="sp-callout-body">
+        <div class="sp-callout-title">Linear Regression Analysis</div>
+        <div class="sp-callout-text">
+          Linear Regression models the relationship between a dependent target variable and one or more independent predictor features by fitting a linear equation. Here, we analyze the relationship between track loudness (in decibels) and core audio characteristics.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       SIMPLE LINEAR REGRESSION
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Example 01</p>
+    <h2>Simple Linear Regression (Loudness ~ Energy)</h2>
+    
+    <p class="sp-section-desc">
+      A simple regression models loudness ($y$) as a function of energy ($x$). More energetic songs typically have a larger amplitude and are recorded at a louder overall volume level.
+    </p>
+
+    <div class="equation-box">
+      <strong>Simple Regression Equation:</strong><br>
+      y = θ₀ + θ₁ * x<br>
+      Loudness (dB) = {{ results.simple.intercept }} + {{ results.simple.coefficient }} * Energy
+    </div>
+
+    <div class="sp-chart-card">
+      <img src="{{ url_for('static', filename=results.simple.fit_chart) }}" alt="Simple Linear Regression Fit">
+    </div>
+
+    <h3>Performance Metrics</h3>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Dataset Split</th>
+            <th>Mean Squared Error (MSE)</th>
+            <th>R² Score (Variance Explained)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Training (80%)</strong></td>
+            <td>{{ results.simple.mse_train }}</td>
+            <td>{{ results.simple.r2_train }}</td>
+          </tr>
+          <tr>
+            <td><strong>Testing (20%)</strong></td>
+            <td>{{ results.simple.mse_test }}</td>
+            <td>{{ results.simple.r2_test }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       COST FUNCTION & GRADIENT DESCENT INTUITION
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Theory & Intuition</p>
+    <h2>MSE Cost Function & Gradient Descent</h2>
+    
+    <div class="sp-callout">
+      <div class="sp-callout-icon">
+        <i class="fa-solid fa-brain"></i>
+      </div>
+      <div class="sp-callout-body">
+        <div class="sp-callout-title">The Cost Function and Optimization</div>
+        <div class="sp-callout-text">
+          To fit a regression line, we define an objective measure of error and try to minimize it.
+        </div>
+        
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-square-root-variable"></i>
+          <span>
+            <strong>Mean Squared Error (MSE) Cost Equation:</strong>
+          </span>
+        </div>
+        <div class="equation-box" style="margin-left: 20px;">
+          J(θ) = 1/m * Σ (h_θ(x^(i)) - y^(i))²
+        </div>
+        
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-arrows-spin"></i>
+          <span>
+            <strong>Gradient Descent Intuition:</strong> We start with arbitrary weights $\theta_0, \theta_1$. By computing the derivative (gradient) of the cost function $J(\theta)$ with respect to each parameter, we know which direction decreases the error. We take small steps in the opposite direction of the gradient:
+          </span>
+        </div>
+        <div class="equation-box" style="margin-left: 20px;">
+          θ_j := θ_j - α * (2/m) * Σ (h_θ(x^(i)) - y^(i)) * x_j^(i)
+        </div>
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-arrow-down-long"></i>
+          <span>
+            As we update the parameters iteratively, the cost $J(\theta)$ descends toward the global minimum, and the line converges to the best fit.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Gradient Descent Convergence Visualizations</h3>
+    <p class="sp-section-desc">
+      Below are the visualizations of the gradient descent optimization run on standardized features:
+    </p>
+
+    <div class="grid-2col" style="margin-top: 20px;">
+      <div class="sp-chart-card" style="margin-bottom: 0;">
+        <h4 style="text-align: center; margin-bottom: 10px;">Cost History vs. Iterations</h4>
+        <img src="{{ url_for('static', filename=results.gd.cost_chart) }}" alt="Gradient Descent Cost History">
+      </div>
+      <div class="sp-chart-card" style="margin-bottom: 0;">
+        <h4 style="text-align: center; margin-bottom: 10px;">Cost Contour Landscape & Parameter Trajectory</h4>
+        <img src="{{ url_for('static', filename=results.gd.trajectory_chart) }}" alt="Parameter Space Trajectory">
+      </div>
+    </div>
+    
+    <div style="margin-top: 15px;">
+      <p class="sp-desc-row">
+        <i class="fa-solid fa-info-circle"></i>
+        <span>
+          The cost function starts high at <strong>{{ results.gd.initial_cost }}</strong> and descends rapidly, converging to a minimum value of <strong>{{ results.gd.final_cost }}</strong> as $\theta_0$ and $\theta_1$ follow the path toward the center of the contour circles.
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       MULTIPLE LINEAR REGRESSION
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Example 02</p>
+    <h2>Multiple Linear Regression</h2>
+    
+    <p class="sp-section-desc">
+      A multiple regression models loudness ($y$) using three predictors: energy ($x_1$), acousticness ($x_2$), and tempo ($x_3$). This accounts for the fact that acoustic tracks are typically quieter, while faster, higher-energy tracks are louder.
+    </p>
+
+    <div class="equation-box">
+      <strong>Multiple Regression Equation:</strong><br>
+      y = θ₀ + θ₁*x₁ + θ₂*x₂ + θ₃*x₃<br>
+      Loudness = {{ results.multiple.coefficients.intercept }} + {{ results.multiple.coefficients.energy }}*Energy + {{ results.multiple.coefficients.acousticness }}*Acousticness + {{ results.multiple.coefficients.tempo }}*Tempo
+    </div>
+
+    <div class="sp-chart-card">
+      <img src="{{ url_for('static', filename=results.multiple.fit_chart) }}" alt="Multiple Linear Regression Actual vs Predicted">
+    </div>
+
+    <h3>Model Coefficients (Parameters)</h3>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Feature / Parameter</th>
+            <th>Coefficient ($\theta$) Value</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Intercept ($\theta_0$)</strong></td>
+            <td>{{ results.multiple.coefficients.intercept }}</td>
+            <td>Baseline loudness level when all predictors are zero.</td>
+          </tr>
+          <tr>
+            <td><strong>Energy ($\theta_1$)</strong></td>
+            <td>+{{ results.multiple.coefficients.energy }}</td>
+            <td>Positive impact: as energy increases by 1 unit, loudness increases by {{ results.multiple.coefficients.energy }} dB.</td>
+          </tr>
+          <tr>
+            <td><strong>Acousticness ($\theta_2$)</strong></td>
+            <td>{{ results.multiple.coefficients.acousticness }}</td>
+            <td>Negative impact: acoustic tracks are quieter and reduce the overall volume.</td>
+          </tr>
+          <tr>
+            <td><strong>Tempo ($\theta_3$)</strong></td>
+            <td>+{{ results.multiple.coefficients.tempo }}</td>
+            <td>Very small positive impact: faster tracks tend to have slightly higher volume levels.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top: 25px;">Model Performance</h3>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Dataset Split</th>
+            <th>Mean Squared Error (MSE)</th>
+            <th>R² Score (Variance Explained)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Training (80%)</strong></td>
+            <td>{{ results.multiple.mse_train }}</td>
+            <td>{{ results.multiple.r2_train }}</td>
+          </tr>
+          <tr>
+            <td><strong>Testing (20%)</strong></td>
+            <td>{{ results.multiple.mse_test }}</td>
+            <td>{{ results.multiple.r2_test }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       CONCLUSIONS & DISCUSSION
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Discussion</p>
+    <h2>Conclusions & Insights</h2>
+    
+    <div class="sp-callout">
+      <div class="sp-callout-icon">
+        <i class="fa-solid fa-list-check"></i>
+      </div>
+      <div class="sp-callout-body">
+        <div class="sp-callout-title">Key Takeways:</div>
+        
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-check"></i>
+          <span>
+            <strong>Strong Linear Association:</strong> Loudness and energy exhibit a powerful, positive linear relationship. In the simple linear regression model, an increase of 1.0 in energy corresponds to an increase of roughly <strong>{{ results.simple.coefficient }} dB</strong> in volume.
+          </span>
+        </div>
+        
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-check"></i>
+          <span>
+            <strong>Improvement with Multiple Features:</strong> The multiple linear regression model explains a slightly larger proportion of variance in loudness (testing $R^2$ of <strong>{{ results.multiple.r2_test }}</strong>) compared to the simple regression model ($R^2$ of <strong>{{ results.simple.r2_test }}</strong>).
+          </span>
+        </div>
+
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-check"></i>
+          <span>
+            <strong>Predictive Characteristics:</strong> High energy and faster tempos push track loudness higher, while acoustic instruments exert a damping effect, lowering the overall loudness.
+          </span>
+        </div>
+        
+        <div class="sp-desc-row">
+          <i class="fa-solid fa-check"></i>
+          <span>
+            <strong>Gradient Descent Validation:</strong> The convergence plots verify that using the MSE cost function and calculating numerical gradients guarantees parameter progression directly towards the optimal analytical parameters.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+const THEME_KEY = "sp-analytics-theme";
+
+const THEME_LABELS = {
+  "spotify-dark": "Spotify Dark",
+  "spotify-light": "Spotify Light",
+  "midnight": "Midnight",
+  "forest": "Forest",
+  "sunflower": "Sunflower Sunrise"
+};
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem(THEME_KEY, theme);
+  
+  const label = document.getElementById("themeLabel");
+  if (label) {
+    label.textContent = THEME_LABELS[theme] || theme;
+  }
+
+  document.querySelectorAll(".sp-theme-option").forEach(option => {
+    option.classList.toggle("selected", option.dataset.theme === theme);
+  });
+}
+
+function loadSavedTheme() {
+  const savedTheme = localStorage.getItem(THEME_KEY) || "spotify-dark";
+  applyTheme(savedTheme);
+}
+
+const themeBtn = document.getElementById("themeBtn");
+const themeMenu = document.getElementById("themeMenu");
+
+if (themeBtn && themeMenu) {
+  themeBtn.addEventListener("click", function(event) {
+    event.stopPropagation();
+    themeMenu.classList.toggle("open");
+  });
+
+  document.querySelectorAll(".sp-theme-option").forEach(option => {
+    option.addEventListener("click", function() {
+      applyTheme(option.dataset.theme);
+      themeMenu.classList.remove("open");
+    });
+  });
+
+  document.addEventListener("click", function() {
+    themeMenu.classList.remove("open");
+  });
+}
+
+loadSavedTheme();
+</script>
+
+</body>
+</html>
