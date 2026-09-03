@@ -40,6 +40,19 @@ os.makedirs(CHART_DIR, exist_ok=True)
 
 
 # =========================================================
+# VALID PENALTY OPTIONS (used by app.py + template dropdown)
+# =========================================================
+
+VALID_PENALTIES = ["l2", "l1", "none"]
+
+PENALTY_LABELS = {
+    "l2": "L2 (Ridge)",
+    "l1": "L1 (Lasso)",
+    "none": "No Regularization"
+}
+
+
+# =========================================================
 # LOAD DATA
 # =========================================================
 
@@ -208,20 +221,73 @@ def load_data():
 
 
 # =========================================================
-# TRAIN MODEL
+# BUILD MODEL FOR A GIVEN PENALTY
+# =========================================================
+
+def build_model(penalty):
+
+    # -----------------------------------------------------
+    # Normalize / validate the incoming penalty value
+    # -----------------------------------------------------
+
+    penalty = (penalty or "l2").lower().strip()
+
+    if penalty not in VALID_PENALTIES:
+        penalty = "l2"
+
+    # -----------------------------------------------------
+    # L1 (Lasso) — needs a solver that supports L1
+    # -----------------------------------------------------
+
+    if penalty == "l1":
+
+        return LogisticRegression(
+            penalty="l1",
+            solver="liblinear",
+            max_iter=2000,
+            random_state=42
+        )
+
+    # -----------------------------------------------------
+    # No regularization at all
+    # -----------------------------------------------------
+
+    elif penalty == "none":
+
+        return LogisticRegression(
+            penalty=None,
+            solver="lbfgs",
+            max_iter=2000,
+            random_state=42
+        )
+
+    # -----------------------------------------------------
+    # Default: L2 (Ridge)
+    # -----------------------------------------------------
+
+    else:
+
+        return LogisticRegression(
+            penalty="l2",
+            solver="lbfgs",
+            max_iter=2000,
+            random_state=42
+        )
+
+
+# =========================================================
+# TRAIN MODEL (penalty-aware)
 # =========================================================
 
 def train_model(
     X_train,
     X_test,
     y_train,
-    y_test
+    y_test,
+    penalty="l2"
 ):
 
-    model = LogisticRegression(
-        max_iter=2000,
-        random_state=42
-    )
+    model = build_model(penalty)
 
     # -----------------------------------------------------
     # Train
@@ -452,7 +518,16 @@ def create_confusion_matrix_chart(
 # MAIN LOGISTIC REGRESSION
 # =========================================================
 
-def run_logistic_regression():
+def run_logistic_regression(penalty="l2"):
+
+    # -----------------------------------------------------
+    # Normalize incoming penalty value
+    # -----------------------------------------------------
+
+    penalty = (penalty or "l2").lower().strip()
+
+    if penalty not in VALID_PENALTIES:
+        penalty = "l2"
 
     # -----------------------------------------------------
     # Load
@@ -490,7 +565,8 @@ def run_logistic_regression():
         X_train,
         X_test,
         y_train,
-        y_test
+        y_test,
+        penalty=penalty
     )
 
     # =====================================================
@@ -517,7 +593,8 @@ def run_logistic_regression():
         X_train_std,
         X_test_std,
         y_train,
-        y_test
+        y_test,
+        penalty=penalty
     )
 
     # =====================================================
@@ -544,7 +621,8 @@ def run_logistic_regression():
         X_train_mm,
         X_test_mm,
         y_train,
-        y_test
+        y_test,
+        penalty=penalty
     )
 
     # =====================================================
@@ -604,6 +682,13 @@ def run_logistic_regression():
     # =====================================================
 
     return {
+
+        "penalty": penalty,
+
+        "penalty_label": PENALTY_LABELS.get(
+            penalty,
+            "L2 (Ridge)"
+        ),
 
         "train_accuracy": round(
             standard_train * 100,
@@ -708,7 +793,12 @@ def run_logistic_regression():
 
 if __name__ == "__main__":
 
-    result = run_logistic_regression()
+    import sys
+
+    # Allow: python logistic_regression.py l1
+    cli_penalty = sys.argv[1] if len(sys.argv) > 1 else "l2"
+
+    result = run_logistic_regression(penalty=cli_penalty)
 
     print()
     print("==========================================")
@@ -723,6 +813,11 @@ if __name__ == "__main__":
 
     print(
         "Target: explicit"
+    )
+
+    print(
+        "Regularization:",
+        result["penalty_label"]
     )
 
     print(

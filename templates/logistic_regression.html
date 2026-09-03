@@ -227,6 +227,86 @@
 
 
   <!-- ==========================================================
+       REGULARIZATION SELECTOR
+       ========================================================== -->
+
+  <div class="sp-section">
+
+    <p class="sp-section-label">
+      Configuration
+    </p>
+
+    <h2>
+      Regularization Method
+    </h2>
+
+    <div class="sp-callout">
+
+      <div class="sp-callout-icon">
+        <i class="fa-solid fa-sliders"></i>
+      </div>
+
+      <div class="sp-callout-body">
+
+        <div class="sp-callout-title">
+          Choose a penalty
+        </div>
+
+        <div class="sp-callout-text">
+          L2 shrinks all coefficients smoothly (default).
+          L1 can zero out weak features (feature selection).
+          "No Regularization" fits an unconstrained model,
+          which can overfit on noisy or high-dimensional data.
+        </div>
+
+        <form method="GET"
+              action="{{ url_for('logistic_regression_page') }}"
+              id="regForm"
+              style="margin-top:14px;">
+
+          <select name="penalty"
+                  id="penaltySelect"
+                  onchange="document.getElementById('regForm').submit()"
+                  style="
+                    background: var(--bg-tertiary);
+                    color: var(--text-primary);
+                    border: 1.5px solid var(--border-hover);
+                    border-radius: 10px;
+                    padding: 10px 16px;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    min-width: 220px;
+                  ">
+
+            <option value="l2"
+              {% if selected_penalty == 'l2' %}selected{% endif %}>
+              L2 (Ridge) — default
+            </option>
+
+            <option value="l1"
+              {% if selected_penalty == 'l1' %}selected{% endif %}>
+              L1 (Lasso)
+            </option>
+
+            <option value="none"
+              {% if selected_penalty == 'none' %}selected{% endif %}>
+              No Regularization
+            </option>
+
+          </select>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ==========================================================
        ERROR
        ========================================================== -->
 
@@ -285,7 +365,9 @@
           The model predicts whether a Spotify track
           is <strong>Explicit</strong> or
           <strong>Not Explicit</strong> using
-          14 numerical audio features.
+          14 numerical audio features, trained with
+          <strong>{{ results.penalty_label }}</strong>
+          regularization.
 
         </div>
 
@@ -313,6 +395,19 @@
 
 
     <table class="sp-summary-table">
+
+
+      <tr>
+
+        <td>
+          Regularization
+        </td>
+
+        <td>
+          {{ results.penalty_label }}
+        </td>
+
+      </tr>
 
 
       <tr>
@@ -581,6 +676,7 @@
 
     <h2>
       Logistic Regression Scaling Comparison
+      ({{ results.penalty_label }})
     </h2>
 
 
@@ -689,6 +785,16 @@
           Logistic Regression calculates a weighted
           combination of the input features and converts
           it into a probability using the sigmoid function.
+          {% if results.penalty == 'l1' %}
+          With L1 regularization, weak or redundant feature
+          weights are pushed to exactly zero.
+          {% elif results.penalty == 'l2' %}
+          With L2 regularization, all feature weights are
+          shrunk smoothly toward zero without eliminating any.
+          {% else %}
+          With no regularization, weights are fit purely to
+          minimize training error, with no penalty term.
+          {% endif %}
 
         </div>
 
