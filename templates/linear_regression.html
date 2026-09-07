@@ -126,8 +126,63 @@
     <p class="sp-label">Machine Learning</p>
     <h1>Linear Regression</h1>
     <p>
-      Explore simple and multiple linear regression models predicting audio properties (loudness) based on track features (energy, acousticness, tempo) with visual cost optimization analysis.
+      Explore simple and multiple linear regression models predicting audio properties (loudness) based on track features (energy, acousticness, tempo) with configurable regularization and visual cost optimization analysis.
     </p>
+  </div>
+
+  <!-- ==========================================================
+       REGULARIZATION SELECTOR
+       ========================================================== -->
+  <div class="sp-section">
+    <p class="sp-section-label">Configuration</p>
+    <h2>Regularization Method</h2>
+    <div class="sp-callout">
+      <div class="sp-callout-icon">
+        <i class="fa-solid fa-sliders"></i>
+      </div>
+      <div class="sp-callout-body">
+        <div class="sp-callout-title">Choose a penalty</div>
+        <div class="sp-callout-text">
+          L2 shrinks all coefficients smoothly (Ridge).
+          L1 can zero out weak features (Lasso).
+          "No Regularization" fits an unconstrained Ordinary Least Squares (OLS) model,
+          which can overfit on noisy or collinear data.
+        </div>
+
+        <form method="GET"
+              action="{{ url_for('linear_regression_page') }}"
+              id="regForm"
+              style="margin-top:14px;">
+          <select name="penalty"
+                  id="penaltySelect"
+                  onchange="document.getElementById('regForm').submit()"
+                  style="
+                    background: var(--bg-tertiary);
+                    color: var(--text-primary);
+                    border: 1.5px solid var(--border-hover);
+                    border-radius: 10px;
+                    padding: 10px 16px;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    min-width: 220px;
+                  ">
+            <option value="l2"
+              {% if selected_penalty == 'l2' %}selected{% endif %}>
+              L2 (Ridge) — default
+            </option>
+            <option value="l1"
+              {% if selected_penalty == 'l1' %}selected{% endif %}>
+              L1 (Lasso)
+            </option>
+            <option value="none"
+              {% if selected_penalty == 'none' %}selected{% endif %}>
+              No Regularization
+            </option>
+          </select>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Error -->
@@ -151,9 +206,9 @@
         <i class="fa-solid fa-calculator"></i>
       </div>
       <div class="sp-callout-body">
-        <div class="sp-callout-title">Linear Regression Analysis</div>
+        <div class="sp-callout-title">Linear Regression with {{ results.penalty_label }}</div>
         <div class="sp-callout-text">
-          Linear Regression models the relationship between a dependent target variable and one or more independent predictor features by fitting a linear equation. Here, we analyze the relationship between track loudness (in decibels) and core audio characteristics.
+          Linear Regression models the relationship between a dependent target variable and one or more independent predictor features by fitting a linear equation. Here, we analyze the relationship between track loudness (in decibels) and core audio characteristics using <strong>{{ results.penalty_label }}</strong>.
         </div>
       </div>
     </div>
@@ -171,7 +226,7 @@
     </p>
 
     <div class="equation-box">
-      <strong>Simple Regression Equation:</strong><br>
+      <strong>Simple Regression Equation ({{ results.penalty_label }}):</strong><br>
       y = θ₀ + θ₁ * x<br>
       Loudness (dB) = {{ results.simple.intercept }} + {{ results.simple.coefficient }} * Energy
     </div>
@@ -185,12 +240,16 @@
       <table class="sp-table">
         <thead>
           <tr>
-            <th>Dataset Split</th>
+            <th>Metric / Split</th>
             <th>Mean Squared Error (MSE)</th>
             <th>R² Score (Variance Explained)</th>
           </tr>
         </thead>
         <tbody>
+          <tr>
+            <td><strong>Regularization Method</strong></td>
+            <td colspan="2"><strong>{{ results.penalty_label }}</strong></td>
+          </tr>
           <tr>
             <td><strong>Training (80%)</strong></td>
             <td>{{ results.simple.mse_train }}</td>
@@ -211,7 +270,7 @@
        ========================================================== -->
   <div class="sp-section">
     <p class="sp-section-label">Theory & Intuition</p>
-    <h2>MSE Cost Function & Gradient Descent</h2>
+    <h2>MSE Cost Function & Gradient Descent ({{ results.penalty_label }})</h2>
     
     <div class="sp-callout">
       <div class="sp-callout-icon">
@@ -220,32 +279,52 @@
       <div class="sp-callout-body">
         <div class="sp-callout-title">The Cost Function and Optimization</div>
         <div class="sp-callout-text">
-          To fit a regression line, we define an objective measure of error and try to minimize it.
+          To fit a regression line, we define an objective measure of error and regularize parameter magnitudes to prevent overfitting.
         </div>
         
         <div class="sp-desc-row">
           <i class="fa-solid fa-square-root-variable"></i>
           <span>
-            <strong>Mean Squared Error (MSE) Cost Equation:</strong>
+            <strong>
+              {% if selected_penalty == 'l2' %}
+                Mean Squared Error (MSE) + L2 Ridge Regularization Cost Equation:
+              {% elif selected_penalty == 'l1' %}
+                Mean Squared Error (MSE) + L1 Lasso Regularization Cost Equation:
+              {% else %}
+                Mean Squared Error (MSE) Cost Equation:
+              {% endif %}
+            </strong>
           </span>
         </div>
         <div class="equation-box" style="margin-left: 20px;">
-          J(θ) = 1/m * Σ (h_θ(x^(i)) - y^(i))²
+          {% if selected_penalty == 'l2' %}
+            J(θ) = 1/m * Σ (h_θ(x^(i)) - y^(i))² + λ * Σ θ_j²
+          {% elif selected_penalty == 'l1' %}
+            J(θ) = 1/m * Σ (h_θ(x^(i)) - y^(i))² + λ * Σ |θ_j|
+          {% else %}
+            J(θ) = 1/m * Σ (h_θ(x^(i)) - y^(i))²
+          {% endif %}
         </div>
         
         <div class="sp-desc-row">
           <i class="fa-solid fa-arrows-spin"></i>
           <span>
-            <strong>Gradient Descent Intuition:</strong> We start with arbitrary weights $\theta_0, \theta_1$. By computing the derivative (gradient) of the cost function $J(\theta)$ with respect to each parameter, we know which direction decreases the error. We take small steps in the opposite direction of the gradient:
+            <strong>Gradient Descent Update Rule:</strong> By taking steps in the opposite direction of the gradient of $J(\theta)$, the parameters move toward the optimal regularized solution:
           </span>
         </div>
         <div class="equation-box" style="margin-left: 20px;">
-          θ_j := θ_j - α * (2/m) * Σ (h_θ(x^(i)) - y^(i)) * x_j^(i)
+          {% if selected_penalty == 'l2' %}
+            θ_j := θ_j - α * [(2/m) * Σ (h_θ(x^(i)) - y^(i)) * x_j^(i) + 2λ * θ_j]
+          {% elif selected_penalty == 'l1' %}
+            θ_j := θ_j - α * [(2/m) * Σ (h_θ(x^(i)) - y^(i)) * x_j^(i) + λ * sign(θ_j)]
+          {% else %}
+            θ_j := θ_j - α * (2/m) * Σ (h_θ(x^(i)) - y^(i)) * x_j^(i)
+          {% endif %}
         </div>
         <div class="sp-desc-row">
           <i class="fa-solid fa-arrow-down-long"></i>
           <span>
-            As we update the parameters iteratively, the cost $J(\theta)$ descends toward the global minimum, and the line converges to the best fit.
+            As we update the parameters iteratively, the cost $J(\theta)$ descends toward the global minimum, and the line converges to the regularized best fit.
           </span>
         </div>
       </div>
@@ -253,7 +332,7 @@
 
     <h3>Gradient Descent Convergence Visualizations</h3>
     <p class="sp-section-desc">
-      Below are the visualizations of the gradient descent optimization run on standardized features:
+      Visualizations of the gradient descent optimization run on standardized features using <strong>{{ results.penalty_label }}</strong>:
     </p>
 
     <div class="grid-2col" style="margin-top: 20px;">
@@ -271,7 +350,7 @@
       <p class="sp-desc-row">
         <i class="fa-solid fa-info-circle"></i>
         <span>
-          The cost function starts high at <strong>{{ results.gd.initial_cost }}</strong> and descends rapidly, converging to a minimum value of <strong>{{ results.gd.final_cost }}</strong> as $\theta_0$ and $\theta_1$ follow the path toward the center of the contour circles.
+          The cost function starts at <strong>{{ results.gd.initial_cost }}</strong> and descends rapidly, converging to a minimum value of <strong>{{ results.gd.final_cost }}</strong> under {{ results.penalty_label }}.
         </span>
       </p>
     </div>
@@ -282,14 +361,14 @@
        ========================================================== -->
   <div class="sp-section">
     <p class="sp-section-label">Example 02</p>
-    <h2>Multiple Linear Regression</h2>
+    <h2>Multiple Linear Regression ({{ results.penalty_label }})</h2>
     
     <p class="sp-section-desc">
-      A multiple regression models loudness ($y$) using three predictors: energy ($x_1$), acousticness ($x_2$), and tempo ($x_3$). This accounts for the fact that acoustic tracks are typically quieter, while faster, higher-energy tracks are louder.
+      A multiple regression models loudness ($y$) using three predictors: energy ($x_1$), acousticness ($x_2$), and tempo ($x_3$), regularized with <strong>{{ results.penalty_label }}</strong>.
     </p>
 
     <div class="equation-box">
-      <strong>Multiple Regression Equation:</strong><br>
+      <strong>Multiple Regression Equation ({{ results.penalty_label }}):</strong><br>
       y = θ₀ + θ₁*x₁ + θ₂*x₂ + θ₃*x₃<br>
       Loudness = {{ results.multiple.coefficients.intercept }} + {{ results.multiple.coefficients.energy }}*Energy + {{ results.multiple.coefficients.acousticness }}*Acousticness + {{ results.multiple.coefficients.tempo }}*Tempo
     </div>
@@ -327,7 +406,7 @@
           <tr>
             <td><strong>Tempo ($\theta_3$)</strong></td>
             <td>+{{ results.multiple.coefficients.tempo }}</td>
-            <td>Very small positive impact: faster tracks tend to have slightly higher volume levels.</td>
+            <td>Very small impact: tempo contributes slightly to perceived energy/volume.</td>
           </tr>
         </tbody>
       </table>
@@ -338,12 +417,16 @@
       <table class="sp-table">
         <thead>
           <tr>
-            <th>Dataset Split</th>
+            <th>Metric / Split</th>
             <th>Mean Squared Error (MSE)</th>
             <th>R² Score (Variance Explained)</th>
           </tr>
         </thead>
         <tbody>
+          <tr>
+            <td><strong>Regularization Method</strong></td>
+            <td colspan="2"><strong>{{ results.penalty_label }}</strong></td>
+          </tr>
           <tr>
             <td><strong>Training (80%)</strong></td>
             <td>{{ results.multiple.mse_train }}</td>
@@ -371,33 +454,33 @@
         <i class="fa-solid fa-list-check"></i>
       </div>
       <div class="sp-callout-body">
-        <div class="sp-callout-title">Key Takeways:</div>
+        <div class="sp-callout-title">Key Takeaways ({{ results.penalty_label }}):</div>
         
         <div class="sp-desc-row">
           <i class="fa-solid fa-check"></i>
           <span>
-            <strong>Strong Linear Association:</strong> Loudness and energy exhibit a powerful, positive linear relationship. In the simple linear regression model, an increase of 1.0 in energy corresponds to an increase of roughly <strong>{{ results.simple.coefficient }} dB</strong> in volume.
+            <strong>Regularization Effect:</strong> When using {{ results.penalty_label }}, weights are constrained to prevent overfitting. L2 smoothly shrinks large weights, L1 performs sparse feature contraction, and No Regularization provides unpenalized OLS estimates.
           </span>
         </div>
         
         <div class="sp-desc-row">
           <i class="fa-solid fa-check"></i>
           <span>
-            <strong>Improvement with Multiple Features:</strong> The multiple linear regression model explains a slightly larger proportion of variance in loudness (testing $R^2$ of <strong>{{ results.multiple.r2_test }}</strong>) compared to the simple regression model ($R^2$ of <strong>{{ results.simple.r2_test }}</strong>).
+            <strong>Dominant Predictor:</strong> Energy remains the primary driver of loudness across all regularization types, with a strong positive coefficient.
           </span>
         </div>
 
         <div class="sp-desc-row">
           <i class="fa-solid fa-check"></i>
           <span>
-            <strong>Predictive Characteristics:</strong> High energy and faster tempos push track loudness higher, while acoustic instruments exert a damping effect, lowering the overall loudness.
+            <strong>Acoustic Damping:</strong> Acousticness exhibits an inverse relationship with loudness, lowering predicted volume for acoustic tracks.
           </span>
         </div>
         
         <div class="sp-desc-row">
           <i class="fa-solid fa-check"></i>
           <span>
-            <strong>Gradient Descent Validation:</strong> The convergence plots verify that using the MSE cost function and calculating numerical gradients guarantees parameter progression directly towards the optimal analytical parameters.
+            <strong>Cost Optimization:</strong> Gradient descent stably converges towards the optimum across all penalty functions, validating the MSE cost formulation.
           </span>
         </div>
       </div>

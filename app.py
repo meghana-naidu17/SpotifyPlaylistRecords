@@ -161,14 +161,20 @@ def logistic_regression_page():
 @app.route("/linear-regression")
 def linear_regression_page():
 
+    penalty = request.args.get("penalty", "l2").lower().strip()
+
+    if penalty not in VALID_PENALTIES:
+        penalty = "l2"
+
     try:
 
-        results = run_linear_regression()
+        results = run_linear_regression(penalty=penalty)
 
         return render_template(
             "linear_regression.html",
             active="linear-regression",
             results=results,
+            selected_penalty=penalty,
             error=None
         )
 
@@ -178,8 +184,10 @@ def linear_regression_page():
             "linear_regression.html",
             active="linear-regression",
             results=None,
+            selected_penalty=penalty,
             error=str(e)
         )
+
 
 
 # =========================================================
