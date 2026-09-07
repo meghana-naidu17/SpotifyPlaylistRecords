@@ -1,9 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 from load_data import get_data_summary
 from playlist_eda import run_eda
 from preprocessing_data import run_preprocessing
-from logistic_regression import run_logistic_regression
+from logistic_regression import run_logistic_regression, VALID_PENALTIES
 from linear_regression import run_linear_regression
 
 
@@ -119,14 +119,27 @@ def preprocessing_page():
 @app.route("/logistic-regression")
 def logistic_regression_page():
 
+    # -----------------------------------------------------
+    # Read the regularization choice from the dropdown.
+    # Falls back to "l2" and is validated against the
+    # allowed set so a bad/missing query param can't
+    # break the model call.
+    # -----------------------------------------------------
+
+    penalty = request.args.get("penalty", "l2").lower().strip()
+
+    if penalty not in VALID_PENALTIES:
+        penalty = "l2"
+
     try:
 
-        results = run_logistic_regression()
+        results = run_logistic_regression(penalty=penalty)
 
         return render_template(
             "logistic_regression.html",
             active="logistic-regression",
             results=results,
+            selected_penalty=penalty,
             error=None
         )
 
@@ -136,8 +149,11 @@ def logistic_regression_page():
             "logistic_regression.html",
             active="logistic-regression",
             results=None,
+            selected_penalty=penalty,
             error=str(e)
         )
+
+
 # =========================================================
 # LINEAR REGRESSION
 # =========================================================
