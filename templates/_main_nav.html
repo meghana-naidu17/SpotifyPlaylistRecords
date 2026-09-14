@@ -1,0 +1,10 @@
+<a href="{{ url_for('index') }}" class="sp-nav-link {% if active == 'none' %}active{% endif %}">Dashboard</a>
+<a href="{{ url_for('data_loading') }}" class="sp-nav-link {% if active == 'data-loading' %}active{% endif %}">Dataset Summary</a>
+<a href="{{ url_for('eda_page') }}" class="sp-nav-link {% if active == 'eda' %}active{% endif %}">Analytics</a>
+<a href="{{ url_for('preprocessing_page') }}" class="sp-nav-link {% if active == 'preprocessing' %}active{% endif %}">Preprocessing</a>
+<a href="{{ url_for('logistic_regression_page') }}" class="sp-nav-link {% if active == 'logistic-regression' %}active{% endif %}">Logistic Regression</a>
+<a href="{{ url_for('linear_regression_page') }}" class="sp-nav-link {% if active == 'linear-regression' %}active{% endif %}">Linear Regression</a>
+
+<a href="{{ url_for('decision_tree_page', algorithm='id3') }}" class="sp-nav-link {% if active == 'decision-tree' %}active{% endif %}">Decision Tree</a>
+<a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}" class="sp-nav-link {% if active == 'ensemble' %}active{% endif %}">Ensemble</a>
+<a href="{{ url_for('kmeans_page') }}" class="sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">Unsupervised</a>

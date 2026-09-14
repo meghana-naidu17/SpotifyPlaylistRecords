@@ -44,36 +44,7 @@
 
 
   <nav class="sp-header-center">
-
-    <a href="{{ url_for('index') }}"
-       class="sp-nav-link">
-      Dashboard
-    </a>
-
-    <a href="{{ url_for('data_loading') }}"
-       class="sp-nav-link">
-      Dataset Summary
-    </a>
-
-    <a href="{{ url_for('eda_page') }}"
-       class="sp-nav-link">
-      Analytics
-    </a>
-
-    <a href="{{ url_for('preprocessing_page') }}"
-       class="sp-nav-link">
-      Preprocessing
-    </a>
-
-    <a href="{{ url_for('logistic_regression_page') }}"
-       class="sp-nav-link active">
-      Logistic Regression
-    </a>
-
-    <a href="{{ url_for('linear_regression_page') }}"
-       class="sp-nav-link">
-      Linear Regression
-    </a>
+    {% include '_main_nav.html' %}
 
   </nav>
 

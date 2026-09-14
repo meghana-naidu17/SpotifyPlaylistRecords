@@ -5,6 +5,7 @@ from playlist_eda import run_eda
 from preprocessing_data import run_preprocessing
 from logistic_regression import run_logistic_regression, VALID_PENALTIES
 from linear_regression import run_linear_regression
+from ml_models import run_classifier, run_kmeans
 
 
 
@@ -189,6 +190,33 @@ def linear_regression_page():
         )
 
 
+@app.route("/decision-tree/<algorithm>")
+def decision_tree_page(algorithm):
+    try:
+        return render_template("model_results.html", active="decision-tree", results=run_classifier("tree", algorithm), error=None)
+    except Exception as e:
+        return render_template("model_results.html", active="decision-tree", results=None, error=str(e))
+
+
+@app.route("/ensemble/<family>/<algorithm>")
+def ensemble_page(family, algorithm):
+    try:
+        return render_template("model_results.html", active="ensemble", results=run_classifier(family, algorithm), error=None)
+    except Exception as e:
+        return render_template("model_results.html", active="ensemble", results=None, error=str(e))
+
+
+@app.route("/unsupervised/kmeans")
+def kmeans_page():
+    method = request.args.get("method", "elbow")
+    try:
+        k = int(request.args.get("k", 3))
+    except ValueError:
+        k = 3
+    try:
+        return render_template("kmeans.html", active="unsupervised", results=run_kmeans(method, k), error=None)
+    except Exception as e:
+        return render_template("kmeans.html", active="unsupervised", results=None, error=str(e))
 
 # =========================================================
 # RUN APPLICATION

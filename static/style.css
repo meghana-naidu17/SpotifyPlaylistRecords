@@ -281,6 +281,23 @@ th, td {
   white-space: nowrap;
 }
 
+/* Header menus for model families */
+.sp-nav-dropdown { position: relative; display: inline-flex; align-items: center; }
+.sp-nav-menu-btn { border: 0; background: transparent; cursor: pointer; font-family: inherit; }
+.sp-nav-menu-btn i { font-size: 9px; margin-left: 4px; }
+.sp-nav-menu { display: none; position: absolute; top: calc(100% + 10px); left: 0; min-width: 205px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); box-shadow: 0 12px 28px rgba(0,0,0,.22); z-index: 20; }
+.sp-nav-dropdown:hover .sp-nav-menu, .sp-nav-dropdown:focus-within .sp-nav-menu { display: block; }
+.sp-nav-menu a { display: block; padding: 9px 10px; color: var(--text-secondary); border-radius: 7px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.sp-nav-menu a:hover { color: var(--accent); background: var(--accent-dim); }
+.sp-nav-menu-label { display: block; padding: 7px 10px 3px; color: var(--accent); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .7px; }
+.wide-menu { min-width: 220px; }
+
+.sp-kmeans-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; color: var(--text-secondary); font-size: 13px; font-weight: 700; }
+.sp-kmeans-controls label { display: inline-flex; align-items: center; gap: 6px; }
+.sp-kmeans-controls input[type="number"] { width: 62px; padding: 8px; color: var(--text-primary); background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 7px; }
+.sp-kmeans-help { margin: 14px 0 0; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.sp-action-btn { padding: 9px 15px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 800; cursor: pointer; }
+
 .sp-nav-link:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary);

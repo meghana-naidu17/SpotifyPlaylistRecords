@@ -3,3 +3,6 @@ numpy
 matplotlib
 seaborn
 flask
+scikit-learn
+lightgbm
+xgboost
