@@ -1,10 +1,98 @@
-<a href="{{ url_for('index') }}" class="sp-nav-link {% if active == 'none' %}active{% endif %}">Dashboard</a>
-<a href="{{ url_for('data_loading') }}" class="sp-nav-link {% if active == 'data-loading' %}active{% endif %}">Dataset Summary</a>
-<a href="{{ url_for('eda_page') }}" class="sp-nav-link {% if active == 'eda' %}active{% endif %}">Analytics</a>
-<a href="{{ url_for('preprocessing_page') }}" class="sp-nav-link {% if active == 'preprocessing' %}active{% endif %}">Preprocessing</a>
-<a href="{{ url_for('logistic_regression_page') }}" class="sp-nav-link {% if active == 'logistic-regression' %}active{% endif %}">Logistic Regression</a>
-<a href="{{ url_for('linear_regression_page') }}" class="sp-nav-link {% if active == 'linear-regression' %}active{% endif %}">Linear Regression</a>
+<details class="sp-sidebar-top-group" {% if active != 'unsupervised' %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active != 'unsupervised' %}active-group{% endif %}">
+    <div class="sp-top-btn-label">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Supervised-Learning Models</span>
+    </div>
+    <i class="fa-solid fa-chevron-down sp-arrow"></i>
+  </summary>
+  <div class="sp-sidebar-subgroup">
+    <!-- 1. Dashboard -->
+    <a href="{{ url_for('index') }}" class="sp-sidebar-link sp-nav-link {% if active == 'none' %}active{% endif %}">
+      <i class="fa-solid fa-house"></i>
+      <span>Dashboard</span>
+    </a>
 
-<a href="{{ url_for('decision_tree_page', algorithm='id3') }}" class="sp-nav-link {% if active == 'decision-tree' %}active{% endif %}">Decision Tree</a>
-<a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}" class="sp-nav-link {% if active == 'ensemble' %}active{% endif %}">Ensemble</a>
-<a href="{{ url_for('kmeans_page') }}" class="sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">Unsupervised</a>
+    <!-- 2. Analytics -->
+    <a href="{{ url_for('eda_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eda' %}active{% endif %}">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Analytics</span>
+    </a>
+
+    <!-- 3. Preprocessing -->
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'preprocessing' %}active{% endif %}">
+      <i class="fa-solid fa-sliders"></i>
+      <span>Preprocessing</span>
+    </a>
+
+    <!-- 4. Regression -->
+    <details class="sp-sidebar-nested-group" {% if active in ['linear-regression', 'logistic-regression'] %}open{% endif %}>
+      <summary class="sp-sidebar-link sp-nested-summary {% if active in ['linear-regression', 'logistic-regression'] %}active-parent{% endif %}">
+        <div class="sp-link-inner">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Regression</span>
+        </div>
+        <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
+      </summary>
+      <div class="sp-sidebar-nested-items">
+        <a href="{{ url_for('linear_regression_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'linear-regression' %}active{% endif %}">
+          <i class="fa-solid fa-arrow-trend-up"></i>
+          <span>Linear Regression</span>
+        </a>
+        <a href="{{ url_for('logistic_regression_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'logistic-regression' %}active{% endif %}">
+          <i class="fa-solid fa-brain"></i>
+          <span>Logistic Regression</span>
+        </a>
+      </div>
+    </details>
+
+    <!-- 5. Decision Tree -->
+    <a href="{{ url_for('decision_tree_page', algorithm='id3') }}" class="sp-sidebar-link sp-nav-link {% if active == 'decision-tree' %}active{% endif %}">
+      <i class="fa-solid fa-sitemap"></i>
+      <span>Decision Tree</span>
+    </a>
+
+    <!-- 6. Bagging -->
+    <a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}" class="sp-sidebar-link sp-nav-link {% if active == 'ensemble' and results is defined and results and results.family == 'bagging' %}active{% endif %}">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>Bagging</span>
+    </a>
+
+    <!-- 7. Boosting -->
+    <details class="sp-sidebar-nested-group" {% if active == 'ensemble' and results is defined and results and results.family == 'boosting' %}open{% endif %}>
+      <summary class="sp-sidebar-link sp-nested-summary {% if active == 'ensemble' and results is defined and results and results.family == 'boosting' %}active-parent{% endif %}">
+        <div class="sp-link-inner">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Boosting</span>
+        </div>
+        <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
+      </summary>
+      <div class="sp-sidebar-nested-items">
+        <a href="{{ url_for('ensemble_page', family='boosting', algorithm='adaboost') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'ensemble' and results is defined and results and results.algorithm == 'adaboost' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>AdaBoost</span>
+        </a>
+        <a href="{{ url_for('ensemble_page', family='boosting', algorithm='gradient_boost') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'ensemble' and results is defined and results and results.algorithm == 'gradient_boost' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>GradientBoost</span>
+        </a>
+        <a href="{{ url_for('ensemble_page', family='boosting', algorithm='lightgbm') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'ensemble' and results is defined and results and results.algorithm == 'lightgbm' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>LightGBM</span>
+        </a>
+        <a href="{{ url_for('ensemble_page', family='boosting', algorithm='xgboost') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'ensemble' and results is defined and results and results.algorithm == 'xgboost' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>XGBoost</span>
+        </a>
+      </div>
+    </details>
+  </div>
+</details>
+
+<!-- 2. Unsupervised-Learning Models -->
+<a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-top-btn {% if active == 'unsupervised' %}active{% endif %}" style="margin-top: 8px;">
+  <div class="sp-top-btn-label">
+    <i class="fa-solid fa-circle-nodes"></i>
+    <span>Unsupervised-Learning Models</span>
+  </div>
+</a>
