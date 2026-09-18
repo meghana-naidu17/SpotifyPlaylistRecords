@@ -1,0 +1,101 @@
+{
+  "task": "binary_classification",
+  "target_column": "explicit",
+  "original_shape": {
+    "rows": 114000,
+    "columns": 20
+  },
+  "numerical_columns": [
+    "popularity",
+    "duration_ms",
+    "danceability",
+    "energy",
+    "key",
+    "loudness",
+    "mode",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo"
+  ],
+  "compact_feature_cols": [
+    "artist_count",
+    "album_name_length",
+    "track_name_length",
+    "track_name_word_count"
+  ],
+  "categorical_columns": [
+    "track_id",
+    "artists",
+    "album_name",
+    "track_name",
+    "time_signature",
+    "track_genre"
+  ],
+  "low_cardinality_ohe": [
+    "time_signature",
+    "track_genre"
+  ],
+  "high_cardinality_skip": [
+    "track_id",
+    "artists",
+    "album_name",
+    "track_name"
+  ],
+  "target_class_counts": {
+    "0": 104253,
+    "1": 9747
+  },
+  "target_missing_removed": 0,
+  "split": {
+    "total": 114000,
+    "train_rows": 79800,
+    "test_rows": 34200,
+    "train_pct": 70.0,
+    "test_pct": 30.0
+  },
+  "imputation_strategy": "median",
+  "imputation_values": {
+    "popularity": 35.0,
+    "duration_ms": 212745.5,
+    "danceability": 0.58,
+    "energy": 0.685,
+    "key": 5.0,
+    "loudness": -7.005,
+    "mode": 1.0,
+    "speechiness": 0.049,
+    "acousticness": 0.169,
+    "instrumentalness": 0.0,
+    "liveness": 0.132,
+    "valence": 0.463,
+    "tempo": 122.017,
+    "artist_count": 1.0,
+    "album_name_length": 17.0,
+    "track_name_length": 15.0,
+    "track_name_word_count": 3.0
+  },
+  "scaling": "StandardScaler (fit on train only)",
+  "encoding_ohe_sparse": true,
+  "total_features_final": 136,
+  "ohe_feature_count": 119,
+  "numerical_feature_count": 17,
+  "missing_summary": {
+    "total_missing_cells": 3,
+    "rows_with_missing": 1
+  },
+  "iqr_summary": {
+    "n_numeric_columns_checked": 13,
+    "total_outliers_found": 60128,
+    "rows_with_any_outlier": 45207
+  },
+  "output_files": {
+    "X_train_npz": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_train.npz",
+    "X_test_npz": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_test.npz",
+    "y_train_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\y_train.csv",
+    "y_test_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\y_test.csv",
+    "X_train_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_train.csv",
+    "X_test_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_test.csv"
+  }
+}
