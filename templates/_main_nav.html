@@ -90,9 +90,22 @@
 </details>
 
 <!-- 2. Unsupervised-Learning Models -->
-<a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-top-btn {% if active == 'unsupervised' %}active{% endif %}" style="margin-top: 8px;">
-  <div class="sp-top-btn-label">
-    <i class="fa-solid fa-circle-nodes"></i>
-    <span>Unsupervised-Learning Models</span>
+<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical'] %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical'] %}active-group{% endif %}" style="margin-top: 8px;">
+    <div class="sp-top-btn-label">
+      <i class="fa-solid fa-circle-nodes"></i>
+      <span>Unsupervised-Learning Models</span>
+    </div>
+    <i class="fa-solid fa-chevron-down sp-arrow"></i>
+  </summary>
+  <div class="sp-sidebar-subgroup">
+    <a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">
+      <i class="fa-solid fa-circle-nodes"></i>
+      <span>K-Means Clustering</span>
+    </a>
+    <a href="{{ url_for('hierarchical_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'hierarchical' %}active{% endif %}">
+      <i class="fa-solid fa-diagram-project"></i>
+      <span>Hierarchical Clustering</span>
+    </a>
   </div>
-</a>
+</details>

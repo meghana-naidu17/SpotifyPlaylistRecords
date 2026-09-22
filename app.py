@@ -6,6 +6,7 @@ from preprocessing_data import run_preprocessing
 from logistic_regression import run_logistic_regression, VALID_PENALTIES
 from linear_regression import run_linear_regression
 from ml_models import run_classifier, run_kmeans
+from hierarchical_clustering import run_hierarchical_clustering
 
 
 
@@ -205,6 +206,36 @@ def ensemble_page(family, algorithm):
     except Exception as e:
         return render_template("model_results.html", active="ensemble", results=None, error=str(e))
 
+
+
+# =========================================================
+# HIERARCHICAL CLUSTERING
+# =========================================================
+
+@app.route("/unsupervised/hierarchical")
+def hierarchical_page():
+    try:
+        k = int(request.args.get("k", 4))
+    except ValueError:
+        k = 4
+
+    method = request.args.get("method", "ward")
+
+    try:
+        results = run_hierarchical_clustering(method=method, k=k)
+        return render_template(
+            "hierarchical.html",
+            active="hierarchical",
+            results=results,
+            error=None
+        )
+    except Exception as e:
+        return render_template(
+            "hierarchical.html",
+            active="hierarchical",
+            results=None,
+            error=str(e)
+        )
 
 @app.route("/unsupervised/kmeans")
 def kmeans_page():

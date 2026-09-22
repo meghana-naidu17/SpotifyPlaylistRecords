@@ -128,6 +128,36 @@
   --chart-filter:   none;
 }
 
+/* --- Marshmellow Pink --- */
+[data-theme="marshmellow-pink"] {
+  --bg-primary:     #fff4f8;
+  --bg-secondary:   #fffafd;
+  --bg-tertiary:    #ffe4ee;
+  --card-bg:        #ffffff;
+  --card-hover:     #fff7fa;
+  --text-primary:   #4d2635;
+  --text-secondary: #8b5c6d;
+  --text-muted:     #b98fa0;
+  --accent:         #e889a8;
+  --accent-hover:   #d96f94;
+  --accent-dim:     rgba(232, 137, 168, 0.14);
+  --accent-glow:    rgba(232, 137, 168, 0.26);
+  --border:         rgba(232, 137, 168, 0.20);
+  --border-hover:   rgba(217, 111, 148, 0.55);
+  --shadow:         0 4px 24px rgba(170, 82, 117, 0.14);
+  --shadow-card:    0 2px 12px rgba(170, 82, 117, 0.10);
+  --shadow-hover:   0 8px 32px rgba(170, 82, 117, 0.18);
+  --header-bg:      #fff0f6;
+  --table-stripe:   rgba(232, 137, 168, 0.055);
+  --table-hover:    rgba(232, 137, 168, 0.10);
+  --scrollbar-track:#ffe8f0;
+  --scrollbar-thumb:#efabc1;
+  --hero-gradient:  linear-gradient(135deg, #ffd6e5 0%, #ffe9f1 45%, #fff4f8 100%);
+  --tag-bg:         rgba(232, 137, 168, 0.15);
+  --disabled-opacity: 0.42;
+  --chart-filter:   none;
+}
+
 /* --- Forest --- */
 [data-theme="forest"] {
   --bg-primary:     #0d1a0f;
@@ -408,6 +438,7 @@ th, td {
 .dot-midnight      { background: #7c6af7; }
 .dot-forest        { background: #4caf50; }
 .dot-sunflower     { background: linear-gradient(135deg, #fff59d, #ffa000); border: 1px solid #ffcc02; }
+.dot-marshmellow-pink { background: linear-gradient(135deg, #ffd6e5, #e889a8); border: 1px solid #e889a8; }
 
 /* Profile icon */
 .sp-profile-btn {
@@ -1687,5 +1718,132 @@ details[open] > summary .sp-nested-arrow {
 
   .sp-section {
     padding: 18px 16px;
+  }
+}
+
+
+/* ============================================================
+   HIERARCHICAL CLUSTERING
+   ============================================================ */
+
+.sp-hier-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--hero-gradient);
+  border: 1px solid var(--border);
+}
+
+.sp-hier-icon {
+  width: 74px;
+  height: 74px;
+  flex: 0 0 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 30px;
+  box-shadow: var(--shadow-card);
+}
+
+.sp-hier-select {
+  min-width: 150px;
+  padding: 8px 34px 8px 10px;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sp-hier-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.sp-hier-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.sp-stat-sub {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sp-hier-chart {
+  overflow-x: auto;
+}
+
+.sp-hier-chart img {
+  display: block;
+  width: 100%;
+  min-width: 680px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.sp-hier-explain-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sp-hier-explain-card {
+  padding: 18px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.sp-hier-explain-card i {
+  color: var(--accent);
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.sp-hier-explain-card h3 {
+  margin-bottom: 7px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.sp-hier-explain-card p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .sp-hier-stats,
+  .sp-hier-explain-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .sp-hier-hero {
+    align-items: flex-start;
+  }
+
+  .sp-hier-icon {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    font-size: 22px;
+  }
+
+  .sp-hier-stats,
+  .sp-hier-explain-grid {
+    grid-template-columns: 1fr;
   }
 }

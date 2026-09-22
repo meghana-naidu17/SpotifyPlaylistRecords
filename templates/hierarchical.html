@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hierarchical Clustering — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+  {% include '_site_header.html' %}
+
+  <main class="sp-page">
+    <nav class="sp-breadcrumb">
+      <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+      <i class="fa-solid fa-chevron-right"></i>
+      <span>Unsupervised / Hierarchical Clustering</span>
+    </nav>
+
+    <div class="sp-page-title-block">
+      <p class="sp-label">Unsupervised Learning</p>
+      <h1>Hierarchical Clustering</h1>
+      <p>
+        Group Spotify tracks into nested clusters using the preprocessed dataset.
+        The dendrogram shows how individual groups merge as distance increases.
+      </p>
+    </div>
+
+    {% if error %}
+      <div class="sp-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>{{ error }}
+      </div>
+    {% endif %}
+
+    <div class="sp-section sp-hier-hero">
+      <div>
+        <p class="sp-section-label">Marshmellow Pink • Hierarchical Learning</p>
+        <h2>Build track groups from preprocessed features</h2>
+        <p class="sp-kmeans-help">
+          The model reads <strong>processed_data/preprocessed_dataset.csv</strong>.
+          To keep agglomerative clustering practical, a reproducible sample of up to
+          1,200 preprocessed records is clustered; the complete preprocessed dataset
+          remains the source.
+        </p>
+      </div>
+      <div class="sp-hier-icon"><i class="fa-solid fa-diagram-project"></i></div>
+    </div>
+
+    <div class="sp-section">
+      <p class="sp-section-label">Configuration</p>
+      <h2>Clustering Settings</h2>
+
+      <form method="GET" class="sp-kmeans-controls">
+        <label>
+          Linkage
+          <select name="method" class="sp-hier-select">
+            <option value="ward" {% if results and results.method == 'ward' %}selected{% endif %}>Ward</option>
+            <option value="complete" {% if results and results.method == 'complete' %}selected{% endif %}>Complete</option>
+            <option value="average" {% if results and results.method == 'average' %}selected{% endif %}>Average</option>
+            <option value="single" {% if results and results.method == 'single' %}selected{% endif %}>Single</option>
+          </select>
+        </label>
+
+        <label>
+          Clusters (K)
+          <input type="number" name="k" min="2" max="8"
+                 value="{{ results.selected_k if results else 4 }}">
+        </label>
+
+        <button class="sp-action-btn" type="submit">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Run Hierarchical Clustering
+        </button>
+      </form>
+
+      <p class="sp-kmeans-help">
+        <strong>Ward:</strong> minimizes within-cluster variance.
+        <strong>Complete:</strong> uses the farthest pair.
+        <strong>Average:</strong> uses average pairwise distance.
+        <strong>Single:</strong> uses the nearest pair.
+      </p>
+    </div>
+
+    {% if results %}
+      <div class="sp-hier-stats">
+        <div class="sp-stat-card">
+          <span class="sp-stat-label">Source Rows</span>
+          <strong>{{ "{:,}".format(results.dataset_records) }}</strong>
+          <span class="sp-stat-sub">preprocessed records</span>
+        </div>
+        <div class="sp-stat-card">
+          <span class="sp-stat-label">Rows Clustered</span>
+          <strong>{{ "{:,}".format(results.sample_records) }}</strong>
+          <span class="sp-stat-sub">reproducible sample</span>
+        </div>
+        <div class="sp-stat-card">
+          <span class="sp-stat-label">Features Used</span>
+          <strong>{{ results.feature_count }}</strong>
+          <span class="sp-stat-sub">preprocessed numeric features</span>
+        </div>
+        <div class="sp-stat-card">
+          <span class="sp-stat-label">Clusters</span>
+          <strong>{{ results.selected_k }}</strong>
+          <span class="sp-stat-sub">{{ results.method|title }} linkage</span>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Hierarchy</p>
+        <h2>Dendrogram</h2>
+        <p class="sp-kmeans-help">
+          The dendrogram displays the hierarchy of merged groups. Lower merges
+          represent more similar tracks; higher merges represent greater distance.
+        </p>
+        <div class="sp-chart-card sp-hier-chart">
+          <img src="{{ url_for('static', filename=results.dendrogram) }}"
+               alt="Hierarchical clustering dendrogram">
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Cluster View</p>
+        <h2>Hierarchical Cluster Visualization</h2>
+        <p class="sp-kmeans-help">
+          PCA reduces the preprocessed feature space to two dimensions only for
+          visualization. The clustering itself uses all selected preprocessed features.
+        </p>
+        <div class="sp-chart-card sp-hier-chart">
+          <img src="{{ url_for('static', filename=results.cluster_chart) }}"
+               alt="Hierarchical clustering PCA visualization">
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Calculated Results</p>
+        <h2>Cluster Distribution</h2>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Cluster</th>
+                <th>Records</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cluster, count in results.cluster_counts.items() %}
+                <tr>
+                  <td>{{ cluster }}</td>
+                  <td>{{ "{:,}".format(count) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Method</p>
+        <h2>How this module works</h2>
+        <div class="sp-hier-explain-grid">
+          <div class="sp-hier-explain-card">
+            <i class="fa-solid fa-file-csv"></i>
+            <h3>1. Preprocessed Data</h3>
+            <p>The module loads the existing preprocessed CSV instead of the raw Spotify dataset.</p>
+          </div>
+          <div class="sp-hier-explain-card">
+            <i class="fa-solid fa-filter"></i>
+            <h3>2. Feature Preparation</h3>
+            <p>Target columns are excluded, invalid values are handled, and constant columns are removed.</p>
+          </div>
+          <div class="sp-hier-explain-card">
+            <i class="fa-solid fa-sitemap"></i>
+            <h3>3. Agglomeration</h3>
+            <p>Each track starts as its own group and the closest groups are merged according to the selected linkage.</p>
+          </div>
+          <div class="sp-hier-explain-card">
+            <i class="fa-solid fa-chart-simple"></i>
+            <h3>4. Visualization</h3>
+            <p>A dendrogram explains the hierarchy and PCA provides a two-dimensional view of the resulting clusters.</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </main>
+
+  <footer class="sp-footer">Built with <span>♥</span> using Flask &amp; Spotify Design Language</footer>
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
