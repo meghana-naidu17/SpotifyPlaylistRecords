@@ -7,7 +7,7 @@ from logistic_regression import run_logistic_regression, VALID_PENALTIES
 from linear_regression import run_linear_regression
 from ml_models import run_classifier, run_kmeans
 from hierarchical_clustering import run_hierarchical_clustering
-
+from dbscan_clustering import run_dbscan
 
 
 # =========================================================
@@ -121,21 +121,19 @@ def preprocessing_page():
 @app.route("/logistic-regression")
 def logistic_regression_page():
 
-    # -----------------------------------------------------
-    # Read the regularization choice from the dropdown.
-    # Falls back to "l2" and is validated against the
-    # allowed set so a bad/missing query param can't
-    # break the model call.
-    # -----------------------------------------------------
-
-    penalty = request.args.get("penalty", "l2").lower().strip()
+    penalty = request.args.get(
+        "penalty",
+        "l2"
+    ).lower().strip()
 
     if penalty not in VALID_PENALTIES:
         penalty = "l2"
 
     try:
 
-        results = run_logistic_regression(penalty=penalty)
+        results = run_logistic_regression(
+            penalty=penalty
+        )
 
         return render_template(
             "logistic_regression.html",
@@ -163,14 +161,19 @@ def logistic_regression_page():
 @app.route("/linear-regression")
 def linear_regression_page():
 
-    penalty = request.args.get("penalty", "l2").lower().strip()
+    penalty = request.args.get(
+        "penalty",
+        "l2"
+    ).lower().strip()
 
     if penalty not in VALID_PENALTIES:
         penalty = "l2"
 
     try:
 
-        results = run_linear_regression(penalty=penalty)
+        results = run_linear_regression(
+            penalty=penalty
+        )
 
         return render_template(
             "linear_regression.html",
@@ -191,21 +194,62 @@ def linear_regression_page():
         )
 
 
+# =========================================================
+# DECISION TREE
+# =========================================================
+
 @app.route("/decision-tree/<algorithm>")
 def decision_tree_page(algorithm):
-    try:
-        return render_template("model_results.html", active="decision-tree", results=run_classifier("tree", algorithm), error=None)
-    except Exception as e:
-        return render_template("model_results.html", active="decision-tree", results=None, error=str(e))
 
+    try:
+
+        return render_template(
+            "model_results.html",
+            active="decision-tree",
+            results=run_classifier(
+                "tree",
+                algorithm
+            ),
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "model_results.html",
+            active="decision-tree",
+            results=None,
+            error=str(e)
+        )
+
+
+# =========================================================
+# ENSEMBLE MODELS
+# =========================================================
 
 @app.route("/ensemble/<family>/<algorithm>")
 def ensemble_page(family, algorithm):
-    try:
-        return render_template("model_results.html", active="ensemble", results=run_classifier(family, algorithm), error=None)
-    except Exception as e:
-        return render_template("model_results.html", active="ensemble", results=None, error=str(e))
 
+    try:
+
+        return render_template(
+            "model_results.html",
+            active="ensemble",
+            results=run_classifier(
+                family,
+                algorithm
+            ),
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "model_results.html",
+            active="ensemble",
+            results=None,
+            error=str(e)
+        )
 
 
 # =========================================================
@@ -214,22 +258,41 @@ def ensemble_page(family, algorithm):
 
 @app.route("/unsupervised/hierarchical")
 def hierarchical_page():
+
     try:
-        k = int(request.args.get("k", 4))
-    except ValueError:
+
+        k = int(
+            request.args.get(
+                "k",
+                4
+            )
+        )
+
+    except (ValueError, TypeError):
+
         k = 4
 
-    method = request.args.get("method", "ward")
+    method = request.args.get(
+        "method",
+        "ward"
+    )
 
     try:
-        results = run_hierarchical_clustering(method=method, k=k)
+
+        results = run_hierarchical_clustering(
+            method=method,
+            k=k
+        )
+
         return render_template(
             "hierarchical.html",
             active="hierarchical",
             results=results,
             error=None
         )
+
     except Exception as e:
+
         return render_template(
             "hierarchical.html",
             active="hierarchical",
@@ -237,17 +300,122 @@ def hierarchical_page():
             error=str(e)
         )
 
+
+# =========================================================
+# K-MEANS CLUSTERING
+# =========================================================
+
 @app.route("/unsupervised/kmeans")
 def kmeans_page():
-    method = request.args.get("method", "elbow")
+
+    method = request.args.get(
+        "method",
+        "elbow"
+    )
+
     try:
-        k = int(request.args.get("k", 3))
-    except ValueError:
+
+        k = int(
+            request.args.get(
+                "k",
+                3
+            )
+        )
+
+    except (ValueError, TypeError):
+
         k = 3
+
     try:
-        return render_template("kmeans.html", active="unsupervised", results=run_kmeans(method, k), error=None)
+
+        return render_template(
+            "kmeans.html",
+            active="unsupervised",
+            results=run_kmeans(
+                method,
+                k
+            ),
+            error=None
+        )
+
     except Exception as e:
-        return render_template("kmeans.html", active="unsupervised", results=None, error=str(e))
+
+        return render_template(
+            "kmeans.html",
+            active="unsupervised",
+            results=None,
+            error=str(e)
+        )
+
+
+# =========================================================
+# DBSCAN CLUSTERING
+# =========================================================
+
+@app.route("/unsupervised/dbscan")
+def dbscan_page():
+
+    try:
+
+        eps = float(
+            request.args.get(
+                "eps",
+                0.75
+            )
+        )
+
+    except (ValueError, TypeError):
+
+        eps = 0.75
+
+    try:
+
+        min_samples = int(
+            request.args.get(
+                "min_samples",
+                5
+            )
+        )
+
+    except (ValueError, TypeError):
+
+        min_samples = 5
+
+    # Prevent invalid values.
+
+    eps = max(
+        0.05,
+        eps
+    )
+
+    min_samples = max(
+        2,
+        min_samples
+    )
+
+    try:
+
+        results = run_dbscan(
+            eps=eps,
+            min_samples=min_samples
+        )
+
+        return render_template(
+            "dbscan.html",
+            active="dbscan",
+            results=results,
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "dbscan.html",
+            active="dbscan",
+            results=None,
+            error=str(e)
+        )
+
 
 # =========================================================
 # RUN APPLICATION

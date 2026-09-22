@@ -1,1 +1,116 @@
-const THEME_KEY="sp-analytics-theme",THEME_LABELS={"spotify-dark":"Spotify Dark","spotify-light":"Spotify Light",midnight:"Midnight",forest:"Forest",sunflower:"Sunflower Sunrise"};function applyTheme(e){document.documentElement.setAttribute("data-theme",e),localStorage.setItem(THEME_KEY,e);const t=document.getElementById("themeLabel");t&&(t.textContent=THEME_LABELS[e]||e),document.querySelectorAll(".sp-theme-option").forEach(t=>t.classList.toggle("selected",t.dataset.theme===e))}document.addEventListener("DOMContentLoaded",()=>{applyTheme(localStorage.getItem(THEME_KEY)||"spotify-dark");const e=document.getElementById("themeBtn"),t=document.getElementById("themeMenu");e&&t&&(e.addEventListener("click",o=>{o.stopPropagation(),t.classList.toggle("open")}),document.querySelectorAll(".sp-theme-option").forEach(e=>e.addEventListener("click",()=>{applyTheme(e.dataset.theme),t.classList.remove("open")})),document.addEventListener("click",()=>t.classList.remove("open"))) });
+const THEME_KEY = "sp-analytics-theme";
+
+const THEME_LABELS = {
+    "spotify-dark": "Spotify Dark",
+    "spotify-light": "Spotify Light",
+    "midnight": "Midnight",
+    "forest": "Forest",
+    "sunflower": "Sunflower Sunrise",
+    "marshmellow-pink": "Marshmellow Pink"
+};
+
+function applyTheme(theme) {
+
+    document.documentElement.setAttribute(
+        "data-theme",
+        theme
+    );
+
+    localStorage.setItem(
+        THEME_KEY,
+        theme
+    );
+
+    const themeLabel =
+        document.getElementById("themeLabel");
+
+    if (themeLabel) {
+
+        themeLabel.textContent =
+            THEME_LABELS[theme] || theme;
+
+    }
+
+    document
+        .querySelectorAll(".sp-theme-option")
+        .forEach(option => {
+
+            option.classList.toggle(
+                "selected",
+                option.dataset.theme === theme
+            );
+
+        });
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        applyTheme(
+            localStorage.getItem(THEME_KEY)
+            || "spotify-dark"
+        );
+
+
+        const themeBtn =
+            document.getElementById("themeBtn");
+
+        const themeMenu =
+            document.getElementById("themeMenu");
+
+
+        if (themeBtn && themeMenu) {
+
+            themeBtn.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    themeMenu.classList.toggle(
+                        "open"
+                    );
+
+                }
+            );
+
+
+            document
+                .querySelectorAll(".sp-theme-option")
+                .forEach(option => {
+
+                    option.addEventListener(
+                        "click",
+                        () => {
+
+                            applyTheme(
+                                option.dataset.theme
+                            );
+
+                            themeMenu.classList.remove(
+                                "open"
+                            );
+
+                        }
+                    );
+
+                });
+
+
+            document.addEventListener(
+                "click",
+                () => {
+
+                    themeMenu.classList.remove(
+                        "open"
+                    );
+
+                }
+            );
+
+        }
+
+    }
+);

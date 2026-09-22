@@ -6,3 +6,4 @@ flask
 scikit-learn
 lightgbm
 xgboost
+scipy

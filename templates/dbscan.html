@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="marshmellow-pink">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        DBSCAN Clustering — Spotify Playlist Analytics
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/dbscan.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    >
+
+</head>
+
+
+<body>
+
+{% include '_site_header.html' %}
+
+
+<main class="sp-page">
+
+    <!-- Breadcrumb -->
+
+    <nav class="sp-breadcrumb">
+
+        <a href="{{ url_for('index') }}">
+
+            <i class="fa-solid fa-house"></i>
+
+            Home
+
+        </a>
+
+        <i class="fa-solid fa-chevron-right"></i>
+
+        <span>
+            Unsupervised / DBSCAN
+        </span>
+
+    </nav>
+
+
+    <!-- Page heading -->
+
+    <div class="sp-page-title-block">
+
+        <p class="sp-label">
+            Unsupervised Learning
+        </p>
+
+        <h1>
+            DBSCAN Clustering
+        </h1>
+
+        <p>
+            Discover dense groups of Spotify tracks and identify
+            unusual records using DBSCAN clustering on the
+            preprocessed dataset.
+        </p>
+
+    </div>
+
+
+    {% if error %}
+
+    <div class="sp-error">
+
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        {{ error }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- Hero -->
+
+    <section class="sp-section dbscan-hero">
+
+        <div>
+
+            <p class="sp-section-label">
+                MARSHMELLOW PINK • DBSCAN
+            </p>
+
+            <h2>
+                Density-based Spotify track clustering
+            </h2>
+
+            <p>
+
+                DBSCAN groups tracks that are located in dense
+                regions and identifies isolated observations as
+                noise.
+
+            </p>
+
+            <p>
+
+                The model uses the existing:
+
+                <strong>
+                    processed_data/preprocessed_dataset.csv
+                </strong>
+
+            </p>
+
+        </div>
+
+
+        <div class="dbscan-icon">
+
+            <i class="fa-solid fa-braille"></i>
+
+        </div>
+
+    </section>
+
+
+    <!-- Controls -->
+
+    <section class="sp-section">
+
+        <p class="sp-section-label">
+            Configuration
+        </p>
+
+        <h2>
+            DBSCAN Settings
+        </h2>
+
+
+        <form
+            method="GET"
+            class="dbscan-controls"
+        >
+
+            <div class="dbscan-input">
+
+                <label for="eps">
+                    EPS
+                </label>
+
+                <input
+                    id="eps"
+                    type="number"
+                    name="eps"
+                    min="0.05"
+                    step="0.05"
+                    value="{{ results.eps if results else 0.75 }}"
+                >
+
+                <small>
+                    Neighborhood radius
+                </small>
+
+            </div>
+
+
+            <div class="dbscan-input">
+
+                <label for="min_samples">
+                    Min Samples
+                </label>
+
+                <input
+                    id="min_samples"
+                    type="number"
+                    name="min_samples"
+                    min="2"
+                    value="{{ results.min_samples if results else 5 }}"
+                >
+
+                <small>
+                    Minimum points in a dense region
+                </small>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="sp-action-btn"
+            >
+
+                <i class="fa-solid fa-play"></i>
+
+                Run DBSCAN
+
+            </button>
+
+        </form>
+
+    </section>
+
+
+    {% if results %}
+
+
+    <!-- Statistics -->
+
+    <section class="dbscan-stats">
+
+
+        <div class="sp-stat-card">
+
+            <span class="sp-stat-label">
+                Clusters
+            </span>
+
+            <strong>
+                {{ results.clusters }}
+            </strong>
+
+            <span class="sp-stat-sub">
+                detected groups
+            </span>
+
+        </div>
+
+
+        <div class="sp-stat-card">
+
+            <span class="sp-stat-label">
+                Noise Points
+            </span>
+
+            <strong>
+                {{ "{:,}".format(results.noise) }}
+            </strong>
+
+            <span class="sp-stat-sub">
+                DBSCAN label -1
+            </span>
+
+        </div>
+
+
+        <div class="sp-stat-card">
+
+            <span class="sp-stat-label">
+                Rows Clustered
+            </span>
+
+            <strong>
+                {{ "{:,}".format(results.sample_size) }}
+            </strong>
+
+            <span class="sp-stat-sub">
+                reproducible sample
+            </span>
+
+        </div>
+
+
+        <div class="sp-stat-card">
+
+            <span class="sp-stat-label">
+                Features
+            </span>
+
+            <strong>
+                {{ results.feature_count }}
+            </strong>
+
+            <span class="sp-stat-sub">
+                preprocessed features
+            </span>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- PCA -->
+
+    <section class="sp-section">
+
+        <p class="sp-section-label">
+            Visualization
+        </p>
+
+        <h2>
+            DBSCAN Cluster Visualization
+        </h2>
+
+        <p class="dbscan-help">
+
+            PCA reduces the preprocessed feature space to two
+            dimensions for visualization only. DBSCAN itself uses
+            the complete set of numeric preprocessed features.
+
+        </p>
+
+
+        <div class="dbscan-chart-container">
+
+            <canvas id="dbscanPlot"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- Cluster distribution -->
+
+    <section class="sp-section">
+
+        <p class="sp-section-label">
+            Results
+        </p>
+
+        <h2>
+            Cluster Distribution
+        </h2>
+
+
+        <div class="sp-table-wrap">
+
+            <table class="sp-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Cluster
+                        </th>
+
+                        <th>
+                            Records
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for row in results.rows %}
+
+                    <tr>
+
+                        <td>
+
+                            {% if "Noise" in row.cluster %}
+
+                                <span class="noise-badge">
+                                    {{ row.cluster }}
+                                </span>
+
+                            {% else %}
+
+                                {{ row.cluster }}
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ "{:,}".format(row.records) }}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- Explanation -->
+
+    <section class="sp-section">
+
+        <p class="sp-section-label">
+            Method
+        </p>
+
+        <h2>
+            How DBSCAN Works
+        </h2>
+
+
+        <div class="dbscan-explanation-grid">
+
+
+            <div class="dbscan-explanation-card">
+
+                <i class="fa-solid fa-circle-dot"></i>
+
+                <h3>
+                    1. EPS
+                </h3>
+
+                <p>
+
+                    EPS defines how far DBSCAN searches around
+                    each track to find neighboring observations.
+
+                </p>
+
+            </div>
+
+
+            <div class="dbscan-explanation-card">
+
+                <i class="fa-solid fa-users"></i>
+
+                <h3>
+                    2. Min Samples
+                </h3>
+
+                <p>
+
+                    Min Samples determines how many neighboring
+                    observations are required for a dense region.
+
+                </p>
+
+            </div>
+
+
+            <div class="dbscan-explanation-card">
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                <h3>
+                    3. Clusters
+                </h3>
+
+                <p>
+
+                    Dense areas are connected together to create
+                    clusters without specifying K beforehand.
+
+                </p>
+
+            </div>
+
+
+            <div class="dbscan-explanation-card">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <h3>
+                    4. Noise
+                </h3>
+
+                <p>
+
+                    Records that do not belong to a dense region
+                    are assigned the DBSCAN label -1.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    {% endif %}
+
+</main>
+
+
+<footer class="sp-footer">
+
+    Built with <span>♥</span>
+    using Flask &amp; Spotify Design Language
+
+</footer>
+
+
+<script>
+
+const points = {{ results.points|tojson if results else "[]" }};
+
+const canvas =
+    document.getElementById("dbscanPlot");
+
+if (canvas && points.length) {
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    function drawPlot() {
+
+        const width =
+            canvas.clientWidth || 900;
+
+        const height = 500;
+
+        const ratio =
+            window.devicePixelRatio || 1;
+
+
+        canvas.width =
+            width * ratio;
+
+        canvas.height =
+            height * ratio;
+
+
+        ctx.setTransform(
+            ratio,
+            0,
+            0,
+            ratio,
+            0,
+            0
+        );
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const xs =
+            points.map(p => p.x);
+
+        const ys =
+            points.map(p => p.y);
+
+
+        const minX =
+            Math.min(...xs);
+
+        const maxX =
+            Math.max(...xs);
+
+        const minY =
+            Math.min(...ys);
+
+        const maxY =
+            Math.max(...ys);
+
+
+        const padding = 40;
+
+
+        const colors = [
+
+            "#e98ab5",
+            "#d96fa4",
+            "#f2a8c8",
+            "#bd6694",
+            "#f6bfd8",
+            "#a95a84",
+            "#d98eb5",
+            "#c7759f"
+
+        ];
+
+
+        points.forEach(point => {
+
+            const x =
+                padding +
+                (
+                    (point.x - minX) /
+                    (maxX - minX || 1)
+                ) *
+                (
+                    width -
+                    padding * 2
+                );
+
+
+            const y =
+                height -
+                padding -
+                (
+                    (point.y - minY) /
+                    (maxY - minY || 1)
+                ) *
+                (
+                    height -
+                    padding * 2
+                );
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                x,
+                y,
+                point.label === -1 ? 3 : 4,
+                0,
+                Math.PI * 2
+            );
+
+
+            if (point.label === -1) {
+
+                ctx.fillStyle =
+                    "#777777";
+
+            } else {
+
+                ctx.fillStyle =
+                    colors[
+                        Math.abs(point.label) %
+                        colors.length
+                    ];
+
+            }
+
+
+            ctx.fill();
+
+        });
+
+    }
+
+
+    drawPlot();
+
+
+    window.addEventListener(
+        "resize",
+        drawPlot
+    );
+
+}
+
+</script>
+
+
+<script
+    src="{{ url_for('static', filename='theme.js') }}"
+></script>
+
+
+</body>
+
+</html>
