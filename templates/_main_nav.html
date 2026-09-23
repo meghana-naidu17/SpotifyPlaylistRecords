@@ -1,5 +1,5 @@
-<details class="sp-sidebar-top-group" {% if active != 'unsupervised' %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active != 'unsupervised' %}active-group{% endif %}">
+<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan'] %}active-group{% endif %}">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-graduation-cap"></i>
       <span>Supervised-Learning Models</span>
@@ -90,8 +90,8 @@
 </details>
 
 <!-- 2. Unsupervised-Learning Models -->
-<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical'] %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical'] %}active-group{% endif %}" style="margin-top: 8px;">
+<details class="sp-sidebar-top-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}active-group{% endif %}" style="margin-top: 8px;">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-circle-nodes"></i>
       <span>Unsupervised-Learning Models</span>
@@ -107,12 +107,9 @@
       <i class="fa-solid fa-diagram-project"></i>
       <span>Hierarchical Clustering</span>
     </a>
-    <a
-    href="{{ url_for('dbscan_page') }}"
-    class="{% if active == 'dbscan' %}active{% endif %}"
->
-    <i class="fa-solid fa-braille"></i>
-    <span>DBSCAN</span>
-</a>
+    <a href="{{ url_for('dbscan_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'dbscan' %}active{% endif %}">
+      <i class="fa-solid fa-braille"></i>
+      <span>DBSCAN</span>
+    </a>
   </div>
 </details>

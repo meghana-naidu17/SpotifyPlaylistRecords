@@ -259,29 +259,18 @@ def ensemble_page(family, algorithm):
 @app.route("/unsupervised/hierarchical")
 def hierarchical_page():
 
-    try:
-
-        k = int(
-            request.args.get(
-                "k",
-                4
-            )
-        )
-
-    except (ValueError, TypeError):
-
-        k = 4
-
     method = request.args.get(
         "method",
         "ward"
     )
 
+    k_param = request.args.get("k", None)
+
     try:
 
         results = run_hierarchical_clustering(
             method=method,
-            k=k
+            k=k_param
         )
 
         return render_template(
@@ -360,13 +349,13 @@ def dbscan_page():
         eps = float(
             request.args.get(
                 "eps",
-                0.75
+                1.6
             )
         )
 
     except (ValueError, TypeError):
 
-        eps = 0.75
+        eps = 1.6
 
     try:
 

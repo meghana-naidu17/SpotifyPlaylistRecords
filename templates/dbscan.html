@@ -2,675 +2,556 @@
 <html lang="en" data-theme="marshmellow-pink">
 
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        DBSCAN Clustering — Spotify Playlist Analytics
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/dbscan.css') }}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-    >
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DBSCAN Clustering — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dbscan.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
-
 
 <body>
 
 {% include '_site_header.html' %}
 
-
 <main class="sp-page">
 
-    <!-- Breadcrumb -->
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Unsupervised / DBSCAN Clustering</span>
+  </nav>
 
-    <nav class="sp-breadcrumb">
+  <!-- Page heading -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Unsupervised Learning</p>
+    <h1>DBSCAN Clustering</h1>
+    <p>
+      Discover density-based clusters in Spotify audio features and explicitly detect
+      <strong>Core points</strong>, <strong>Border points</strong>, and <strong>Noise points</strong>.
+    </p>
+  </div>
 
-        <a href="{{ url_for('index') }}">
-
-            <i class="fa-solid fa-house"></i>
-
-            Home
-
-        </a>
-
-        <i class="fa-solid fa-chevron-right"></i>
-
-        <span>
-            Unsupervised / DBSCAN
-        </span>
-
-    </nav>
-
-
-    <!-- Page heading -->
-
-    <div class="sp-page-title-block">
-
-        <p class="sp-label">
-            Unsupervised Learning
-        </p>
-
-        <h1>
-            DBSCAN Clustering
-        </h1>
-
-        <p>
-            Discover dense groups of Spotify tracks and identify
-            unusual records using DBSCAN clustering on the
-            preprocessed dataset.
-        </p>
-
-    </div>
-
-
-    {% if error %}
-
+  {% if error %}
     <div class="sp-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+    </div>
+  {% endif %}
 
-        <i class="fa-solid fa-triangle-exclamation"></i>
+  <!-- Hero Section -->
+  <section class="sp-section dbscan-hero">
+    <div>
+      <p class="sp-section-label">Marshmellow Pink • Density-Based Learning</p>
+      <h2>Track Clustering with Core, Border &amp; Noise Separation</h2>
+      <p class="dbscan-help">
+        DBSCAN identifies continuous high-density regions without assuming spherical shapes.
+        Points inside dense regions are designated as <strong>Core points</strong>; points on the outskirts
+        are <strong>Border points</strong>; and isolated tracks are tagged as <strong>Noise</strong>.
+      </p>
+      <p class="dbscan-help" style="margin-top: 6px;">
+        Dataset source: <strong>processed_data/preprocessed_dataset.csv</strong> (11 continuous Spotify features).
+      </p>
+    </div>
+    <div class="dbscan-icon">
+      <i class="fa-solid fa-braille"></i>
+    </div>
+  </section>
 
-        {{ error }}
+  <!-- Configuration Controls -->
+  <section class="sp-section">
+    <p class="sp-section-label">Configuration</p>
+    <h2>DBSCAN Parameters</h2>
 
+    <form method="GET" class="dbscan-controls">
+      <div class="dbscan-input">
+        <label for="eps">
+          <i class="fa-solid fa-circle-notch"></i> Neighborhood Radius (EPS)
+        </label>
+        <input
+          id="eps"
+          type="number"
+          name="eps"
+          min="0.1"
+          max="10.0"
+          step="0.1"
+          value="{{ results.eps if results else 1.6 }}"
+        >
+        <small>Max distance between adjacent tracks</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="min_samples">
+          <i class="fa-solid fa-users"></i> Min Samples
+        </label>
+        <input
+          id="min_samples"
+          type="number"
+          name="min_samples"
+          min="2"
+          max="50"
+          value="{{ results.min_samples if results else 5 }}"
+        >
+        <small>Threshold for a point to qualify as Core</small>
+      </div>
+
+      <button type="submit" class="sp-action-btn">
+        <i class="fa-solid fa-play"></i> Run DBSCAN
+      </button>
+    </form>
+  </section>
+
+  {% if results %}
+
+  <!-- Statistics Cards -->
+  <section class="dbscan-stats">
+    <div class="dbscan-stat-card dbscan-stat-clusters">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Clusters</span>
+        <i class="fa-solid fa-layer-group dbscan-stat-icon" style="color: #ec407a;"></i>
+      </div>
+      <strong>{{ results.clusters }}</strong>
+      <span class="dbscan-stat-sub">Dense track groupings</span>
     </div>
 
-    {% endif %}
+    <div class="dbscan-stat-card dbscan-stat-core">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Core Points</span>
+        <i class="fa-solid fa-circle-dot dbscan-stat-icon" style="color: #e91e63;"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.core_count) }}</strong>
+      <span class="dbscan-stat-sub">{{ results.core_percentage }}% of sample (Dense seeds)</span>
+    </div>
 
+    <div class="dbscan-stat-card dbscan-stat-border">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Border Points</span>
+        <i class="fa-solid fa-circle-notch dbscan-stat-icon" style="color: #ab47bc;"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.border_count) }}</strong>
+      <span class="dbscan-stat-sub">{{ results.border_percentage }}% of sample (Boundaries)</span>
+    </div>
 
-    <!-- Hero -->
+    <div class="dbscan-stat-card dbscan-stat-noise">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Noise Points</span>
+        <i class="fa-solid fa-xmark dbscan-stat-icon" style="color: #78909c;"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.noise) }}</strong>
+      <span class="dbscan-stat-sub">{{ results.noise_percentage }}% of sample (Outliers)</span>
+    </div>
+  </section>
 
-    <section class="sp-section dbscan-hero">
+  <!-- Visualization Section -->
+  <section class="sp-section dbscan-chart-card">
+    <div class="dbscan-plot-toolbar">
+      <div>
+        <p class="sp-section-label" style="margin: 0;">Visualization</p>
+        <h2 style="margin: 4px 0 0; font-size: 20px;">DBSCAN Cluster Map (PCA 2D)</h2>
+      </div>
 
-        <div>
+      <!-- Point Type Filter Buttons -->
+      <div class="dbscan-filters">
+        <button type="button" class="dbscan-filter-btn active" data-filter="all">
+          <i class="fa-solid fa-border-all"></i> All Points ({{ results.sample_size }})
+        </button>
+        <button type="button" class="dbscan-filter-btn" data-filter="core">
+          <i class="fa-solid fa-circle-dot" style="color: #e91e63;"></i> Core ({{ results.core_count }})
+        </button>
+        <button type="button" class="dbscan-filter-btn" data-filter="border">
+          <i class="fa-regular fa-circle" style="color: #ab47bc;"></i> Border ({{ results.border_count }})
+        </button>
+        <button type="button" class="dbscan-filter-btn" data-filter="noise">
+          <i class="fa-solid fa-xmark" style="color: #78909c;"></i> Noise ({{ results.noise }})
+        </button>
+        <button type="button" class="dbscan-filter-btn" id="btnToggleChartMode">
+          <i class="fa-solid fa-image"></i> Toggle Static Plot
+        </button>
+      </div>
+    </div>
 
-            <p class="sp-section-label">
-                MARSHMELLOW PINK • DBSCAN
-            </p>
+    <p class="dbscan-help" style="margin-bottom: 12px; font-size: 13px;">
+      PCA projects the 11 continuous Spotify features onto 2 principal components.
+      PC1 explains <strong>{{ results.pc1_var }}%</strong> of variance and PC2 explains <strong>{{ results.pc2_var }}%</strong>.
+      Hover over any point to inspect its cluster and type.
+    </p>
 
-            <h2>
-                Density-based Spotify track clustering
-            </h2>
+    <!-- Interactive Canvas -->
+    <div class="dbscan-chart-container" id="interactivePlotWrap">
+      <canvas id="dbscanPlot"></canvas>
+      <div class="dbscan-tooltip" id="dbscanTooltip"></div>
+    </div>
 
-            <p>
+    <!-- Static Image (Toggled on button click) -->
+    <div id="staticPlotWrap" style="display: none; text-align: center; margin-top: 14px;">
+      <img src="{{ url_for('static', filename=results.chart) }}"
+           alt="DBSCAN static clusters plot"
+           style="max-width: 100%; border-radius: 12px; border: 1.5px solid var(--border);">
+    </div>
 
-                DBSCAN groups tracks that are located in dense
-                regions and identifies isolated observations as
-                noise.
+    <!-- Legend -->
+    <div class="dbscan-legend-wrap">
+      <div class="dbscan-legend-item">
+        <span class="legend-dot-core"></span>
+        <span><strong>Core Points</strong> (Solid: &ge; {{ results.min_samples }} neighbors)</span>
+      </div>
+      <div class="dbscan-legend-item">
+        <span class="legend-dot-border"></span>
+        <span><strong>Border Points</strong> (Ring: within &epsilon; of Core)</span>
+      </div>
+      <div class="dbscan-legend-item">
+        <span class="legend-dot-noise"></span>
+        <span><strong>Noise Points</strong> (Diamond/Cross: Outliers)</span>
+      </div>
+    </div>
+  </section>
 
-            </p>
+  <!-- Distribution Table -->
+  <section class="sp-section">
+    <p class="sp-section-label">Cluster Metrics</p>
+    <h2>Density &amp; Cluster Breakdown</h2>
 
-            <p>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Group / Cluster</th>
+            <th>Type</th>
+            <th>Track Count</th>
+            <th>Sample Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Core summary row -->
+          <tr style="background: rgba(233, 30, 99, 0.04);">
+            <td><strong>All Core Points</strong></td>
+            <td><span class="core-badge"><i class="fa-solid fa-circle-dot"></i> Core</span></td>
+            <td><strong>{{ "{:,}".format(results.core_count) }}</strong></td>
+            <td>{{ results.core_percentage }}%</td>
+          </tr>
+          <!-- Border summary row -->
+          <tr style="background: rgba(171, 71, 188, 0.04);">
+            <td><strong>All Border Points</strong></td>
+            <td><span class="border-badge"><i class="fa-solid fa-circle-notch"></i> Border</span></td>
+            <td><strong>{{ "{:,}".format(results.border_count) }}</strong></td>
+            <td>{{ results.border_percentage }}%</td>
+          </tr>
+          <!-- Clusters / Noise rows -->
+          {% for row in results.rows %}
+            <tr>
+              <td>
+                {% if "Noise" in row.cluster %}
+                  <span class="noise-badge"><i class="fa-solid fa-xmark"></i> {{ row.cluster }}</span>
+                {% else %}
+                  <span class="cluster-badge"><i class="fa-solid fa-music"></i> {{ row.cluster }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if "Noise" in row.cluster %}
+                  <span style="color: var(--text-muted); font-size: 12px;">Noise (Label -1)</span>
+                {% else %}
+                  <span style="color: #ad1457; font-size: 12px; font-weight: 600;">Dense Cluster</span>
+                {% endif %}
+              </td>
+              <td>{{ "{:,}".format(row.records) }}</td>
+              <td>{{ row.percentage }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-                The model uses the existing:
+  <!-- Explanation Section -->
+  <section class="sp-section">
+    <p class="sp-section-label">Theory</p>
+    <h2>How DBSCAN Categorizes Tracks</h2>
 
-                <strong>
-                    processed_data/preprocessed_dataset.csv
-                </strong>
-
-            </p>
-
-        </div>
-
-
-        <div class="dbscan-icon">
-
-            <i class="fa-solid fa-braille"></i>
-
-        </div>
-
-    </section>
-
-
-    <!-- Controls -->
-
-    <section class="sp-section">
-
-        <p class="sp-section-label">
-            Configuration
+    <div class="dbscan-explanation-grid">
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-circle-dot" style="color: #e91e63;"></i>
+        <h3>1. Core Points</h3>
+        <p>
+          A track is a <strong>Core point</strong> if its &epsilon;-neighborhood contains at least
+          <em>Min Samples</em> ({{ results.min_samples }}) tracks. These form the dense anchors of clusters.
         </p>
+      </div>
 
-        <h2>
-            DBSCAN Settings
-        </h2>
-
-
-        <form
-            method="GET"
-            class="dbscan-controls"
-        >
-
-            <div class="dbscan-input">
-
-                <label for="eps">
-                    EPS
-                </label>
-
-                <input
-                    id="eps"
-                    type="number"
-                    name="eps"
-                    min="0.05"
-                    step="0.05"
-                    value="{{ results.eps if results else 0.75 }}"
-                >
-
-                <small>
-                    Neighborhood radius
-                </small>
-
-            </div>
-
-
-            <div class="dbscan-input">
-
-                <label for="min_samples">
-                    Min Samples
-                </label>
-
-                <input
-                    id="min_samples"
-                    type="number"
-                    name="min_samples"
-                    min="2"
-                    value="{{ results.min_samples if results else 5 }}"
-                >
-
-                <small>
-                    Minimum points in a dense region
-                </small>
-
-            </div>
-
-
-            <button
-                type="submit"
-                class="sp-action-btn"
-            >
-
-                <i class="fa-solid fa-play"></i>
-
-                Run DBSCAN
-
-            </button>
-
-        </form>
-
-    </section>
-
-
-    {% if results %}
-
-
-    <!-- Statistics -->
-
-    <section class="dbscan-stats">
-
-
-        <div class="sp-stat-card">
-
-            <span class="sp-stat-label">
-                Clusters
-            </span>
-
-            <strong>
-                {{ results.clusters }}
-            </strong>
-
-            <span class="sp-stat-sub">
-                detected groups
-            </span>
-
-        </div>
-
-
-        <div class="sp-stat-card">
-
-            <span class="sp-stat-label">
-                Noise Points
-            </span>
-
-            <strong>
-                {{ "{:,}".format(results.noise) }}
-            </strong>
-
-            <span class="sp-stat-sub">
-                DBSCAN label -1
-            </span>
-
-        </div>
-
-
-        <div class="sp-stat-card">
-
-            <span class="sp-stat-label">
-                Rows Clustered
-            </span>
-
-            <strong>
-                {{ "{:,}".format(results.sample_size) }}
-            </strong>
-
-            <span class="sp-stat-sub">
-                reproducible sample
-            </span>
-
-        </div>
-
-
-        <div class="sp-stat-card">
-
-            <span class="sp-stat-label">
-                Features
-            </span>
-
-            <strong>
-                {{ results.feature_count }}
-            </strong>
-
-            <span class="sp-stat-sub">
-                preprocessed features
-            </span>
-
-        </div>
-
-
-    </section>
-
-
-    <!-- PCA -->
-
-    <section class="sp-section">
-
-        <p class="sp-section-label">
-            Visualization
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-circle-notch" style="color: #ab47bc;"></i>
+        <h3>2. Border Points</h3>
+        <p>
+          A track is a <strong>Border point</strong> if it falls within the &epsilon;-neighborhood of a Core point,
+          but does not have enough neighbors itself to be a Core point.
         </p>
+      </div>
 
-        <h2>
-            DBSCAN Cluster Visualization
-        </h2>
-
-        <p class="dbscan-help">
-
-            PCA reduces the preprocessed feature space to two
-            dimensions for visualization only. DBSCAN itself uses
-            the complete set of numeric preprocessed features.
-
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-xmark" style="color: #78909c;"></i>
+        <h3>3. Noise Points</h3>
+        <p>
+          Tracks that are not reachable from any Core point are marked with label <strong>-1 (Noise)</strong>.
+          These represent unusual tracks or audio outliers.
         </p>
+      </div>
 
-
-        <div class="dbscan-chart-container">
-
-            <canvas id="dbscanPlot"></canvas>
-
-        </div>
-
-    </section>
-
-
-    <!-- Cluster distribution -->
-
-    <section class="sp-section">
-
-        <p class="sp-section-label">
-            Results
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-diagram-project" style="color: #f06292;"></i>
+        <h3>4. Arbitrary Shapes</h3>
+        <p>
+          Unlike K-Means which enforces spherical clusters, DBSCAN connects overlapping dense neighborhoods,
+          discovering natural musical groupings of any shape.
         </p>
-
-        <h2>
-            Cluster Distribution
-        </h2>
-
-
-        <div class="sp-table-wrap">
-
-            <table class="sp-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Cluster
-                        </th>
-
-                        <th>
-                            Records
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                {% for row in results.rows %}
-
-                    <tr>
-
-                        <td>
-
-                            {% if "Noise" in row.cluster %}
-
-                                <span class="noise-badge">
-                                    {{ row.cluster }}
-                                </span>
-
-                            {% else %}
-
-                                {{ row.cluster }}
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {{ "{:,}".format(row.records) }}
-
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-
-
-    <!-- Explanation -->
-
-    <section class="sp-section">
-
-        <p class="sp-section-label">
-            Method
-        </p>
-
-        <h2>
-            How DBSCAN Works
-        </h2>
-
-
-        <div class="dbscan-explanation-grid">
-
-
-            <div class="dbscan-explanation-card">
-
-                <i class="fa-solid fa-circle-dot"></i>
-
-                <h3>
-                    1. EPS
-                </h3>
-
-                <p>
-
-                    EPS defines how far DBSCAN searches around
-                    each track to find neighboring observations.
-
-                </p>
-
-            </div>
-
-
-            <div class="dbscan-explanation-card">
-
-                <i class="fa-solid fa-users"></i>
-
-                <h3>
-                    2. Min Samples
-                </h3>
-
-                <p>
-
-                    Min Samples determines how many neighboring
-                    observations are required for a dense region.
-
-                </p>
-
-            </div>
-
-
-            <div class="dbscan-explanation-card">
-
-                <i class="fa-solid fa-layer-group"></i>
-
-                <h3>
-                    3. Clusters
-                </h3>
-
-                <p>
-
-                    Dense areas are connected together to create
-                    clusters without specifying K beforehand.
-
-                </p>
-
-            </div>
-
-
-            <div class="dbscan-explanation-card">
-
-                <i class="fa-solid fa-triangle-exclamation"></i>
-
-                <h3>
-                    4. Noise
-                </h3>
-
-                <p>
-
-                    Records that do not belong to a dense region
-                    are assigned the DBSCAN label -1.
-
-                </p>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% endif %}
 
 </main>
 
-
 <footer class="sp-footer">
-
-    Built with <span>♥</span>
-    using Flask &amp; Spotify Design Language
-
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
 </footer>
 
-
+<!-- Interactive High-DPI Canvas Script -->
 <script>
+const rawPoints = {{ results.points|tojson if results else "[]" }};
+const pc1Var = {{ results.pc1_var if results else 0 }};
+const pc2Var = {{ results.pc2_var if results else 0 }};
 
-const points = {{ results.points|tojson if results else "[]" }};
+const canvas = document.getElementById("dbscanPlot");
+const tooltip = document.getElementById("dbscanTooltip");
+const container = document.getElementById("interactivePlotWrap");
 
-const canvas =
-    document.getElementById("dbscanPlot");
+if (canvas && rawPoints.length) {
+  const ctx = canvas.getContext("2d");
+  let activeFilter = "all";
+  let renderedPoints = [];
 
-if (canvas && points.length) {
+  const clusterColors = [
+    "#e86b97", "#5c7cfa", "#20c997", "#f59f00",
+    "#845ef7", "#339af0", "#ff6b6b", "#94d82d",
+    "#fa5252", "#15aabf", "#e64980", "#be4bdb"
+  ];
 
-    const ctx =
-        canvas.getContext("2d");
+  function drawPlot() {
+    const width = container.clientWidth || 900;
+    const height = 520;
+    const ratio = window.devicePixelRatio || 1;
 
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
-    function drawPlot() {
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, width, height);
 
-        const width =
-            canvas.clientWidth || 900;
+    // Padding
+    const padX = 54;
+    const padY = 46;
 
-        const height = 500;
+    // Bounds
+    const xs = rawPoints.map(p => p.x);
+    const ys = rawPoints.map(p => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
 
-        const ratio =
-            window.devicePixelRatio || 1;
+    // Coordinate converters
+    const toCanvasX = x => padX + ((x - minX) / (maxX - minX || 1)) * (width - padX * 2);
+    const toCanvasY = y => (height - padY) - ((y - minY) / (maxY - minY || 1)) * (height - padY * 2);
 
+    // 1. Grid & Axes
+    ctx.strokeStyle = "rgba(240, 98, 146, 0.15)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
 
-        canvas.width =
-            width * ratio;
+    for (let i = 0; i <= 6; i++) {
+      const gx = padX + (i / 6) * (width - padX * 2);
+      ctx.beginPath();
+      ctx.moveTo(gx, padY);
+      ctx.lineTo(gx, height - padY);
+      ctx.stroke();
 
-        canvas.height =
-            height * ratio;
+      const gy = padY + (i / 6) * (height - padY * 2);
+      ctx.beginPath();
+      ctx.moveTo(padX, gy);
+      ctx.lineTo(width - padX, gy);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
 
-
-        ctx.setTransform(
-            ratio,
-            0,
-            0,
-            ratio,
-            0,
-            0
-        );
-
-
-        ctx.clearRect(
-            0,
-            0,
-            width,
-            height
-        );
-
-
-        const xs =
-            points.map(p => p.x);
-
-        const ys =
-            points.map(p => p.y);
-
-
-        const minX =
-            Math.min(...xs);
-
-        const maxX =
-            Math.max(...xs);
-
-        const minY =
-            Math.min(...ys);
-
-        const maxY =
-            Math.max(...ys);
-
-
-        const padding = 40;
-
-
-        const colors = [
-
-            "#e98ab5",
-            "#d96fa4",
-            "#f2a8c8",
-            "#bd6694",
-            "#f6bfd8",
-            "#a95a84",
-            "#d98eb5",
-            "#c7759f"
-
-        ];
-
-
-        points.forEach(point => {
-
-            const x =
-                padding +
-                (
-                    (point.x - minX) /
-                    (maxX - minX || 1)
-                ) *
-                (
-                    width -
-                    padding * 2
-                );
-
-
-            const y =
-                height -
-                padding -
-                (
-                    (point.y - minY) /
-                    (maxY - minY || 1)
-                ) *
-                (
-                    height -
-                    padding * 2
-                );
-
-
-            ctx.beginPath();
-
-
-            ctx.arc(
-                x,
-                y,
-                point.label === -1 ? 3 : 4,
-                0,
-                Math.PI * 2
-            );
-
-
-            if (point.label === -1) {
-
-                ctx.fillStyle =
-                    "#777777";
-
-            } else {
-
-                ctx.fillStyle =
-                    colors[
-                        Math.abs(point.label) %
-                        colors.length
-                    ];
-
-            }
-
-
-            ctx.fill();
-
-        });
-
+    // Zero axes if in range
+    if (minX <= 0 && maxX >= 0) {
+      const zx = toCanvasX(0);
+      ctx.strokeStyle = "rgba(173, 20, 87, 0.25)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(zx, padY);
+      ctx.lineTo(zx, height - padY);
+      ctx.stroke();
+    }
+    if (minY <= 0 && maxY >= 0) {
+      const zy = toCanvasY(0);
+      ctx.strokeStyle = "rgba(173, 20, 87, 0.25)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(padX, zy);
+      ctx.lineTo(width - padX, zy);
+      ctx.stroke();
     }
 
+    // Axis labels
+    ctx.fillStyle = "#7d3f56";
+    ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Principal Component 1 (${pc1Var}% variance)`, width / 2, height - 12);
 
-    drawPlot();
+    ctx.save();
+    ctx.translate(14, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(`Principal Component 2 (${pc2Var}% variance)`, 0, 0);
+    ctx.restore();
 
+    // 2. Draw Points
+    renderedPoints = [];
 
-    window.addEventListener(
-        "resize",
-        drawPlot
-    );
+    rawPoints.forEach((p, idx) => {
+      // Filter check
+      if (activeFilter !== "all" && p.type !== activeFilter) {
+        return;
+      }
 
+      const cx = toCanvasX(p.x);
+      const cy = toCanvasY(p.y);
+      const color = p.label === -1 ? "#78909c" : clusterColors[Math.abs(p.label) % clusterColors.length];
+
+      renderedPoints.push({
+        idx: idx,
+        cx: cx,
+        cy: cy,
+        r: p.type === "core" ? 5 : p.type === "border" ? 4.5 : 3.5,
+        point: p,
+        color: color
+      });
+
+      ctx.beginPath();
+
+      if (p.type === "noise") {
+        // Noise: Distinct 4-point star / cross
+        const s = 3.5;
+        ctx.strokeStyle = "#607d8b";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(cx - s, cy - s);
+        ctx.lineTo(cx + s, cy + s);
+        ctx.moveTo(cx + s, cy - s);
+        ctx.lineTo(cx - s, cy + s);
+        ctx.stroke();
+      } else if (p.type === "border") {
+        // Border: Ring / halo marker
+        ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.fill();
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+      } else {
+        // Core: Solid filled vibrant circle
+        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+      }
+    });
+  }
+
+  drawPlot();
+  window.addEventListener("resize", drawPlot);
+
+  // Filter Buttons
+  document.querySelectorAll(".dbscan-filter-btn[data-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".dbscan-filter-btn[data-filter]").forEach(b => b.classList.remove("active", "filter-core", "filter-border", "filter-noise"));
+      btn.classList.add("active");
+      const f = btn.dataset.filter;
+      if (f === "core") btn.classList.add("filter-core");
+      if (f === "border") btn.classList.add("filter-border");
+      if (f === "noise") btn.classList.add("filter-noise");
+      activeFilter = f;
+      drawPlot();
+    });
+  });
+
+  // Toggle Static Plot button
+  const toggleBtn = document.getElementById("btnToggleChartMode");
+  const staticWrap = document.getElementById("staticPlotWrap");
+  if (toggleBtn && staticWrap) {
+    toggleBtn.addEventListener("click", () => {
+      if (staticWrap.style.display === "none") {
+        staticWrap.style.display = "block";
+        toggleBtn.innerHTML = '<i class="fa-solid fa-chart-line"></i> Hide Static Plot';
+      } else {
+        staticWrap.style.display = "none";
+        toggleBtn.innerHTML = '<i class="fa-solid fa-image"></i> Toggle Static Plot';
+      }
+    });
+  }
+
+  // Interactive Hover Tooltip
+  canvas.addEventListener("mousemove", e => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    let match = null;
+    let minDist = 9;
+
+    for (let i = renderedPoints.length - 1; i >= 0; i--) {
+      const rp = renderedPoints[i];
+      const dx = mouseX - rp.cx;
+      const dy = mouseY - rp.cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < minDist) {
+        minDist = dist;
+        match = rp;
+        break;
+      }
+    }
+
+    if (match) {
+      const pt = match.point;
+      const typeLabel = pt.type.toUpperCase();
+      const clusterName = pt.label === -1 ? "Noise (Outlier)" : `Cluster ${pt.label + 1}`;
+      tooltip.style.display = "block";
+      tooltip.style.left = match.cx + "px";
+      tooltip.style.top = match.cy + "px";
+      tooltip.innerHTML = `
+        <div style="font-weight: 700; color: ${match.color}; margin-bottom: 2px;">
+          ${clusterName}
+        </div>
+        <div>Type: <strong>${typeLabel}</strong></div>
+        <div style="font-size: 10px; opacity: 0.85;">PC1: ${pt.x.toFixed(2)}, PC2: ${pt.y.toFixed(2)}</div>
+      `;
+    } else {
+      tooltip.style.display = "none";
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    tooltip.style.display = "none";
+  });
 }
-
 </script>
 
-
-<script
-    src="{{ url_for('static', filename='theme.js') }}"
-></script>
-
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 
 </body>
-
 </html>

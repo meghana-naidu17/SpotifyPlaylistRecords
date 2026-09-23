@@ -130,30 +130,30 @@
 
 /* --- Marshmellow Pink --- */
 [data-theme="marshmellow-pink"] {
-  --bg-primary:     #fff4f8;
-  --bg-secondary:   #fffafd;
+  --bg-primary:     #fff5f8;
+  --bg-secondary:   #fff9fb;
   --bg-tertiary:    #ffe4ee;
   --card-bg:        #ffffff;
   --card-hover:     #fff7fa;
-  --text-primary:   #4d2635;
-  --text-secondary: #8b5c6d;
-  --text-muted:     #b98fa0;
-  --accent:         #e889a8;
-  --accent-hover:   #d96f94;
-  --accent-dim:     rgba(232, 137, 168, 0.14);
-  --accent-glow:    rgba(232, 137, 168, 0.26);
-  --border:         rgba(232, 137, 168, 0.20);
-  --border-hover:   rgba(217, 111, 148, 0.55);
-  --shadow:         0 4px 24px rgba(170, 82, 117, 0.14);
-  --shadow-card:    0 2px 12px rgba(170, 82, 117, 0.10);
-  --shadow-hover:   0 8px 32px rgba(170, 82, 117, 0.18);
+  --text-primary:   #3d1421;
+  --text-secondary: #7d3f56;
+  --text-muted:     #a37286;
+  --accent:         #f06292;
+  --accent-hover:   #e91e63;
+  --accent-dim:     rgba(240, 98, 146, 0.14);
+  --accent-glow:    rgba(240, 98, 146, 0.28);
+  --border:         #f8bbd0;
+  --border-hover:   #f06292;
+  --shadow:         0 4px 24px rgba(233, 30, 99, 0.12);
+  --shadow-card:    0 2px 12px rgba(233, 30, 99, 0.08);
+  --shadow-hover:   0 8px 32px rgba(233, 30, 99, 0.18);
   --header-bg:      #fff0f6;
-  --table-stripe:   rgba(232, 137, 168, 0.055);
-  --table-hover:    rgba(232, 137, 168, 0.10);
+  --table-stripe:   rgba(240, 98, 146, 0.04);
+  --table-hover:    rgba(240, 98, 146, 0.08);
   --scrollbar-track:#ffe8f0;
-  --scrollbar-thumb:#efabc1;
-  --hero-gradient:  linear-gradient(135deg, #ffd6e5 0%, #ffe9f1 45%, #fff4f8 100%);
-  --tag-bg:         rgba(232, 137, 168, 0.15);
+  --scrollbar-thumb:#f48fb1;
+  --hero-gradient:  linear-gradient(135deg, #ffd6e7 0%, #fff0f6 60%, #ffffff 100%);
+  --tag-bg:         rgba(240, 98, 146, 0.12);
   --disabled-opacity: 0.42;
   --chart-filter:   none;
 }
@@ -438,7 +438,7 @@ th, td {
 .dot-midnight      { background: #7c6af7; }
 .dot-forest        { background: #4caf50; }
 .dot-sunflower     { background: linear-gradient(135deg, #fff59d, #ffa000); border: 1px solid #ffcc02; }
-.dot-marshmellow-pink { background: linear-gradient(135deg, #ffd6e5, #e889a8); border: 1px solid #e889a8; }
+.dot-marshmellow-pink { background: linear-gradient(135deg, #ffd6e5, #f06292); border: 1.5px solid #e91e63; }
 
 /* Profile icon */
 .sp-profile-btn {
