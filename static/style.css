@@ -816,10 +816,11 @@ details[open] > summary .sp-nested-arrow {
 .sp-nav-card.disabled:hover::before { opacity: 0; }
 
 .sp-nav-card-icon {
-  font-size: 28px;
+  font-size: 26px;
   margin-bottom: 14px;
   display: block;
   line-height: 1;
+  color: var(--accent);
 }
 
 .sp-nav-card-title {
@@ -1372,6 +1373,97 @@ details[open] > summary .sp-nested-arrow {
 .sp-chart-card:nth-child(2) { animation-delay: 0.10s; }
 .sp-chart-card:nth-child(3) { animation-delay: 0.15s; }
 .sp-chart-card:nth-child(4) { animation-delay: 0.20s; }
+
+/* ============================================================
+   EXPANDABLE NAV CARD  (Unsupervised Learning sub-menu)
+   ============================================================ */
+
+.sp-nav-card-expandable {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Sub-menu container — hidden by default */
+.sp-nav-card-submenu {
+  display: none;
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.sp-nav-card-submenu.open {
+  display: block;
+  animation: fadeInUp 0.2s ease;
+}
+
+/* "Clustering" group header row */
+.sp-nav-card-subgroup {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sp-nav-card-subgroup:hover {
+  background: var(--bg-tertiary);
+}
+
+.sp-nav-card-subgroup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sp-subgroup-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.22s ease;
+}
+
+/* Individual algo links */
+.sp-nav-card-subitems {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 14px;
+  margin-top: 2px;
+}
+
+.sp-nav-card-subitems.open {
+  display: flex;
+  animation: fadeInUp 0.18s ease;
+}
+
+.sp-nav-card-subitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.sp-nav-card-subitem:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.sp-nav-card-subitem i {
+  font-size: 9px;
+  color: var(--accent);
+  opacity: 0.7;
+}
 
 /* ============================================================
    PREPROCESSING TABS

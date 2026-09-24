@@ -196,7 +196,7 @@
        style="text-decoration:none;">
 
       <span class="sp-nav-card-icon">
-        📊
+        <i class="fa-solid fa-database"></i>
       </span>
 
       <div class="sp-nav-card-title">
@@ -226,7 +226,7 @@
        style="text-decoration:none;">
 
       <span class="sp-nav-card-icon">
-        📈
+        <i class="fa-solid fa-chart-bar"></i>
       </span>
 
       <div class="sp-nav-card-title">
@@ -256,7 +256,7 @@
        style="text-decoration:none;">
 
       <span class="sp-nav-card-icon">
-        ⚙️
+        <i class="fa-solid fa-sliders"></i>
       </span>
 
       <div class="sp-nav-card-title">
@@ -286,7 +286,7 @@
    style="text-decoration:none;">
 
   <span class="sp-nav-card-icon">
-    🤖
+    <i class="fa-solid fa-brain"></i>
   </span>
 
   <div class="sp-nav-card-title">
@@ -315,7 +315,7 @@
        style="text-decoration:none;">
 
       <span class="sp-nav-card-icon">
-        📈
+        <i class="fa-solid fa-arrow-trend-up"></i>
       </span>
 
       <div class="sp-nav-card-title">
@@ -336,32 +336,147 @@
     </a>
 
     <!-- ====================================================
-         PREDICTION
+         DECISION TREE
          ==================================================== -->
 
-    <div class="sp-nav-card disabled"
-         onclick="showComingSoon('Prediction')">
+    <a href="{{ url_for('decision_tree_page', algorithm='id3') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
 
-      <span class="sp-nav-card-icon">
-        🎯
-      </span>
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-sitemap"></i></span>
 
       <div class="sp-nav-card-title">
-        Prediction
+        Decision Tree
       </div>
 
       <div class="sp-nav-card-desc">
-
-        Predict track popularity and
-        audio feature outcomes.
-
+        ID3 algorithm — classify tracks using
+        a tree of audio feature decisions.
       </div>
 
-      <span class="sp-nav-card-badge">
-        Coming Soon
-      </span>
+      <span class="sp-nav-card-badge">Available</span>
 
-    </div>
+    </a>
+
+
+    <!-- ====================================================
+         BAGGING
+         ==================================================== -->
+
+    <a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-layer-group"></i></span>
+
+      <div class="sp-nav-card-title">
+        Bagging
+      </div>
+
+      <div class="sp-nav-card-desc">
+        Random Forest ensemble — reduce variance
+        by averaging many decision trees.
+      </div>
+
+      <span class="sp-nav-card-badge">Available</span>
+
+    </a>
+
+
+    <!-- ====================================================
+         BOOSTING
+         ==================================================== -->
+
+    <a href="{{ url_for('ensemble_page', family='boosting', algorithm='adaboost') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-bolt"></i></span>
+
+      <div class="sp-nav-card-title">
+        Boosting
+      </div>
+
+      <div class="sp-nav-card-desc">
+        AdaBoost, GradientBoost, LightGBM &amp; XGBoost —
+        sequentially correct model errors.
+      </div>
+
+      <span class="sp-nav-card-badge">Available</span>
+
+    </a>
+
+
+    <!-- ====================================================
+         K-MEANS
+         ==================================================== -->
+
+    <a href="{{ url_for('kmeans_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-circle-nodes"></i></span>
+
+      <div class="sp-nav-card-title">
+        K-Means Clustering
+      </div>
+
+      <div class="sp-nav-card-desc">
+        Partition tracks into K clusters based
+        on audio feature similarity.
+      </div>
+
+      <span class="sp-nav-card-badge">Available</span>
+
+    </a>
+
+
+    <!-- ====================================================
+         HIERARCHICAL CLUSTERING
+         ==================================================== -->
+
+    <a href="{{ url_for('hierarchical_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-diagram-project"></i></span>
+
+      <div class="sp-nav-card-title">
+        Hierarchical Clustering
+      </div>
+
+      <div class="sp-nav-card-desc">
+        Build a dendrogram of track clusters using
+        Ward, Single or Complete linkage.
+      </div>
+
+      <span class="sp-nav-card-badge">Available</span>
+
+    </a>
+
+
+    <!-- ====================================================
+         DBSCAN
+         ==================================================== -->
+
+    <a href="{{ url_for('dbscan_page') }}"
+       class="sp-nav-card"
+       style="text-decoration:none;">
+
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-braille"></i></span>
+
+      <div class="sp-nav-card-title">
+        DBSCAN
+      </div>
+
+      <div class="sp-nav-card-desc">
+        Density-based clustering — find arbitrarily
+        shaped clusters and detect noise points.
+      </div>
+
+      <span class="sp-nav-card-badge">Available</span>
+
+    </a>
 
 
   </div>

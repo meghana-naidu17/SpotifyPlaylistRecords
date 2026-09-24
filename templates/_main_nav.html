@@ -99,17 +99,31 @@
     <i class="fa-solid fa-chevron-down sp-arrow"></i>
   </summary>
   <div class="sp-sidebar-subgroup">
-    <a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">
-      <i class="fa-solid fa-circle-nodes"></i>
-      <span>K-Means Clustering</span>
-    </a>
-    <a href="{{ url_for('hierarchical_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'hierarchical' %}active{% endif %}">
-      <i class="fa-solid fa-diagram-project"></i>
-      <span>Hierarchical Clustering</span>
-    </a>
-    <a href="{{ url_for('dbscan_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'dbscan' %}active{% endif %}">
-      <i class="fa-solid fa-braille"></i>
-      <span>DBSCAN</span>
-    </a>
+
+    <!-- Clustering sub-group -->
+    <details class="sp-sidebar-nested-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
+      <summary class="sp-sidebar-link sp-nested-summary {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}active-parent{% endif %}">
+        <div class="sp-link-inner">
+          <i class="fa-solid fa-circle-nodes"></i>
+          <span>Clustering</span>
+        </div>
+        <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
+      </summary>
+      <div class="sp-sidebar-nested-items">
+        <a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>K-Means</span>
+        </a>
+        <a href="{{ url_for('hierarchical_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'hierarchical' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>Hierarchical Clustering</span>
+        </a>
+        <a href="{{ url_for('dbscan_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'dbscan' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>DBSCAN</span>
+        </a>
+      </div>
+    </details>
+
   </div>
 </details>
