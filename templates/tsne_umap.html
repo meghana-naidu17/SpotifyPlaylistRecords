@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="marshmellow-pink">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>t-SNE &amp; UMAP — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dbscan.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+{% include '_site_header.html' %}
+
+<main class="sp-page">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Unsupervised / t-SNE &amp; UMAP</span>
+  </nav>
+
+  <!-- Page heading -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Non-Linear Manifold Learning</p>
+    <h1>t-SNE &amp; UMAP Manifold Projection</h1>
+    <p>
+      Discover non-linear musical sub-structures and compare probabilistic neighborhood embedding
+      (<strong>t-SNE</strong>) against topological Riemannian manifold projection (<strong>UMAP</strong>).
+    </p>
+  </div>
+
+  {% if error %}
+    <div class="sp-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- Hero Section -->
+  <section class="sp-section dbscan-hero">
+    <div>
+      <p class="sp-section-label">Marshmellow Pink • Manifold Topology</p>
+      <h2>Local vs. Global Structure Preservation</h2>
+      <p class="dbscan-help">
+        Linear methods like PCA struggle when data lies along non-linear curves.
+        <strong>t-SNE</strong> maps high-dimensional probability distributions into 2D using Student-t distributions,
+        isolating tight local song clusters. <strong>UMAP</strong> builds on Riemannian geometry and fuzzy simplicial sets,
+        preserving both local groupings and the overarching global relationships between musical genres with superior speed.
+      </p>
+      <p class="dbscan-help" style="margin-top: 6px;">
+        Dataset source: <strong>processed_data/preprocessed_dataset.csv</strong> (11 continuous Spotify features).
+      </p>
+    </div>
+    <div class="dbscan-icon" style="background: linear-gradient(135deg, #ffd0e3, #ffb2d1); color: #ad1457;">
+      <i class="fa-solid fa-compass-drafting"></i>
+    </div>
+  </section>
+
+  <!-- Configuration Controls -->
+  <section class="sp-section">
+    <p class="sp-section-label">Hyperparameters</p>
+    <h2>Manifold Algorithm Settings</h2>
+
+    <form method="GET" class="dbscan-controls" style="align-items: flex-start;">
+      <!-- Execution Mode -->
+      <div class="dbscan-input">
+        <label for="method">
+          <i class="fa-solid fa-code-compare"></i> Visualization Mode
+        </label>
+        <select id="method" name="method" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
+          <option value="both" {% if results and results.method == 'both' %}selected{% endif %}>Side-by-Side Comparison (Both)</option>
+          <option value="tsne" {% if results and results.method == 'tsne' %}selected{% endif %}>t-SNE Only</option>
+          <option value="umap" {% if results and results.method == 'umap' %}selected{% endif %}>UMAP Only</option>
+        </select>
+        <small>Algorithm to evaluate</small>
+      </div>
+
+      <!-- t-SNE Parameters -->
+      <div class="dbscan-input">
+        <label for="perplexity">
+          <i class="fa-solid fa-circle-nodes"></i> t-SNE Perplexity
+        </label>
+        <input
+          id="perplexity"
+          type="number"
+          name="perplexity"
+          min="5"
+          max="50"
+          value="{{ results.perplexity if results else 30 }}"
+        >
+        <small>Effective neighbor balance (5-50)</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="n_iter">
+          <i class="fa-solid fa-repeat"></i> t-SNE Iterations
+        </label>
+        <input
+          id="n_iter"
+          type="number"
+          name="n_iter"
+          min="250"
+          max="2000"
+          step="50"
+          value="{{ results.n_iter if results else 1000 }}"
+        >
+        <small>Optimization steps</small>
+      </div>
+
+      <!-- UMAP Parameters -->
+      <div class="dbscan-input">
+        <label for="n_neighbors">
+          <i class="fa-solid fa-users"></i> UMAP Neighbors
+        </label>
+        <input
+          id="n_neighbors"
+          type="number"
+          name="n_neighbors"
+          min="3"
+          max="50"
+          value="{{ results.n_neighbors if results else 15 }}"
+        >
+        <small>Local vs global metric balance</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="min_dist">
+          <i class="fa-solid fa-ruler"></i> UMAP Min Distance
+        </label>
+        <input
+          id="min_dist"
+          type="number"
+          name="min_dist"
+          min="0.01"
+          max="0.99"
+          step="0.05"
+          value="{{ results.min_dist if results else 0.1 }}"
+        >
+        <small>Clustering tightness (0.01-0.99)</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="metric">
+          <i class="fa-solid fa-bezier-curve"></i> UMAP Metric
+        </label>
+        <select id="metric" name="metric" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
+          <option value="euclidean" {% if results and results.metric == 'euclidean' %}selected{% endif %}>Euclidean</option>
+          <option value="cosine" {% if results and results.metric == 'cosine' %}selected{% endif %}>Cosine</option>
+          <option value="manhattan" {% if results and results.metric == 'manhattan' %}selected{% endif %}>Manhattan</option>
+        </select>
+        <small>Distance geometry</small>
+      </div>
+
+      <button type="submit" class="sp-action-btn" style="margin-top: 24px;">
+        <i class="fa-solid fa-play"></i> Run Manifold Embedding
+      </button>
+    </form>
+  </section>
+
+  {% if results %}
+
+  <!-- Statistics Cards -->
+  <section class="dbscan-stats">
+    <div class="dbscan-stat-card dbscan-stat-clusters">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">t-SNE Runtime</span>
+        <i class="fa-solid fa-stopwatch dbscan-stat-icon" style="color: #ec407a;"></i>
+      </div>
+      <strong>{{ results.tsne_duration }}s</strong>
+      <span class="dbscan-stat-sub">Perplexity: {{ results.perplexity }} • {{ results.n_iter }} Iterations</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-core">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">UMAP Runtime</span>
+        <i class="fa-solid fa-bolt-lightning dbscan-stat-icon" style="color: #e91e63;"></i>
+      </div>
+      <strong>{{ results.umap_duration }}s</strong>
+      <span class="dbscan-stat-sub">Neighbors: {{ results.n_neighbors }} • {{ results.metric|title }}</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-border">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Computational Speedup</span>
+        <i class="fa-solid fa-gauge-high dbscan-stat-icon" style="color: #ab47bc;"></i>
+      </div>
+      <strong>{{ results.speedup }}x</strong>
+      <span class="dbscan-stat-sub">UMAP efficiency multiplier</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-noise">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Embedded Records</span>
+        <i class="fa-solid fa-cubes dbscan-stat-icon" style="color: #78909c;"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.sample_size) }}</strong>
+      <span class="dbscan-stat-sub">From {{ results.features_count }} audio features</span>
+    </div>
+  </section>
+
+  <!-- Graphs Section -->
+  {% if results.method == 'both' or results.method == 'tsne_umap' %}
+    <!-- Dual Comparison Chart -->
+    <div class="sp-section">
+      <p class="sp-section-label">Side-by-Side Comparison</p>
+      <h2>t-SNE vs. UMAP Manifold Projection</h2>
+      <p class="sp-kmeans-help">
+        Both algorithms map the exact same Spotify track sample. Notice how <strong>t-SNE</strong> generates isolated,
+        compact clusters with arbitrary inter-cluster distances, while <strong>UMAP</strong> preserves meaningful global
+        distance trajectories across energetic, acoustic, and danceable tracks.
+      </p>
+      <div class="sp-chart-card sp-hier-chart">
+        <img src="{{ url_for('static', filename=results.comparison_chart) }}"
+             alt="t-SNE vs UMAP Manifold Projection Comparison">
+      </div>
+    </div>
+  {% endif %}
+
+  {% if results.method == 'tsne' or results.method == 'both' %}
+    <div class="sp-section">
+      <p class="sp-section-label">t-SNE Embedding</p>
+      <h2>t-SNE Manifold Map (Perplexity = {{ results.perplexity }})</h2>
+      <p class="sp-kmeans-help">
+        High-resolution 2D projection using Student-t distribution heavy tails to prevent crowding of local clusters.
+      </p>
+      <div class="sp-chart-card sp-hier-chart">
+        <img src="{{ url_for('static', filename=results.tsne_chart) }}"
+             alt="t-SNE 2D Manifold Embedding">
+      </div>
+    </div>
+  {% endif %}
+
+  {% if results.method == 'umap' or results.method == 'both' %}
+    <div class="sp-section">
+      <p class="sp-section-label">UMAP Embedding</p>
+      <h2>UMAP Manifold Map (Neighbors = {{ results.n_neighbors }}, Metric = {{ results.metric|title }})</h2>
+      <p class="sp-kmeans-help">
+        High-resolution 2D projection balancing local neighborhood cohesion with continuous global topology.
+      </p>
+      <div class="sp-chart-card sp-hier-chart">
+        <img src="{{ url_for('static', filename=results.umap_chart) }}"
+             alt="UMAP 2D Manifold Embedding">
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Method Comparison Table -->
+  <section class="sp-section">
+    <p class="sp-section-label">Algorithm Comparison</p>
+    <h2>t-SNE vs. UMAP Technical Comparison</h2>
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>t-SNE</th>
+            <th>UMAP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.comparison_table %}
+            <tr>
+              <td><strong>{{ row.criteria }}</strong></td>
+              <td style="color: #6a1b9a;">{{ row.tsne }}</td>
+              <td style="color: #ad1457; font-weight: 600;">{{ row.umap }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Theory & Concepts -->
+  <section class="sp-section">
+    <p class="sp-section-label">Methodology</p>
+    <h2>How Manifold Learning Works</h2>
+
+    <div class="dbscan-explanation-grid">
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-dice" style="color: #e91e63;"></i>
+        <h3>1. t-SNE Probability</h3>
+        <p>
+          Converts Euclidean distances into conditional probabilities representing similarities,
+          minimizing the Kullback-Leibler divergence between high-D and 2D distributions.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-shapes" style="color: #ab47bc;"></i>
+        <h3>2. UMAP Fuzzy Simplicial Sets</h3>
+        <p>
+          Assumes data lies on a Riemannian manifold and models the geometry via simplicial complexes,
+          optimizing cross-entropy to preserve both local and global topology.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-sliders" style="color: #f06292;"></i>
+        <h3>3. Perplexity &amp; Neighbors</h3>
+        <p>
+          Perplexity (t-SNE) and N-Neighbors (UMAP) control the effective neighborhood size considered.
+          Low values emphasize micro-clusters; high values capture broader trends.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-gauge-high" style="color: #78909c;"></i>
+        <h3>4. Scalability</h3>
+        <p>
+          UMAP leverages nearest neighbor descent algorithms, scaling cleanly to millions of points
+          and enabling new incoming tracks to be projected without retraining.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {% endif %}
+
+</main>
+
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+
+</body>
+</html>

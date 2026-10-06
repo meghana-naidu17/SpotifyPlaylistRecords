@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="marshmellow-pink">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autoencoders — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dbscan.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+{% include '_site_header.html' %}
+
+<main class="sp-page">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Unsupervised / Autoencoders</span>
+  </nav>
+
+  <!-- Page heading -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Unsupervised Representation Learning</p>
+    <h1>Neural Network Autoencoders</h1>
+    <p>
+      Compress high-dimensional Spotify audio features through a non-linear neural bottleneck,
+      capturing essential acoustic structures in a compact latent code.
+    </p>
+  </div>
+
+  {% if error %}
+    <div class="sp-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- Hero Section -->
+  <section class="sp-section dbscan-hero">
+    <div>
+      <p class="sp-section-label">Marshmellow Pink • Deep Representation Learning</p>
+      <h2>Deep Non-Linear Audio Compression &amp; Latent Mapping</h2>
+      <p class="dbscan-help">
+        An <strong>Autoencoder</strong> is a symmetric feed-forward neural network trained to reconstruct its own inputs.
+        By forcing tracks through a low-dimensional <strong>bottleneck layer</strong>, the network discovers
+        intricate, non-linear correlations across energy, danceability, loudness, and acousticness.
+      </p>
+      <p class="dbscan-help" style="margin-top: 6px;">
+        Dataset source: <strong>processed_data/preprocessed_dataset.csv</strong> (11 continuous Spotify features).
+      </p>
+    </div>
+    <div class="dbscan-icon" style="background: linear-gradient(135deg, #ffd0e3, #f8a5c2); color: #ad1457;">
+      <i class="fa-solid fa-brain"></i>
+    </div>
+  </section>
+
+  <!-- Configuration Controls -->
+  <section class="sp-section">
+    <p class="sp-section-label">Hyperparameters</p>
+    <h2>Network Architecture Settings</h2>
+
+    <form method="GET" class="dbscan-controls">
+      <div class="dbscan-input">
+        <label for="latent_dim">
+          <i class="fa-solid fa-compress"></i> Latent Dimensions
+        </label>
+        <select id="latent_dim" name="latent_dim" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
+          <option value="2" {% if results and results.latent_dim == 2 %}selected{% endif %}>2 Dimensions (Z₁, Z₂)</option>
+          <option value="3" {% if results and results.latent_dim == 3 %}selected{% endif %}>3 Dimensions</option>
+          <option value="4" {% if results and results.latent_dim == 4 %}selected{% endif %}>4 Dimensions</option>
+        </select>
+        <small>Bottleneck embedding size</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="hidden_dim">
+          <i class="fa-solid fa-network-wired"></i> Hidden Layer Units
+        </label>
+        <select id="hidden_dim" name="hidden_dim" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
+          <option value="16" {% if results and results.hidden_dim == 16 %}selected{% endif %}>16 Neurons</option>
+          <option value="32" {% if results and results.hidden_dim == 32 %}selected{% endif %}>32 Neurons</option>
+          <option value="64" {% if results and results.hidden_dim == 64 %}selected{% endif %}>64 Neurons</option>
+        </select>
+        <small>Intermediate layer capacity</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="activation">
+          <i class="fa-solid fa-wave-square"></i> Activation Function
+        </label>
+        <select id="activation" name="activation" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
+          <option value="relu" {% if results and results.activation == 'relu' %}selected{% endif %}>ReLU (Rectified Linear)</option>
+          <option value="tanh" {% if results and results.activation == 'tanh' %}selected{% endif %}>Tanh (Hyperbolic Tangent)</option>
+          <option value="logistic" {% if results and results.activation == 'logistic' %}selected{% endif %}>Sigmoid / Logistic</option>
+        </select>
+        <small>Non-linear mapping function</small>
+      </div>
+
+      <div class="dbscan-input">
+        <label for="epochs">
+          <i class="fa-solid fa-arrows-spin"></i> Max Epochs
+        </label>
+        <input
+          id="epochs"
+          type="number"
+          name="epochs"
+          min="20"
+          max="200"
+          step="10"
+          value="{{ results.epochs if results else 80 }}"
+        >
+        <small>Optimization iterations</small>
+      </div>
+
+      <button type="submit" class="sp-action-btn" style="margin-bottom: 2px;">
+        <i class="fa-solid fa-bolt"></i> Train Autoencoder
+      </button>
+    </form>
+  </section>
+
+  {% if results %}
+
+  <!-- Statistics Cards -->
+  <section class="dbscan-stats">
+    <div class="dbscan-stat-card dbscan-stat-clusters">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Reconstruction Loss</span>
+        <i class="fa-solid fa-bullseye dbscan-stat-icon" style="color: #ec407a;"></i>
+      </div>
+      <strong>{{ results.final_loss }}</strong>
+      <span class="dbscan-stat-sub">Final MSE error</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-core">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Variance Preserved</span>
+        <i class="fa-solid fa-shield-halved dbscan-stat-icon" style="color: #e91e63;"></i>
+      </div>
+      <strong>{{ results.fidelity_r2 }}%</strong>
+      <span class="dbscan-stat-sub">Reconstruction R² Score</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-border">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Bottleneck Dims</span>
+        <i class="fa-solid fa-compress dbscan-stat-icon" style="color: #ab47bc;"></i>
+      </div>
+      <strong>{{ results.latent_dim }}D</strong>
+      <span class="dbscan-stat-sub">From {{ results.input_features }} original features</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-noise">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Network Topology</span>
+        <i class="fa-solid fa-diagram-project dbscan-stat-icon" style="color: #78909c;"></i>
+      </div>
+      <strong>{{ results.input_features }}→{{ results.hidden_dim }}→{{ results.latent_dim }}</strong>
+      <span class="dbscan-stat-sub">{{ results.activation|title }} • {{ results.actual_epochs }} Epochs</span>
+    </div>
+  </section>
+
+  <!-- Graph 1: 2D Latent Representation -->
+  <div class="sp-section">
+    <p class="sp-section-label">Representation Space</p>
+    <h2>2D Latent Bottleneck Projection</h2>
+    <p class="sp-kmeans-help">
+      Each point represents a Spotify track mapped into the neural bottleneck coordinates (Z₁, Z₂).
+      Colors indicate track audio energy, demonstrating how the network naturally groups energetic vs mellow music.
+    </p>
+    <div class="sp-chart-card sp-hier-chart">
+      <img src="{{ url_for('static', filename=results.latent_chart) }}"
+           alt="Autoencoder 2D Latent Representation Space">
+    </div>
+  </div>
+
+  <!-- Graph 2 & 3: Loss Curve & Feature Reconstruction -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px;">
+    <!-- Loss Curve -->
+    <div class="sp-section" style="margin: 0;">
+      <p class="sp-section-label">Training Dynamics</p>
+      <h2>Loss Curve Convergence</h2>
+      <p class="sp-kmeans-help">
+        Tracks Mean Squared Error decline across Adam optimization iterations.
+      </p>
+      <div class="sp-chart-card sp-hier-chart">
+        <img src="{{ url_for('static', filename=results.loss_chart) }}"
+             alt="Autoencoder Loss Curve">
+      </div>
+    </div>
+
+    <!-- Feature Error -->
+    <div class="sp-section" style="margin: 0;">
+      <p class="sp-section-label">Fidelity Analysis</p>
+      <h2>Per-Feature Reconstruction Error</h2>
+      <p class="sp-kmeans-help">
+        Identifies which audio attributes are preserved most accurately.
+      </p>
+      <div class="sp-chart-card sp-hier-chart">
+        <img src="{{ url_for('static', filename=results.error_chart) }}"
+             alt="Per-Feature Reconstruction Error">
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Error Table -->
+  <section class="sp-section" style="margin-top: 24px;">
+    <p class="sp-section-label">Metric Breakdown</p>
+    <h2>Audio Feature Reconstruction Accuracy</h2>
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>Audio Feature</th>
+            <th>Reconstruction MSE</th>
+            <th>Preservation Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in results.feature_rows %}
+            <tr>
+              <td><strong>{{ row.feature }}</strong></td>
+              <td>{{ "%.4f"|format(row.mse) }}</td>
+              <td>
+                {% if row.preservation == 'High' %}
+                  <span class="core-badge"><i class="fa-solid fa-circle-check"></i> High Fidelity</span>
+                {% elif row.preservation == 'Medium' %}
+                  <span class="border-badge"><i class="fa-solid fa-circle-notch"></i> Medium Fidelity</span>
+                {% else %}
+                  <span class="noise-badge"><i class="fa-solid fa-circle-exclamation"></i> Moderate</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Theory & Method Explanation -->
+  <section class="sp-section">
+    <p class="sp-section-label">Methodology</p>
+    <h2>How Neural Autoencoders Work</h2>
+
+    <div class="dbscan-explanation-grid">
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-file-contract" style="color: #e91e63;"></i>
+        <h3>1. The Encoder</h3>
+        <p>
+          Maps original 11 audio features into intermediate representations using non-linear activation functions,
+          compressing dimensionality down to the bottleneck.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-compress-arrows-alt" style="color: #ab47bc;"></i>
+        <h3>2. The Bottleneck (Z)</h3>
+        <p>
+          A low-dimensional information bottleneck that forces the network to retain only essential acoustic patterns
+          while discarding noise and redundancy.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-arrows-spin" style="color: #f06292;"></i>
+        <h3>3. The Decoder</h3>
+        <p>
+          Symmetrically unpacks the compact latent vector back into reconstructed feature estimates,
+          optimizing Mean Squared Error through backpropagation.
+        </p>
+      </div>
+
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: #78909c;"></i>
+        <h3>4. Non-Linear Power</h3>
+        <p>
+          Unlike PCA which is strictly linear, autoencoders use activation functions (ReLU, Tanh) to bend and model
+          complex curved manifolds in the Spotify dataset.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {% endif %}
+
+</main>
+
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+
+</body>
+</html>
