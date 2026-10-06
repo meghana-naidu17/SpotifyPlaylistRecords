@@ -11,6 +11,16 @@ from dbscan_clustering import run_dbscan
 from autoencoder_model import run_autoencoder
 from pca_model import run_pca
 from tsne_umap_model import run_tsne_umap
+from model_evaluation import (
+    run_data_splitting_evaluation,
+    run_cross_validation_evaluation,
+    run_classification_metrics_evaluation,
+    run_regression_metrics_evaluation,
+    run_calibration_evaluation,
+    run_hyperparameter_search_evaluation,
+    run_learning_curves_evaluation,
+    run_significance_testing_evaluation
+)
 
 
 # =========================================================
@@ -527,6 +537,91 @@ def tsne_umap_page():
             results=None,
             error=str(e)
         )
+
+
+# =========================================================
+# MODEL EVALUATION ROUTES
+# =========================================================
+
+@app.route("/model-evaluation")
+@app.route("/model-evaluation/data-splitting")
+def eval_data_splitting():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_data_splitting_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-splitting", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-splitting", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/cross-validation")
+def eval_cross_validation():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_cross_validation_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-cv", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-cv", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/classification-metrics")
+def eval_classification_metrics():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_classification_metrics_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-classification", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-classification", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/regression-metrics")
+def eval_regression_metrics():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_regression_metrics_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-regression", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-regression", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/calibration")
+def eval_calibration():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_calibration_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-calibration", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-calibration", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/hyperparameter-search")
+def eval_hyperparameter_search():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_hyperparameter_search_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-hyperparam", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-hyperparam", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/learning-curves")
+def eval_learning_curves():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_learning_curves_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-curves", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-curves", results=None, error=str(e))
+
+
+@app.route("/model-evaluation/significance-testing")
+def eval_significance_testing():
+    force_refresh = request.args.get("refresh", "false").lower() == "true"
+    try:
+        results = run_significance_testing_evaluation(force_refresh=force_refresh)
+        return render_template("model_evaluation.html", active="eval-significance", results=results, error=None)
+    except Exception as e:
+        return render_template("model_evaluation.html", active="eval-significance", results=None, error=str(e))
 
 
 # =========================================================

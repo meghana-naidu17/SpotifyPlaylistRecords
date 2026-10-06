@@ -1,5 +1,5 @@
-<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}active-group{% endif %}">
+<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}active-group{% endif %}">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-graduation-cap"></i>
       <span>Supervised-Learning Models</span>
@@ -143,5 +143,65 @@
       <span>t-SNE &amp; UMAP</span>
     </a>
 
+  </div>
+</details>
+
+<!-- 3. Model Evaluation -->
+<details class="sp-sidebar-top-group" {% if active and active.startswith('eval-') %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active and active.startswith('eval-') %}active-group{% endif %}" style="margin-top: 8px;">
+    <div class="sp-top-btn-label">
+      <i class="fa-solid fa-square-poll-vertical"></i>
+      <span>Model Evaluation</span>
+    </div>
+    <i class="fa-solid fa-chevron-down sp-arrow"></i>
+  </summary>
+  <div class="sp-sidebar-subgroup">
+    <!-- 1. Train / Val / Test Split Discipline -->
+    <a href="{{ url_for('eval_data_splitting') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-splitting' %}active{% endif %}">
+      <i class="fa-solid fa-arrows-split-up-and-left"></i>
+      <span>Train / Val / Test Split</span>
+    </a>
+
+    <!-- 2. Cross-Validation & Nested CV -->
+    <a href="{{ url_for('eval_cross_validation') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-cv' %}active{% endif %}">
+      <i class="fa-solid fa-arrows-spin"></i>
+      <span>Cross-Validation &amp; Nested CV</span>
+    </a>
+
+    <!-- 3. Classification Metrics & Imbalance -->
+    <a href="{{ url_for('eval_classification_metrics') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-classification' %}active{% endif %}">
+      <i class="fa-solid fa-bullseye"></i>
+      <span>Classification Metrics</span>
+    </a>
+
+    <!-- 4. Regression Metrics & Outliers -->
+    <a href="{{ url_for('eval_regression_metrics') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-regression' %}active{% endif %}">
+      <i class="fa-solid fa-chart-line"></i>
+      <span>Regression Metrics</span>
+    </a>
+
+    <!-- 5. Probability Calibration -->
+    <a href="{{ url_for('eval_calibration') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-calibration' %}active{% endif %}">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span>Probability Calibration</span>
+    </a>
+
+    <!-- 6. Hyperparameter Search -->
+    <a href="{{ url_for('eval_hyperparameter_search') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-hyperparam' %}active{% endif %}">
+      <i class="fa-solid fa-sliders"></i>
+      <span>Hyperparameter Search</span>
+    </a>
+
+    <!-- 7. Learning & Validation Curves -->
+    <a href="{{ url_for('eval_learning_curves') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-curves' %}active{% endif %}">
+      <i class="fa-solid fa-chart-area"></i>
+      <span>Learning &amp; Validation Curves</span>
+    </a>
+
+    <!-- 8. Statistical Significance Testing -->
+    <a href="{{ url_for('eval_significance_testing') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-significance' %}active{% endif %}">
+      <i class="fa-solid fa-scale-balanced"></i>
+      <span>Statistical Significance</span>
+    </a>
   </div>
 </details>
