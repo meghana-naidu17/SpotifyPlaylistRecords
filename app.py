@@ -8,6 +8,9 @@ from linear_regression import run_linear_regression
 from ml_models import run_classifier, run_kmeans
 from hierarchical_clustering import run_hierarchical_clustering
 from dbscan_clustering import run_dbscan
+from autoencoder_model import run_autoencoder
+from pca_model import run_pca
+from tsne_umap_model import run_tsne_umap
 
 
 # =========================================================
@@ -401,6 +404,126 @@ def dbscan_page():
         return render_template(
             "dbscan.html",
             active="dbscan",
+            results=None,
+            error=str(e)
+        )
+
+
+# =========================================================
+# AUTOENCODER REPRESENTATION LEARNING
+# =========================================================
+
+@app.route("/unsupervised/autoencoder")
+def autoencoder_page():
+
+    latent_dim = request.args.get("latent_dim", 2)
+    hidden_dim = request.args.get("hidden_dim", 32)
+    activation = request.args.get("activation", "relu")
+    epochs = request.args.get("epochs", 80)
+    alpha = request.args.get("alpha", 0.0001)
+
+    try:
+
+        results = run_autoencoder(
+            latent_dim=latent_dim,
+            hidden_dim=hidden_dim,
+            activation=activation,
+            epochs=epochs,
+            alpha=alpha
+        )
+
+        return render_template(
+            "autoencoder.html",
+            active="autoencoder",
+            results=results,
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "autoencoder.html",
+            active="autoencoder",
+            results=None,
+            error=str(e)
+        )
+
+
+# =========================================================
+# PRINCIPAL COMPONENT ANALYSIS (PCA)
+# =========================================================
+
+@app.route("/unsupervised/pca")
+def pca_page():
+
+    n_components = request.args.get("n_components", 5)
+    whiten = request.args.get("whiten", "false")
+    svd_solver = request.args.get("svd_solver", "auto")
+
+    try:
+
+        results = run_pca(
+            n_components=n_components,
+            whiten=whiten,
+            svd_solver=svd_solver
+        )
+
+        return render_template(
+            "pca.html",
+            active="pca",
+            results=results,
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "pca.html",
+            active="pca",
+            results=None,
+            error=str(e)
+        )
+
+
+# =========================================================
+# t-SNE & UMAP MANIFOLD LEARNING
+# =========================================================
+
+@app.route("/unsupervised/tsne-umap")
+def tsne_umap_page():
+
+    method = request.args.get("method", "both")
+    perplexity = request.args.get("perplexity", 30)
+    learning_rate = request.args.get("learning_rate", 200)
+    n_iter = request.args.get("n_iter", 1000)
+    n_neighbors = request.args.get("n_neighbors", 15)
+    min_dist = request.args.get("min_dist", 0.1)
+    metric = request.args.get("metric", "euclidean")
+
+    try:
+
+        results = run_tsne_umap(
+            method=method,
+            perplexity=perplexity,
+            learning_rate=learning_rate,
+            n_iter=n_iter,
+            n_neighbors=n_neighbors,
+            min_dist=min_dist,
+            metric=metric
+        )
+
+        return render_template(
+            "tsne_umap.html",
+            active="tsne-umap",
+            results=results,
+            error=None
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "tsne_umap.html",
+            active="tsne-umap",
             results=None,
             error=str(e)
         )

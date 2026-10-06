@@ -1,5 +1,5 @@
-<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan'] %}active-group{% endif %}">
+<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}active-group{% endif %}">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-graduation-cap"></i>
       <span>Supervised-Learning Models</span>
@@ -90,8 +90,8 @@
 </details>
 
 <!-- 2. Unsupervised-Learning Models -->
-<details class="sp-sidebar-top-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}active-group{% endif %}" style="margin-top: 8px;">
+<details class="sp-sidebar-top-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}active-group{% endif %}" style="margin-top: 8px;">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-circle-nodes"></i>
       <span>Unsupervised-Learning Models</span>
@@ -124,6 +124,24 @@
         </a>
       </div>
     </details>
+
+    <!-- Autoencoders -->
+    <a href="{{ url_for('autoencoder_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'autoencoder' %}active{% endif %}">
+      <i class="fa-solid fa-brain"></i>
+      <span>Autoencoders</span>
+    </a>
+
+    <!-- PCA -->
+    <a href="{{ url_for('pca_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'pca' %}active{% endif %}">
+      <i class="fa-solid fa-arrows-split-up-and-left"></i>
+      <span>PCA</span>
+    </a>
+
+    <!-- t-SNE & UMAP -->
+    <a href="{{ url_for('tsne_umap_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'tsne-umap' %}active{% endif %}">
+      <i class="fa-solid fa-compass-drafting"></i>
+      <span>t-SNE &amp; UMAP</span>
+    </a>
 
   </div>
 </details>
