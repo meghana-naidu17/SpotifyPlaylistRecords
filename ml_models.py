@@ -151,19 +151,35 @@ def run_classifier(family, algorithm):
     }
 
 
+PREPROCESSED_PATH = os.path.join(BASE_DIR, "processed_data", "preprocessed_dataset.csv")
+
+# 10 continuous audio features already StandardScaled in preprocessed_dataset.csv
+KMEANS_FEATURES = [
+    "duration_ms", "danceability", "energy", "loudness",
+    "speechiness", "acousticness", "instrumentalness",
+    "liveness", "valence", "tempo",
+]
+
+
 def _clustering_data():
-    data = pd.read_csv(DATASET_PATH)
-    X = data[FEATURES].apply(pd.to_numeric, errors="coerce").dropna()
-    return StandardScaler().fit_transform(X), len(X)
+    """Load the 10 pre-scaled continuous audio features from preprocessed_dataset.csv."""
+    df = pd.read_csv(PREPROCESSED_PATH)
+    available = [c for c in KMEANS_FEATURES if c in df.columns]
+    if not available:
+        raise ValueError("No audio feature columns found in preprocessed_dataset.csv")
+    X = df[available].apply(pd.to_numeric, errors="coerce")
+    X = X.replace([np.inf, -np.inf], np.nan)
+    X = X.fillna(X.median(numeric_only=True)).fillna(0)
+    return X.to_numpy(dtype=float), len(X)
 
 
 def _save_cluster_plot(X, labels, centers, k, filename):
     """Plot clusters on two standardized Spotify features with their centroids."""
     path = os.path.join(CHART_DIR, filename)
-    # A sample keeps the visual readable and avoids an oversized image file.
     sample = min(12000, len(X))
     indices = np.random.default_rng(42).choice(len(X), sample, replace=False)
-    x_index, y_index = FEATURES.index("danceability"), FEATURES.index("energy")
+    x_index = KMEANS_FEATURES.index("danceability")
+    y_index = KMEANS_FEATURES.index("energy")
     fig, ax = plt.subplots(figsize=(9, 6.5))
     scatter = ax.scatter(X[indices, x_index], X[indices, y_index], c=labels[indices],
                          cmap="viridis", s=12, alpha=.72, linewidths=0)

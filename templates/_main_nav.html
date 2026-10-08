@@ -1,5 +1,5 @@
-<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}active-group{% endif %}">
+<details class="sp-sidebar-top-group" {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if active not in ['unsupervised', 'hierarchical', 'dbscan', 'pca', 'tsne-umap'] and not (active and active.startswith('eval-')) %}active-group{% endif %}">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-graduation-cap"></i>
       <span>Supervised-Learning Models</span>
@@ -90,17 +90,18 @@
 </details>
 
 <!-- 2. Unsupervised-Learning Models -->
-<details class="sp-sidebar-top-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}open{% endif %}>
-  <summary class="sp-sidebar-top-btn {% if active in ['unsupervised', 'hierarchical', 'dbscan', 'autoencoder', 'pca', 'tsne-umap'] %}active-group{% endif %}" style="margin-top: 8px;">
+{% set _unsup_active = active in ['unsupervised', 'hierarchical', 'dbscan', 'pca', 'tsne-umap', 'anomaly-detection'] %}
+<details class="sp-sidebar-top-group" {% if _unsup_active %}open{% endif %}>
+  <summary class="sp-sidebar-top-btn {% if _unsup_active %}active-group{% endif %}" style="margin-top: 8px;">
     <div class="sp-top-btn-label">
       <i class="fa-solid fa-circle-nodes"></i>
-      <span>Unsupervised-Learning Models</span>
+      <span>Unsupervised Learning</span>
     </div>
     <i class="fa-solid fa-chevron-down sp-arrow"></i>
   </summary>
   <div class="sp-sidebar-subgroup">
 
-    <!-- Clustering sub-group -->
+    <!-- ── Clustering ── -->
     <details class="sp-sidebar-nested-group" {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}open{% endif %}>
       <summary class="sp-sidebar-link sp-nested-summary {% if active in ['unsupervised', 'hierarchical', 'dbscan'] %}active-parent{% endif %}">
         <div class="sp-link-inner">
@@ -110,38 +111,74 @@
         <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
       </summary>
       <div class="sp-sidebar-nested-items">
-        <a href="{{ url_for('kmeans_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">
+        <a href="{{ url_for('kmeans_page') }}"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'unsupervised' %}active{% endif %}">
           <i class="fa-solid fa-circle-dot"></i>
           <span>K-Means</span>
         </a>
-        <a href="{{ url_for('hierarchical_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'hierarchical' %}active{% endif %}">
+        <a href="{{ url_for('hierarchical_page') }}"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'hierarchical' %}active{% endif %}">
           <i class="fa-solid fa-circle-dot"></i>
           <span>Hierarchical Clustering</span>
         </a>
-        <a href="{{ url_for('dbscan_page') }}" class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'dbscan' %}active{% endif %}">
+        <a href="{{ url_for('dbscan_page') }}"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'dbscan' %}active{% endif %}">
           <i class="fa-solid fa-circle-dot"></i>
           <span>DBSCAN</span>
         </a>
       </div>
     </details>
 
-    <!-- Autoencoders -->
-    <a href="{{ url_for('autoencoder_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'autoencoder' %}active{% endif %}">
-      <i class="fa-solid fa-brain"></i>
-      <span>Autoencoders</span>
-    </a>
+    <!-- ── Dimensionality Reduction ── -->
+    <details class="sp-sidebar-nested-group" {% if active in ['pca', 'tsne-umap'] %}open{% endif %}>
+      <summary class="sp-sidebar-link sp-nested-summary {% if active in ['pca', 'tsne-umap'] %}active-parent{% endif %}">
+        <div class="sp-link-inner">
+          <i class="fa-solid fa-compress"></i>
+          <span>Dimensionality Reduction</span>
+        </div>
+        <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
+      </summary>
+      <div class="sp-sidebar-nested-items">
+        <a href="{{ url_for('pca_page') }}"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'pca' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>PCA</span>
+        </a>
+        <a href="{{ url_for('tsne_umap_page') }}"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'tsne-umap' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>t-SNE &amp; UMAP</span>
+        </a>
+      </div>
+    </details>
 
-    <!-- PCA -->
-    <a href="{{ url_for('pca_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'pca' %}active{% endif %}">
-      <i class="fa-solid fa-arrows-split-up-and-left"></i>
-      <span>PCA</span>
-    </a>
-
-    <!-- t-SNE & UMAP -->
-    <a href="{{ url_for('tsne_umap_page') }}" class="sp-sidebar-link sp-nav-link {% if active == 'tsne-umap' %}active{% endif %}">
-      <i class="fa-solid fa-compass-drafting"></i>
-      <span>t-SNE &amp; UMAP</span>
-    </a>
+    <!-- ── Anomaly Detection ── -->
+    <details class="sp-sidebar-nested-group" {% if active == 'anomaly-detection' %}open{% endif %}>
+      <summary class="sp-sidebar-link sp-nested-summary {% if active == 'anomaly-detection' %}active-parent{% endif %}">
+        <div class="sp-link-inner">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Anomaly Detection</span>
+        </div>
+        <i class="fa-solid fa-chevron-down sp-nested-arrow"></i>
+      </summary>
+      <div class="sp-sidebar-nested-items">
+        <a href="{{ url_for('anomaly_detection_page') }}?algo=isolation_forest"
+           class="sp-sidebar-link sp-sub-link sp-nav-link {% if active == 'anomaly-detection' %}active{% endif %}">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>Isolation Forest</span>
+        </a>
+        <a href="{{ url_for('anomaly_detection_page') }}?algo=ocsvm"
+           class="sp-sidebar-link sp-sub-link sp-nav-link">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>One-Class SVM</span>
+        </a>
+        <a href="{{ url_for('anomaly_detection_page') }}?algo=autoencoder"
+           class="sp-sidebar-link sp-sub-link sp-nav-link">
+          <i class="fa-solid fa-circle-dot"></i>
+          <span>Autoencoder (Anomaly)</span>
+        </a>
+      </div>
+    </details>
 
   </div>
 </details>
@@ -156,49 +193,34 @@
     <i class="fa-solid fa-chevron-down sp-arrow"></i>
   </summary>
   <div class="sp-sidebar-subgroup">
-    <!-- 1. Train / Val / Test Split Discipline -->
     <a href="{{ url_for('eval_data_splitting') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-splitting' %}active{% endif %}">
       <i class="fa-solid fa-arrows-split-up-and-left"></i>
       <span>Train / Val / Test Split</span>
     </a>
-
-    <!-- 2. Cross-Validation & Nested CV -->
     <a href="{{ url_for('eval_cross_validation') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-cv' %}active{% endif %}">
       <i class="fa-solid fa-arrows-spin"></i>
       <span>Cross-Validation &amp; Nested CV</span>
     </a>
-
-    <!-- 3. Classification Metrics & Imbalance -->
     <a href="{{ url_for('eval_classification_metrics') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-classification' %}active{% endif %}">
       <i class="fa-solid fa-bullseye"></i>
       <span>Classification Metrics</span>
     </a>
-
-    <!-- 4. Regression Metrics & Outliers -->
     <a href="{{ url_for('eval_regression_metrics') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-regression' %}active{% endif %}">
       <i class="fa-solid fa-chart-line"></i>
       <span>Regression Metrics</span>
     </a>
-
-    <!-- 5. Probability Calibration -->
     <a href="{{ url_for('eval_calibration') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-calibration' %}active{% endif %}">
       <i class="fa-solid fa-gauge-high"></i>
       <span>Probability Calibration</span>
     </a>
-
-    <!-- 6. Hyperparameter Search -->
     <a href="{{ url_for('eval_hyperparameter_search') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-hyperparam' %}active{% endif %}">
       <i class="fa-solid fa-sliders"></i>
       <span>Hyperparameter Search</span>
     </a>
-
-    <!-- 7. Learning & Validation Curves -->
     <a href="{{ url_for('eval_learning_curves') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-curves' %}active{% endif %}">
       <i class="fa-solid fa-chart-area"></i>
       <span>Learning &amp; Validation Curves</span>
     </a>
-
-    <!-- 8. Statistical Significance Testing -->
     <a href="{{ url_for('eval_significance_testing') }}" class="sp-sidebar-link sp-nav-link {% if active == 'eval-significance' %}active{% endif %}">
       <i class="fa-solid fa-scale-balanced"></i>
       <span>Statistical Significance</span>

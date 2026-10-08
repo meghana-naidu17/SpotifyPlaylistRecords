@@ -8,9 +8,9 @@ from linear_regression import run_linear_regression
 from ml_models import run_classifier, run_kmeans
 from hierarchical_clustering import run_hierarchical_clustering
 from dbscan_clustering import run_dbscan
-from autoencoder_model import run_autoencoder
 from pca_model import run_pca
 from tsne_umap_model import run_tsne_umap
+from anomaly_detection import run_anomaly_detection
 from model_evaluation import (
     run_data_splitting_evaluation,
     run_cross_validation_evaluation,
@@ -420,42 +420,66 @@ def dbscan_page():
 
 
 # =========================================================
-# AUTOENCODER REPRESENTATION LEARNING
+# ANOMALY DETECTION
 # =========================================================
 
-@app.route("/unsupervised/autoencoder")
-def autoencoder_page():
-
-    latent_dim = request.args.get("latent_dim", 2)
-    hidden_dim = request.args.get("hidden_dim", 32)
-    activation = request.args.get("activation", "relu")
-    epochs = request.args.get("epochs", 80)
-    alpha = request.args.get("alpha", 0.0001)
+@app.route("/unsupervised/anomaly-detection")
+def anomaly_detection_page():
 
     try:
+        contamination = float(request.args.get("contamination", 0.05))
+    except (ValueError, TypeError):
+        contamination = 0.05
 
-        results = run_autoencoder(
-            latent_dim=latent_dim,
+    try:
+        n_estimators = int(request.args.get("n_estimators", 100))
+    except (ValueError, TypeError):
+        n_estimators = 100
+
+    try:
+        nu = float(request.args.get("nu", 0.05))
+    except (ValueError, TypeError):
+        nu = 0.05
+
+    kernel = request.args.get("kernel", "rbf")
+
+    try:
+        hidden_dim = int(request.args.get("hidden_dim", 32))
+    except (ValueError, TypeError):
+        hidden_dim = 32
+
+    try:
+        latent_dim = int(request.args.get("latent_dim", 4))
+    except (ValueError, TypeError):
+        latent_dim = 4
+
+    try:
+        epochs = int(request.args.get("epochs", 80))
+    except (ValueError, TypeError):
+        epochs = 80
+
+    try:
+        results = run_anomaly_detection(
+            contamination=contamination,
+            n_estimators=n_estimators,
+            nu=nu,
+            kernel=kernel,
             hidden_dim=hidden_dim,
-            activation=activation,
+            latent_dim=latent_dim,
             epochs=epochs,
-            alpha=alpha
         )
-
         return render_template(
-            "autoencoder.html",
-            active="autoencoder",
+            "anomaly_detection.html",
+            active="anomaly-detection",
             results=results,
-            error=None
+            error=None,
         )
-
     except Exception as e:
-
         return render_template(
-            "autoencoder.html",
-            active="autoencoder",
+            "anomaly_detection.html",
+            active="anomaly-detection",
             results=None,
-            error=str(e)
+            error=str(e),
         )
 
 
@@ -466,17 +490,9 @@ def autoencoder_page():
 @app.route("/unsupervised/pca")
 def pca_page():
 
-    n_components = request.args.get("n_components", 5)
-    whiten = request.args.get("whiten", "false")
-    svd_solver = request.args.get("svd_solver", "auto")
-
     try:
 
-        results = run_pca(
-            n_components=n_components,
-            whiten=whiten,
-            svd_solver=svd_solver
-        )
+        results = run_pca()
 
         return render_template(
             "pca.html",

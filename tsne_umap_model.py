@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.manifold import TSNE
-from sklearn.preprocessing import StandardScaler
 import umap
 
 
@@ -27,6 +26,13 @@ os.makedirs(CHART_DIR, exist_ok=True)
 
 MAX_SAMPLE = 800
 
+# Exactly 10 continuous audio features, already StandardScaled.
+AUDIO_FEATURES = [
+    "duration_ms", "danceability", "energy", "loudness",
+    "speechiness", "acousticness", "instrumentalness",
+    "liveness", "valence", "tempo",
+]
+
 
 def _load_preprocessed():
     if not os.path.exists(PREPROCESSED_PATH):
@@ -36,22 +42,18 @@ def _load_preprocessed():
 
     df = pd.read_csv(PREPROCESSED_PATH)
 
-    dummy_prefixes = (
-        "track_genre_", "explicit_", "key_", "mode_", "time_signature_"
-    )
-    feature_cols = [
-        c for c in df.columns
-        if not c.startswith(dummy_prefixes)
-        and c not in ["track_id", "id", "explicit"]
-    ]
+    # Use exactly the 10 continuous scaled audio features.
+    # Already StandardScaled — no re-scaling needed.
+    available = [c for c in AUDIO_FEATURES if c in df.columns]
+    if not available:
+        raise ValueError(
+            "None of the expected audio feature columns found in "
+            "preprocessed_dataset.csv"
+        )
 
-    numeric = df[feature_cols].select_dtypes(include=np.number).copy()
+    numeric = df[available].copy()
     numeric = numeric.replace([np.inf, -np.inf], np.nan)
-    numeric = numeric.fillna(numeric.median(numeric_only=True))
-    numeric = numeric.fillna(0)
-
-    varying_cols = numeric.columns[numeric.nunique(dropna=False) > 1]
-    numeric = numeric[varying_cols]
+    numeric = numeric.fillna(numeric.median(numeric_only=True)).fillna(0)
 
     if numeric.empty:
         raise ValueError("No varying numeric audio features available for Manifold Learning.")
@@ -189,8 +191,8 @@ def run_tsne_umap(
     original_rows = len(numeric)
 
     sample = numeric.sample(n=min(MAX_SAMPLE, len(numeric)), random_state=42)
-    scaler = StandardScaler()
-    X = scaler.fit_transform(sample.to_numpy(dtype=float))
+    # Data is already StandardScaled — use directly
+    X = sample.to_numpy(dtype=float)
 
     # Color values by Energy or first available feature
     c_name = "energy" if "energy" in sample.columns else sample.columns[0]

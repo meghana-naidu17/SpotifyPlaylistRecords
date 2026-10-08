@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Evaluation — Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+
+{% include '_site_header.html' %}
+
+<main class="sp-page sp-page-wide">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Model Evaluation</span>
+    {% if results %}
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>{{ results.title }}</span>
+    {% endif %}
+  </nav>
+
+  <!-- Page Title -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Model Evaluation</p>
+    <h1>{{ results.title if results else "Model Evaluation" }}</h1>
+    {% if not results and not error %}
+    <p>Select an evaluation method from the sidebar to begin.</p>
+    {% elif results %}
+    <p>Independent evaluation on real Spotify audio features — no fabricated results.</p>
+    {% endif %}
+  </div>
+
+  <!-- Error -->
+  {% if error %}
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- ============================================================
+       SECTION PICKER (quick nav pills)
+       ============================================================ -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
+    {% set nav_items = [
+      ('eval_data_splitting',       'eval-splitting',    'fa-arrows-split-up-and-left', 'Train/Val/Test Split'),
+      ('eval_cross_validation',     'eval-cv',           'fa-arrows-spin',              'Cross-Validation'),
+      ('eval_classification_metrics','eval-classification','fa-bullseye',               'Classification Metrics'),
+      ('eval_regression_metrics',   'eval-regression',   'fa-chart-line',               'Regression Metrics'),
+      ('eval_calibration',          'eval-calibration',  'fa-gauge-high',               'Calibration'),
+      ('eval_hyperparameter_search','eval-hyperparam',   'fa-sliders',                  'Hyperparam Search'),
+      ('eval_learning_curves',      'eval-curves',       'fa-chart-area',               'Learning Curves'),
+      ('eval_significance_testing', 'eval-significance', 'fa-scale-balanced',           'Significance'),
+    ] %}
+    {% for fn, key, icon, label in nav_items %}
+    <a href="{{ url_for(fn) }}"
+       style="display:inline-flex;align-items:center;gap:7px;padding:7px 14px;
+              border-radius:99px;font-size:12px;font-weight:700;text-decoration:none;
+              border:1.5px solid {% if active == key %}var(--accent){% else %}var(--border){% endif %};
+              background:{% if active == key %}var(--accent-dim){% else %}var(--bg-secondary){% endif %};
+              color:{% if active == key %}var(--accent){% else %}var(--text-secondary){% endif %};">
+      <i class="fa-solid {{ icon }}" style="font-size:11px;"></i>{{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if results %}
+
+  <!-- ============================================================
+       CHART (every section has one main chart)
+       ============================================================ -->
+  <div class="sp-section" style="margin-bottom:28px;">
+    <div class="sp-chart-card wide" style="border:none;padding:0;background:transparent;">
+      <div class="sp-chart-card-title">{{ results.title }}</div>
+      <img src="{{ url_for('static', filename=results.chart_url) }}"
+           alt="{{ results.title }}" loading="lazy"
+           style="width:100%;border-radius:12px;border:1px solid var(--border);">
+    </div>
+  </div>
+
+  <!-- ============================================================
+       METRICS — one card per active section
+       ============================================================ -->
+
+  <!-- 1. TRAIN / VAL / TEST SPLIT -->
+  {% if active == 'eval-splitting' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Split Discipline</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Key Metrics</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-database"></i></div><div class="sp-stat-value">{{ "{:,}".format(results.train_records) }}</div><div class="sp-stat-label">Train Records</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-vial"></i></div><div class="sp-stat-value">{{ "{:,}".format(results.val_records) }}</div><div class="sp-stat-label">Validation Records</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-flask"></i></div><div class="sp-stat-value">{{ "{:,}".format(results.test_records) }}</div><div class="sp-stat-label">Test Records</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color:#ff4757;"></i></div><div class="sp-stat-value" style="color:#ff4757;">{{ results.optimism_gap }}</div><div class="sp-stat-label">Optimism Bias Gap</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>Best Ridge Alpha (selected on validation)</td><td><span style="color:var(--accent);font-weight:700;">{{ results.best_alpha }}</span></td></tr>
+      <tr><td>Apparent 2-Way Test MSE (snooped)</td><td><span style="color:#ff4757;font-weight:700;">{{ results.apparent_2way_mse }}</span></td></tr>
+      <tr><td>True 3-Way Test MSE (honest)</td><td><span style="color:var(--accent);font-weight:700;">{{ results.true_3way_mse }}</span></td></tr>
+      <tr><td>Optimism Bias Gap</td><td>{{ results.optimism_gap }}</td></tr>
+      <tr><td>Leakage Prevention Rule</td><td style="color:var(--text-secondary);">{{ results.leakage_rule }}</td></tr>
+    </table>
+  </div>
+
+  <!-- 2. CROSS-VALIDATION -->
+  {% elif active == 'eval-cv' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Cross-Validation</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Key Metrics</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-arrows-spin"></i></div><div class="sp-stat-value">{{ results.k_folds }}</div><div class="sp-stat-label">K Folds</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-percent"></i></div><div class="sp-stat-value">{{ results.overall_explicit_pct }}%</div><div class="sp-stat-label">Explicit Rate</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-bullseye"></i></div><div class="sp-stat-value">{{ results.mean_nested_score }}%</div><div class="sp-stat-label">Nested CV Accuracy</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-plus-minus"></i></div><div class="sp-stat-value">±{{ results.nested_score_std }}%</div><div class="sp-stat-label">Std Deviation</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>K-Fold class variance (unstable)</td><td><span style="color:#ff4757;font-weight:700;">{{ results.kf_variance }}</span></td></tr>
+      <tr><td>Stratified K-Fold class variance (stable)</td><td><span style="color:var(--accent);font-weight:700;">{{ results.skf_variance }}</span></td></tr>
+      <tr><td>Recommendation</td><td style="color:var(--text-secondary);">{{ results.recommendation }}</td></tr>
+    </table>
+  </div>
+
+  <!-- 3. CLASSIFICATION METRICS -->
+  {% elif active == 'eval-classification' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Classification</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Accuracy Trap vs Real Performance</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-robot"></i></div><div class="sp-stat-value" style="color:#ff4757;">{{ results.dummy_accuracy }}%</div><div class="sp-stat-label">Dummy Accuracy</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-brain"></i></div><div class="sp-stat-value">{{ results.real_accuracy }}%</div><div class="sp-stat-label">Real Accuracy</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-crosshairs"></i></div><div class="sp-stat-value">{{ results.real_precision }}%</div><div class="sp-stat-label">Precision</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-magnifying-glass"></i></div><div class="sp-stat-value">{{ results.real_recall }}%</div><div class="sp-stat-label">Recall</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-f"></i></div><div class="sp-stat-value">{{ results.real_f1 }}%</div><div class="sp-stat-label">F1 Score</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-chart-area"></i></div><div class="sp-stat-value">{{ results.roc_auc }}</div><div class="sp-stat-label">ROC-AUC</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-chart-area" style="color:#ff4757;"></i></div><div class="sp-stat-value" style="color:var(--accent);">{{ results.pr_auc }}</div><div class="sp-stat-label">PR-AUC</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <p class="sp-section-label" style="margin-bottom:10px;">Confusion Matrix</p>
+        <table class="sp-summary-table">
+          <tr><td>True Negatives (TN)</td><td><span style="color:var(--accent);font-weight:700;">{{ "{:,}".format(results.confusion_matrix.tn) }}</span></td></tr>
+          <tr><td>False Positives (FP)</td><td><span style="color:#ff4757;font-weight:700;">{{ "{:,}".format(results.confusion_matrix.fp) }}</span></td></tr>
+          <tr><td>False Negatives (FN)</td><td><span style="color:#ff4757;font-weight:700;">{{ "{:,}".format(results.confusion_matrix.fn) }}</span></td></tr>
+          <tr><td>True Positives (TP)</td><td><span style="color:var(--accent);font-weight:700;">{{ "{:,}".format(results.confusion_matrix.tp) }}</span></td></tr>
+        </table>
+      </div>
+      <div class="sp-callout">
+        <div class="sp-callout-icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">Verdict</div>
+          <div class="sp-callout-text">{{ results.verdict }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. REGRESSION METRICS -->
+  {% elif active == 'eval-regression' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Regression Metrics</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Loudness Prediction Quality</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-ruler"></i></div><div class="sp-stat-value">{{ results.rmse }}</div><div class="sp-stat-label">RMSE (dB)</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-ruler-horizontal"></i></div><div class="sp-stat-value">{{ results.mae }}</div><div class="sp-stat-label">MAE (dB)</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-chart-bar"></i></div><div class="sp-stat-value">{{ results.medae }}</div><div class="sp-stat-label">MedAE (dB)</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-r"></i></div><div class="sp-stat-value">{{ results.r2 }}</div><div class="sp-stat-label">R² Score</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>RMSE on outlier tracks (≤ −15 dB)</td><td><span style="color:#ff4757;font-weight:700;">{{ results.rmse_outlier }} dB</span></td></tr>
+      <tr><td>MAE on outlier tracks (≤ −15 dB)</td><td><span style="color:#ff4757;font-weight:700;">{{ results.mae_outlier }} dB</span></td></tr>
+      <tr><td>MAPE status</td><td style="color:var(--text-secondary);">{{ results.mape_status }}</td></tr>
+      <tr><td>Key takeaway</td><td style="color:var(--text-secondary);">{{ results.takeaway }}</td></tr>
+    </table>
+  </div>
+
+  <!-- 5. CALIBRATION -->
+  {% elif active == 'eval-calibration' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Probability Calibration</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Brier Scores</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-circle-xmark" style="color:#ff4757;"></i></div><div class="sp-stat-value" style="color:#ff4757;">{{ results.brier_uncalibrated }}</div><div class="sp-stat-label">Brier Uncalibrated</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-circle-half-stroke"></i></div><div class="sp-stat-value">{{ results.brier_platt }}</div><div class="sp-stat-label">Brier Platt</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div><div class="sp-stat-value" style="color:var(--accent);">{{ results.brier_isotonic }}</div><div class="sp-stat-label">Brier Isotonic</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>What calibration means</td><td style="color:var(--text-secondary);">{{ results.meaning }}</td></tr>
+      <tr><td>Best method</td><td><span style="color:var(--accent);font-weight:700;">{{ results.best_method }}</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 6. HYPERPARAMETER SEARCH -->
+  {% elif active == 'eval-hyperparam' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Hyperparameter Search</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Grid vs Random Search</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-hashtag"></i></div><div class="sp-stat-value">{{ results.total_trials }}</div><div class="sp-stat-label">Total Trials</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-table-cells"></i></div><div class="sp-stat-value">{{ results.grid_best_score }}</div><div class="sp-stat-label">Grid Best F1</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-shuffle"></i></div><div class="sp-stat-value" style="color:var(--accent);">{{ results.random_best_score }}</div><div class="sp-stat-label">Random Best F1</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>Grid best: max_depth</td><td>{{ results.grid_best_params.max_depth }}</td></tr>
+      <tr><td>Grid best: min_samples_split</td><td>{{ results.grid_best_params.min_samples_split }}</td></tr>
+      <tr><td>Random best: max_depth</td><td>{{ results.random_best_params.max_depth }}</td></tr>
+      <tr><td>Random best: min_samples_split</td><td>{{ results.random_best_params.min_samples_split }}</td></tr>
+      <tr><td>Bergstra-Bengio insight</td><td style="color:var(--text-secondary);">{{ results.bergstra_bengio_insight }}</td></tr>
+    </table>
+  </div>
+
+  <!-- 7. LEARNING CURVES -->
+  {% elif active == 'eval-curves' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Learning Curves</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">Bias-Variance Diagnostics</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-database"></i></div><div class="sp-stat-value">{{ "{:,}".format(results.max_sample_tested) }}</div><div class="sp-stat-label">Max Samples Tested</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-sitemap"></i></div><div class="sp-stat-value">{{ results.optimal_capacity }}</div><div class="sp-stat-label">Optimal Tree Depth</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>High bias indicator</td><td style="color:var(--text-secondary);">{{ results.high_bias_indicator }}</td></tr>
+      <tr><td>High variance indicator</td><td style="color:var(--text-secondary);">{{ results.high_variance_indicator }}</td></tr>
+      <tr><td>Data scarcity verdict</td><td style="color:var(--text-secondary);">{{ results.data_scarcity_verdict }}</td></tr>
+    </table>
+  </div>
+
+  <!-- 8. SIGNIFICANCE TESTING -->
+  {% elif active == 'eval-significance' %}
+  <div class="sp-section">
+    <p class="sp-section-label">Statistical Significance</p>
+    <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:20px;">McNemar's Test &amp; Paired Bootstrap</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-chi-square" style="font-style:normal;font-size:22px;font-weight:900;">χ²</i></div><div class="sp-stat-value">{{ results.mcnemar_stat }}</div><div class="sp-stat-label">McNemar Stat</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-p" style="font-style:normal;font-size:22px;font-weight:900;">p</i></div><div class="sp-stat-value" style="font-size:18px;">{{ results.mcnemar_p_value }}</div><div class="sp-stat-label">p-value</div></div>
+      <div class="sp-stat-card"><div class="sp-stat-icon"><i class="fa-solid fa-arrows-left-right"></i></div><div class="sp-stat-value">{{ results.bootstrap_mean_diff }}</div><div class="sp-stat-label">Bootstrap Mean Diff</div></div>
+    </div>
+    <table class="sp-summary-table">
+      <tr><td>Classifiers differ significantly</td>
+        <td>{% if results.classifier_significant %}<span style="color:var(--accent);font-weight:700;">Yes (p &lt; 0.05)</span>{% else %}<span style="color:#ff4757;font-weight:700;">No (p ≥ 0.05)</span>{% endif %}</td>
+      </tr>
+      <tr><td>Bootstrap 95% CI lower</td><td>{{ results.ci_lower }}</td></tr>
+      <tr><td>Bootstrap 95% CI upper</td><td>{{ results.ci_upper }}</td></tr>
+      <tr><td>Regressors differ significantly</td>
+        <td>{% if results.regressor_significant %}<span style="color:var(--accent);font-weight:700;">Yes (0 outside CI)</span>{% else %}<span style="color:#ff4757;font-weight:700;">No (0 inside CI)</span>{% endif %}</td>
+      </tr>
+      <tr><td>Verdict</td><td style="color:var(--text-secondary);">{{ results.verdict }}</td></tr>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Refresh link -->
+  <div style="margin-top:8px;text-align:right;">
+    <a href="{{ request.path }}?refresh=true"
+       style="font-size:12px;font-weight:700;color:var(--text-muted);text-decoration:none;
+              display:inline-flex;align-items:center;gap:6px;">
+      <i class="fa-solid fa-rotate-right"></i> Regenerate charts
+    </a>
+  </div>
+
+  {% elif not error %}
+  <!-- No results yet — landing state -->
+  <div class="sp-callout">
+    <div class="sp-callout-icon"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="sp-callout-body">
+      <div class="sp-callout-title">Select a section</div>
+      <div class="sp-callout-text">Choose one of the evaluation sections from the pills above or the sidebar to load the analysis.</div>
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+
+<footer class="sp-footer">Built with <span>♥</span> using Flask &amp; Spotify Design Language</footer>
+
+<script>
+const THEME_KEY = 'sp-analytics-theme';
+const THEME_LABELS = {
+  'spotify-dark':'Spotify Dark','spotify-light':'Spotify Light',
+  'midnight':'Midnight','forest':'Forest',
+  'sunflower':'Sunflower Sunrise','marshmellow-pink':'Marshmellow Pink'
+};
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem(THEME_KEY, t);
+  const lbl = document.getElementById('themeLabel');
+  if (lbl) lbl.textContent = THEME_LABELS[t] || t;
+  document.querySelectorAll('.sp-theme-option').forEach(o => o.classList.toggle('selected', o.dataset.theme === t));
+}
+const themeBtn = document.getElementById('themeBtn');
+const themeMenu = document.getElementById('themeMenu');
+if (themeBtn && themeMenu) {
+  themeBtn.addEventListener('click', e => { e.stopPropagation(); themeMenu.classList.toggle('open'); });
+  document.querySelectorAll('.sp-theme-option').forEach(o => o.addEventListener('click', () => { applyTheme(o.dataset.theme); themeMenu.classList.remove('open'); }));
+  document.addEventListener('click', () => themeMenu.classList.remove('open'));
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'spotify-dark');
+</script>
+</body>
+</html>

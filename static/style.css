@@ -266,7 +266,7 @@ th, td {
   padding: 0 28px;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1000;        /* always above sidebar (500) and dropdowns (600) */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -316,7 +316,7 @@ th, td {
 .sp-nav-dropdown { position: relative; display: inline-flex; align-items: center; }
 .sp-nav-menu-btn { border: 0; background: transparent; cursor: pointer; font-family: inherit; }
 .sp-nav-menu-btn i { font-size: 9px; margin-left: 4px; }
-.sp-nav-menu { display: none; position: absolute; top: calc(100% + 10px); left: 0; min-width: 205px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); box-shadow: 0 12px 28px rgba(0,0,0,.22); z-index: 20; }
+.sp-nav-menu { display: none; position: absolute; top: calc(100% + 10px); left: 0; min-width: 205px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); box-shadow: 0 12px 28px rgba(0,0,0,.22); z-index: 1100; }
 .sp-nav-dropdown:hover .sp-nav-menu, .sp-nav-dropdown:focus-within .sp-nav-menu { display: block; }
 .sp-nav-menu a { display: block; padding: 9px 10px; color: var(--text-secondary); border-radius: 7px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .sp-nav-menu a:hover { color: var(--accent); background: var(--accent-dim); }
@@ -387,9 +387,9 @@ th, td {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 8px;
-  min-width: 180px;
+  min-width: 200px;
   box-shadow: var(--shadow);
-  z-index: 2000;
+  z-index: 1100;
   animation: fadeInDown 0.18s ease;
 }
 
@@ -468,7 +468,7 @@ th, td {
 
 .sp-sidebar {
   position: fixed;
-  top: 64px;
+  top: 64px;            /* sits exactly below the 64px header */
   left: 0;
   bottom: 0;
   width: 250px;
@@ -476,7 +476,7 @@ th, td {
   border-right: 1px solid var(--border);
   overflow-y: auto;
   overflow-x: hidden;
-  z-index: 900;
+  z-index: 500;          /* well below header z-index:1000 */
   padding: 24px 14px;
   display: flex;
   flex-direction: column;
@@ -847,7 +847,7 @@ details[open] > summary .sp-nested-arrow {
   text-transform: uppercase;
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(29,185,84,0.2);
+  border: 1px solid var(--border-hover);
 }
 
 .sp-nav-card.disabled .sp-nav-card-badge {
