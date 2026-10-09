@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="spotify-dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ results.title }} — Model Evaluation | Spotify Playlist Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  
+  <style>
+    .eval-tabs-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .eval-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .eval-tab-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+      background: rgba(29, 185, 84, 0.08);
+    }
+    .eval-tab-btn.active {
+      color: #000000;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .eval-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .eval-takeaway-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-top: 20px;
+    }
+    .eval-takeaway-box h4 {
+      margin: 0 0 8px 0;
+      color: var(--accent);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .eval-takeaway-box p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .sp-chart-card.wide img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+{% include '_site_header.html' %}
+
+<main class="sp-page">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Model Evaluation</span>
+    {% if results and results.title %}
+      <i class="fa-solid fa-chevron-right"></i>
+      <span>{{ results.title }}</span>
+    {% endif %}
+  </nav>
+
+  <!-- Error display if any -->
+  {% if error %}
+    <div class="sp-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- Page Heading Block -->
+  <div class="sp-page-title-block">
+    <p class="sp-label">Rigorous Machine Learning Validation</p>
+    <h1>{{ results.title if results else "Model Evaluation" }}</h1>
+    <p>
+      Evaluation, calibration, and statistical hypothesis testing on Spotify playlist track records.
+    </p>
+  </div>
+
+  <!-- Horizontal Section Tabs -->
+  <div class="eval-tabs-bar">
+    <a href="{{ url_for('eval_data_splitting') }}" class="eval-tab-btn {% if active == 'eval-splitting' %}active{% endif %}">
+      <i class="fa-solid fa-arrows-split-up-and-left"></i> 1. Train / Val / Test Split
+    </a>
+    <a href="{{ url_for('eval_cross_validation') }}" class="eval-tab-btn {% if active == 'eval-cv' %}active{% endif %}">
+      <i class="fa-solid fa-arrows-spin"></i> 2. Cross-Validation &amp; Nested CV
+    </a>
+    <a href="{{ url_for('eval_classification_metrics') }}" class="eval-tab-btn {% if active == 'eval-classification' %}active{% endif %}">
+      <i class="fa-solid fa-bullseye"></i> 3. Classification Metrics
+    </a>
+    <a href="{{ url_for('eval_regression_metrics') }}" class="eval-tab-btn {% if active == 'eval-regression' %}active{% endif %}">
+      <i class="fa-solid fa-chart-line"></i> 4. Regression Metrics
+    </a>
+    <a href="{{ url_for('eval_calibration') }}" class="eval-tab-btn {% if active == 'eval-calibration' %}active{% endif %}">
+      <i class="fa-solid fa-gauge-high"></i> 5. Probability Calibration
+    </a>
+    <a href="{{ url_for('eval_hyperparameter_search') }}" class="eval-tab-btn {% if active == 'eval-hyperparam' %}active{% endif %}">
+      <i class="fa-solid fa-sliders"></i> 6. Hyperparameter Search
+    </a>
+    <a href="{{ url_for('eval_learning_curves') }}" class="eval-tab-btn {% if active == 'eval-curves' %}active{% endif %}">
+      <i class="fa-solid fa-chart-area"></i> 7. Learning &amp; Validation Curves
+    </a>
+    <a href="{{ url_for('eval_significance_testing') }}" class="eval-tab-btn {% if active == 'eval-significance' %}active{% endif %}">
+      <i class="fa-solid fa-scale-balanced"></i> 8. Statistical Significance
+    </a>
+  </div>
+
+  {% if results %}
+
+    <!-- ============================================================
+         1. TRAIN / VAL / TEST SPLIT DISCIPLINE
+         ============================================================ -->
+    {% if active == 'eval-splitting' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">The Three-Way Split Discipline &amp; Data Snooping Prevention</div>
+          <div class="sp-callout-text">
+            In standard 2-way splits (Train/Test), tuning hyperparameters on the test set causes <strong>Data Snooping Bias</strong> (optimistic error illusion).
+            A disciplined 3-way split holds the Test set in a sealed vault, tuning strictly on Validation to ensure unbiased generalization.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-dumbbell"></i></div>
+          <div class="sp-stat-value">{{ "{:,}".format(results.train_records) }}</div>
+          <div class="sp-stat-label">Training Records (70%)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-sliders"></i></div>
+          <div class="sp-stat-value">{{ "{:,}".format(results.val_records) }}</div>
+          <div class="sp-stat-label">Validation Records (15%)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-vault"></i></div>
+          <div class="sp-stat-value">{{ "{:,}".format(results.test_records) }}</div>
+          <div class="sp-stat-label">Vaulted Test Records (15%)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="sp-stat-value">{{ results.optimism_gap }} MSE</div>
+          <div class="sp-stat-label">2-Way Optimism Bias Gap</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Empirical Comparison</p>
+        <h2>2-Way vs 3-Way Split: Loss Curves &amp; Snooping Gap</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="2-Way vs 3-Way Split Comparison Chart">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-circle-check"></i> Preprocessing Discipline Takeaway</h4>
+        <p><strong>Leakage Rule:</strong> {{ results.leakage_rule }} The 2-way split reported MSE ({{ results.apparent_2way_mse }}) was artificially over-optimistic compared to the true held-out test MSE ({{ results.true_3way_mse }}).</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         2. CROSS-VALIDATION & NESTED CV
+         ============================================================ -->
+    {% if active == 'eval-cv' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">Stratified K-Fold vs Standard K-Fold &amp; Nested CV</div>
+          <div class="sp-callout-text">
+            Because Spotify explicit tracks make up only <strong>{{ results.overall_explicit_pct }}%</strong> of the catalog, standard K-Fold creates severe fold-to-fold class distortion.
+            <strong>Stratified K-Fold</strong> guarantees uniform class representation. <strong>Nested CV</strong> isolates parameter tuning in an inner loop for leak-free outer evaluation.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-pie-chart"></i></div>
+          <div class="sp-stat-value">{{ results.overall_explicit_pct }}%</div>
+          <div class="sp-stat-label">Explicit Base Rate</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+          <div class="sp-stat-value">{{ results.kf_variance }}</div>
+          <div class="sp-stat-label">Standard K-Fold Variance</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="sp-stat-value">{{ results.skf_variance }}</div>
+          <div class="sp-stat-label">Stratified K-Fold Variance</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-award"></i></div>
+          <div class="sp-stat-value">{{ results.mean_nested_score }}%</div>
+          <div class="sp-stat-label">Nested CV Generalization (±{{ results.nested_score_std }}%)</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Empirical Comparison</p>
+        <h2>Stratification Stability &amp; Nested CV Outer Generalization</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Cross-Validation and Nested CV Chart">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-circle-check"></i> Methodological Recommendation</h4>
+        <p>{{ results.recommendation }} Standard K-Fold introduces sampling noise across folds that skews performance metrics.</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         3. CLASSIFICATION METRICS & CLASS IMBALANCE
+         ============================================================ -->
+    {% if active == 'eval-classification' %}
+      <div class="sp-callout alert">
+        <div class="sp-callout-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">The Accuracy Paradox: When High Accuracy Lies</div>
+          <div class="sp-callout-text">
+            A naive dummy classifier predicting "Not Explicit" for every single song achieves <strong>{{ results.dummy_accuracy }}% accuracy</strong> while catching exactly 0 explicit songs.
+            For imbalanced datasets, Accuracy is fundamentally deceptive. Precision, Recall, F1, and PR-AUC provide the true measure of quality.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-robot"></i></div>
+          <div class="sp-stat-value">{{ results.dummy_accuracy }}%</div>
+          <div class="sp-stat-label">Dummy Baseline Accuracy (F1: {{ results.dummy_f1 }})</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-crosshairs"></i></div>
+          <div class="sp-stat-value">{{ results.real_precision }}%</div>
+          <div class="sp-stat-label">Tuned Model Precision</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-radar"></i></div>
+          <div class="sp-stat-value">{{ results.real_recall }}%</div>
+          <div class="sp-stat-label">Tuned Model Recall</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-gem"></i></div>
+          <div class="sp-stat-value">{{ results.pr_auc }}</div>
+          <div class="sp-stat-label">PR-AUC (ROC-AUC: {{ results.roc_auc }})</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Curve Analysis</p>
+        <h2>ROC-AUC vs Precision-Recall Curve (PR-AUC)</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="ROC and PR Curve Comparison">
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Confusion Matrix</p>
+        <h2>Test Set Predictions Breakdown</h2>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>True \ Predicted</th>
+                <th>Predicted Clean (0)</th>
+                <th>Predicted Explicit (1)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Actual Clean (0)</strong></td>
+                <td>{{ "{:,}".format(results.confusion_matrix.tn) }} (True Negatives)</td>
+                <td>{{ "{:,}".format(results.confusion_matrix.fp) }} (False Positives)</td>
+              </tr>
+              <tr>
+                <td><strong>Actual Explicit (1)</strong></td>
+                <td>{{ "{:,}".format(results.confusion_matrix.fn) }} (False Negatives)</td>
+                <td>{{ "{:,}".format(results.confusion_matrix.tp) }} (True Positives)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-circle-check"></i> Key Takeaway</h4>
+        <p>{{ results.verdict }} ROC-AUC can remain artificially high because the massive true negative pool suppresses the False Positive Rate.</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         4. REGRESSION METRICS & OUTLIER SENSITIVITY
+         ============================================================ -->
+    {% if active == 'eval-regression' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">RMSE vs MAE on Continuous Loudness (dB)</div>
+          <div class="sp-callout-text">
+            Spotify track loudness ranges from -49.5 dB to +4.5 dB. The vast majority of modern tracks cluster between -10 dB and -5 dB, but quiet ambient and spoken-word tracks form an extreme negative tail.
+            Because RMSE squares deviations, quiet outlier tracks cause quadratic penalty explosions.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-wave-square"></i></div>
+          <div class="sp-stat-value">{{ results.rmse }} dB</div>
+          <div class="sp-stat-label">RMSE (Root Mean Squared Error)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-ruler-horizontal"></i></div>
+          <div class="sp-stat-value">{{ results.mae }} dB</div>
+          <div class="sp-stat-label">MAE (Mean Absolute Error)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-shield"></i></div>
+          <div class="sp-stat-value">{{ results.medae }} dB</div>
+          <div class="sp-stat-label">Median Absolute Error</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-percent"></i></div>
+          <div class="sp-stat-value">{{ results.r2 }}</div>
+          <div class="sp-stat-label">R² Score (Explained Variance)</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Empirical Visualization</p>
+        <h2>Predicted vs Actual &amp; Outlier Sensitivity Impact</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Regression Outlier Analysis Chart">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-triangle-exclamation"></i> MAPE Limitation &amp; Outlier Sensitivity</h4>
+        <p><strong>MAPE:</strong> {{ results.mape_status }}</p>
+        <p style="margin-top: 6px;"><strong>Outlier Impact:</strong> On extreme quiet tracks (&le; -15 dB), RMSE rises to <strong>{{ results.rmse_outlier }} dB</strong> compared to MAE of <strong>{{ results.mae_outlier }} dB</strong>. {{ results.takeaway }}</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         5. PROBABILITY CALIBRATION
+         ============================================================ -->
+    {% if active == 'eval-calibration' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-gauge-high"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">Reliability Diagrams, Platt Scaling &amp; Isotonic Regression</div>
+          <div class="sp-callout-text">
+            A well-calibrated classifier ensures that if 100 songs are predicted with <strong>70% probability</strong> of being explicit, exactly <strong>70 of them are actually explicit</strong>.
+            Tree ensembles frequently produce uncalibrated probabilities that require post-hoc calibration via Platt scaling (sigmoid) or Isotonic regression.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+          <div class="sp-stat-value">{{ results.brier_uncalibrated }}</div>
+          <div class="sp-stat-label">Uncalibrated Brier Score</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="sp-stat-value">{{ results.brier_platt }}</div>
+          <div class="sp-stat-label">Platt Sigmoid Brier Score</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div class="sp-stat-value">{{ results.brier_isotonic }}</div>
+          <div class="sp-stat-label">Isotonic Regression Brier Score</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="sp-stat-value">{{ results.best_method }}</div>
+          <div class="sp-stat-label">Optimal Calibration Method</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Reliability Visualization</p>
+        <h2>Reliability Diagram (Calibration Curve) &amp; Confidence Shift</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Probability Calibration Diagram">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-circle-check"></i> Calibration Discipline</h4>
+        <p>{{ results.meaning }} Calibration models are strictly fitted on the Validation set (never Training) using <code>cv='prefit'</code> to prevent over-optimistic probability alignment.</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         6. HYPERPARAMETER SEARCH
+         ============================================================ -->
+    {% if active == 'eval-hyperparam' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-sliders"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">Grid vs Random (Bergstra-Bengio) vs Bayesian Optimization</div>
+          <div class="sp-callout-text">
+            Grid Search tests a rigid lattice, redundantly re-testing unimportant hyperparameter values.
+            <strong>Random Search</strong> explores distinct coordinates along every dimension, finding superior configurations in fewer iterations.
+            <strong>Bayesian Optimization</strong> uses Gaussian Process surrogates and acquisition functions (Expected Improvement) to intelligently guide the search.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-hashtag"></i></div>
+          <div class="sp-stat-value">{{ results.total_trials }}</div>
+          <div class="sp-stat-label">Evaluation Budget (Trials)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-border-all"></i></div>
+          <div class="sp-stat-value">{{ results.grid_best_score }}</div>
+          <div class="sp-stat-label">Grid Search Best Score</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-shuffle"></i></div>
+          <div class="sp-stat-value">{{ results.random_best_score }}</div>
+          <div class="sp-stat-label">Random Search Best Score</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-brain"></i></div>
+          <div class="sp-stat-value">{{ results.bayesian_best_score }}</div>
+          <div class="sp-stat-label">Bayesian Opt Best Score</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Exploration Dynamics</p>
+        <h2>Parameter Space Coverage &amp; Optimization Convergence</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Hyperparameter Search Exploration">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-lightbulb"></i> The Bergstra-Bengio Theorem</h4>
+        <p>{{ results.bergstra_bengio_insight }} In high-dimensional tuning of Spotify models (e.g. Gradient Boosting), Random Search and Bayesian Optimization drastically outperform Grid Search for equivalent compute budgets.</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         7. LEARNING & VALIDATION CURVES
+         ============================================================ -->
+    {% if active == 'eval-curves' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-chart-area"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">Diagnosing High Bias, High Variance, and Data Scarcity</div>
+          <div class="sp-callout-text">
+            <strong>Learning curves</strong> plot score versus sample size to determine if collecting more Spotify tracks will improve generalization.
+            <strong>Validation curves</strong> plot score versus model capacity (e.g. tree max depth) to find the exact inflection point between underfitting and overfitting.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-database"></i></div>
+          <div class="sp-stat-value">{{ "{:,}".format(results.max_sample_tested) }}</div>
+          <div class="sp-stat-label">Max Training Samples Tested</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-sitemap"></i></div>
+          <div class="sp-stat-value">{{ results.optimal_capacity }}</div>
+          <div class="sp-stat-label">Optimal Tree Max Depth</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="sp-stat-value">Sufficient</div>
+          <div class="sp-stat-label">Data Scarcity Diagnostic</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div class="sp-stat-value">Optimal</div>
+          <div class="sp-stat-label">Bias-Variance Trade-off</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Diagnostic Plots</p>
+        <h2>Sample Size Scaling &amp; Capacity Validation Curves</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Learning and Validation Curves">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-stethoscope"></i> Diagnostic Criteria</h4>
+        <p><strong>Under-fitting (High Bias):</strong> {{ results.high_bias_indicator }}</p>
+        <p style="margin-top: 6px;"><strong>Over-fitting (High Variance):</strong> {{ results.high_variance_indicator }}</p>
+        <p style="margin-top: 6px;"><strong>Verdict on Spotify Data:</strong> {{ results.data_scarcity_verdict }}</p>
+      </div>
+    {% endif %}
+
+
+    <!-- ============================================================
+         8. STATISTICAL SIGNIFICANCE TESTING
+         ============================================================ -->
+    {% if active == 'eval-significance' %}
+      <div class="sp-callout success">
+        <div class="sp-callout-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="sp-callout-body">
+          <div class="sp-callout-title">McNemar's Test &amp; Paired Bootstrap Hypothesis Testing</div>
+          <div class="sp-callout-text">
+            When comparing two models, a difference in test accuracy or MAE could be a statistical fluke.
+            <strong>McNemar's Test</strong> compares paired prediction disagreements for classifiers.
+            <strong>Paired Bootstrap Testing</strong> computes empirical 95% Confidence Intervals for regressors without assuming normality.
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-square-root-variable"></i></div>
+          <div class="sp-stat-value">{{ results.mcnemar_stat }}</div>
+          <div class="sp-stat-label">McNemar χ² Statistic</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="sp-stat-value">{{ results.mcnemar_p_value }}</div>
+          <div class="sp-stat-label">McNemar p-value (p &lt; 0.05)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+          <div class="sp-stat-value">{{ results.bootstrap_mean_diff }} dB</div>
+          <div class="sp-stat-label">Bootstrap Mean Difference</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="sp-stat-value">[{{ results.ci_lower }}, {{ results.ci_upper }}]</div>
+          <div class="sp-stat-label">95% Confidence Interval</div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <p class="sp-section-label">Empirical Testing Visuals</p>
+        <h2>McNemar Contingency Matrix &amp; Bootstrap Distribution</h2>
+        <div class="sp-chart-card wide">
+          <img src="{{ url_for('static', filename=results.chart_url) }}" alt="Statistical Significance Testing Chart">
+        </div>
+      </div>
+
+      <div class="eval-takeaway-box">
+        <h4><i class="fa-solid fa-certificate"></i> Statistical Verdict</h4>
+        <p>{{ results.verdict }} Because the 95% Bootstrap Confidence Interval strictly excludes 0, the Multiple Ridge regressor is statistically significantly superior to the Simple Linear baseline on Spotify track loudness.</p>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+</main>
+
+<footer class="sp-footer">
+  Built with <span>♥</span> using Flask &amp; Spotify Design Language
+</footer>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
