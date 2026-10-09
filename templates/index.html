@@ -190,558 +190,248 @@
     <!-- ====================================================
          DATASET SUMMARY
          ==================================================== -->
-
-    <a href="{{ url_for('data_loading') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
-      <span class="sp-nav-card-icon">
-        <i class="fa-solid fa-database"></i>
-      </span>
-
-      <div class="sp-nav-card-title">
-        Dataset Summary
-      </div>
-
-      <div class="sp-nav-card-desc">
-
-        Shape, columns, missing values
-        and dataset preview.
-
-      </div>
-
-      <span class="sp-nav-card-badge">
-        Available
-      </span>
-
+    <a href="{{ url_for('data_loading') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-database"></i></span>
+      <div class="sp-nav-card-title">Dataset Summary</div>
+      <div class="sp-nav-card-desc">Shape, columns, missing values and dataset preview.</div>
+      <span class="sp-nav-card-badge">Available</span>
     </a>
-
 
     <!-- ====================================================
          EDA
          ==================================================== -->
-
-    <a href="{{ url_for('eda_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
-      <span class="sp-nav-card-icon">
-        <i class="fa-solid fa-chart-bar"></i>
-      </span>
-
-      <div class="sp-nav-card-title">
-        Exploratory Data Analysis
-      </div>
-
-      <div class="sp-nav-card-desc">
-
-        Distributions, boxplots,
-        heatmaps and feature relationships.
-
-      </div>
-
-      <span class="sp-nav-card-badge">
-        Available
-      </span>
-
+    <a href="{{ url_for('eda_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-chart-bar"></i></span>
+      <div class="sp-nav-card-title">Exploratory Data Analysis</div>
+      <div class="sp-nav-card-desc">Distributions, boxplots, heatmaps and feature relationships.</div>
+      <span class="sp-nav-card-badge">Available</span>
     </a>
-
 
     <!-- ====================================================
          DATA PREPROCESSING
          ==================================================== -->
-
-    <a href="{{ url_for('preprocessing_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
-      <span class="sp-nav-card-icon">
-        <i class="fa-solid fa-sliders"></i>
-      </span>
-
-      <div class="sp-nav-card-title">
-        Data Preprocessing
-      </div>
-
-      <div class="sp-nav-card-desc">
-
-        Outlier handling, scaling,
-        encoding and train-test split.
-
-      </div>
-
-      <span class="sp-nav-card-badge">
-        Available
-      </span>
-
+    <a href="{{ url_for('preprocessing_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-sliders"></i></span>
+      <div class="sp-nav-card-title">Data Preprocessing</div>
+      <div class="sp-nav-card-desc">Outlier handling, scaling, encoding and train-test split.</div>
+      <span class="sp-nav-card-badge">Available</span>
     </a>
 
-
-   <!-- ====================================================
-     LOGISTIC REGRESSION
-     ==================================================== -->
-
-<a href="{{ url_for('logistic_regression_page') }}"
-   class="sp-nav-card"
-   style="text-decoration:none;">
-
-  <span class="sp-nav-card-icon">
-    <i class="fa-solid fa-brain"></i>
-  </span>
-
-  <div class="sp-nav-card-title">
-    Logistic Regression
-  </div>
-
-  <div class="sp-nav-card-desc">
-
-    Predict whether Spotify tracks
-    are explicit or non-explicit.
-
-  </div>
-
-  <span class="sp-nav-card-badge">
-    Available
-  </span>
-
-</a>
+    <!-- ====================================================
+         LOGISTIC REGRESSION
+         ==================================================== -->
+    <a href="{{ url_for('logistic_regression_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-brain"></i></span>
+      <div class="sp-nav-card-title">Logistic Regression</div>
+      <div class="sp-nav-card-desc">Predict whether Spotify tracks are explicit or non-explicit.</div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
 
     <!-- ====================================================
          LINEAR REGRESSION
          ==================================================== -->
-
-    <a href="{{ url_for('linear_regression_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
-      <span class="sp-nav-card-icon">
-        <i class="fa-solid fa-arrow-trend-up"></i>
-      </span>
-
-      <div class="sp-nav-card-title">
-        Linear Regression
-      </div>
-
-      <div class="sp-nav-card-desc">
-
-        Analyze audio feature linear relations
-        with simple and multiple regression models.
-
-      </div>
-
-      <span class="sp-nav-card-badge">
-        Available
-      </span>
-
+    <a href="{{ url_for('linear_regression_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+      <div class="sp-nav-card-title">Linear Regression</div>
+      <div class="sp-nav-card-desc">Analyse audio feature linear relations with simple and multiple regression.</div>
+      <span class="sp-nav-card-badge">Available</span>
     </a>
 
     <!-- ====================================================
          DECISION TREE
          ==================================================== -->
-
-    <a href="{{ url_for('decision_tree_page', algorithm='id3') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('decision_tree_page', algorithm='id3') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-sitemap"></i></span>
-
-      <div class="sp-nav-card-title">
-        Decision Tree
-      </div>
-
-      <div class="sp-nav-card-desc">
-        ID3 algorithm — classify tracks using
-        a tree of audio feature decisions.
-      </div>
-
+      <div class="sp-nav-card-title">Decision Tree</div>
+      <div class="sp-nav-card-desc">ID3 algorithm — classify tracks using a tree of audio feature decisions.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
-
 
     <!-- ====================================================
          BAGGING
          ==================================================== -->
-
-    <a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('ensemble_page', family='bagging', algorithm='random_forest') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-layer-group"></i></span>
-
-      <div class="sp-nav-card-title">
-        Bagging
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Random Forest ensemble — reduce variance
-        by averaging many decision trees.
-      </div>
-
+      <div class="sp-nav-card-title">Bagging</div>
+      <div class="sp-nav-card-desc">Random Forest ensemble — reduce variance by averaging many decision trees.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
-
 
     <!-- ====================================================
          BOOSTING
          ==================================================== -->
-
-    <a href="{{ url_for('ensemble_page', family='boosting', algorithm='adaboost') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('ensemble_page', family='boosting', algorithm='adaboost') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-bolt"></i></span>
-
-      <div class="sp-nav-card-title">
-        Boosting
-      </div>
-
-      <div class="sp-nav-card-desc">
-        AdaBoost, GradientBoost, LightGBM &amp; XGBoost —
-        sequentially correct model errors.
-      </div>
-
+      <div class="sp-nav-card-title">Boosting</div>
+      <div class="sp-nav-card-desc">AdaBoost, GradientBoost, LightGBM &amp; XGBoost — sequentially correct model errors.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
+  </div>
 
-    <!-- ====================================================
-         K-MEANS
-         ==================================================== -->
+  <!-- ============================================================
+       UNSUPERVISED LEARNING — SECTION HEADER
+       ============================================================ -->
+  <div class="sp-section-header" style="margin-top:40px;margin-bottom:16px;">
+    <h2 class="sp-section-title">
+      <i class="fa-solid fa-circle-nodes" style="color:var(--accent);margin-right:10px;font-size:20px;"></i>
+      Unsupervised Learning
+    </h2>
+  </div>
 
-    <a href="{{ url_for('kmeans_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
+  <!-- ── Clustering ── -->
+  <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+            color:var(--text-muted);margin-bottom:12px;padding-left:2px;">
+    Clustering
+  </p>
+  <div class="sp-nav-cards" style="margin-bottom:28px;">
 
+    <a href="{{ url_for('kmeans_page') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-circle-nodes"></i></span>
-
-      <div class="sp-nav-card-title">
-        K-Means Clustering
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Partition tracks into K clusters based
-        on audio feature similarity.
-      </div>
-
+      <div class="sp-nav-card-title">K-Means Clustering</div>
+      <div class="sp-nav-card-desc">Partition tracks into K clusters based on audio feature similarity.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         HIERARCHICAL CLUSTERING
-         ==================================================== -->
-
-    <a href="{{ url_for('hierarchical_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('hierarchical_page') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-diagram-project"></i></span>
-
-      <div class="sp-nav-card-title">
-        Hierarchical Clustering
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Build a dendrogram of track clusters using
-        Ward, Single or Complete linkage.
-      </div>
-
+      <div class="sp-nav-card-title">Hierarchical Clustering</div>
+      <div class="sp-nav-card-desc">Build a dendrogram of track clusters using Ward, Single or Complete linkage.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         DBSCAN
-         ==================================================== -->
-
-    <a href="{{ url_for('dbscan_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('dbscan_page') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-braille"></i></span>
-
-      <div class="sp-nav-card-title">
-        DBSCAN
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Density-based clustering — find arbitrarily
-        shaped clusters and detect noise points.
-      </div>
-
+      <div class="sp-nav-card-title">DBSCAN</div>
+      <div class="sp-nav-card-desc">Density-based clustering — find arbitrarily shaped clusters and noise points.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
+  </div>
 
-    <!-- ====================================================
-         AUTOENCODERS
-         ==================================================== -->
+  <!-- ── Dimensionality Reduction ── -->
+  <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+            color:var(--text-muted);margin-bottom:12px;padding-left:2px;">
+    Dimensionality Reduction
+  </p>
+  <div class="sp-nav-cards" style="margin-bottom:28px;">
 
-    <a href="{{ url_for('autoencoder_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
-      <span class="sp-nav-card-icon"><i class="fa-solid fa-brain"></i></span>
-
-      <div class="sp-nav-card-title">
-        Autoencoders
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Non-linear neural representation learning —
-        compress audio features into compact latent bottleneck codes.
-      </div>
-
-      <span class="sp-nav-card-badge">Available</span>
-
-    </a>
-
-
-    <!-- ====================================================
-         PCA (PRINCIPAL COMPONENT ANALYSIS)
-         ==================================================== -->
-
-    <a href="{{ url_for('pca_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('pca_page') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-arrows-split-up-and-left"></i></span>
-
-      <div class="sp-nav-card-title">
-        Principal Component Analysis (PCA)
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Linear orthogonal decomposition — maximize
-        variance retention and inspect feature loadings.
-      </div>
-
+      <div class="sp-nav-card-title">PCA</div>
+      <div class="sp-nav-card-desc">Linear orthogonal decomposition — maximise variance retention and inspect feature loadings.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         t-SNE & UMAP
-         ==================================================== -->
-
-    <a href="{{ url_for('tsne_umap_page') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('tsne_umap_page') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-compass-drafting"></i></span>
-
-      <div class="sp-nav-card-title">
-        t-SNE &amp; UMAP
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Non-linear manifold learning — compare local
-        probabilistic embeddings with global topological projections.
-      </div>
-
+      <div class="sp-nav-card-title">t-SNE &amp; UMAP</div>
+      <div class="sp-nav-card-desc">Non-linear manifold learning — compare local probabilistic embeddings with global topological projections.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
+  </div>
 
-    <!-- ====================================================
-         TRAIN / VAL / TEST SPLIT
-         ==================================================== -->
+  <!-- ── Anomaly Detection ── -->
+  <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+            color:var(--text-muted);margin-bottom:12px;padding-left:2px;">
+    Anomaly Detection
+  </p>
+  <div class="sp-nav-cards" style="margin-bottom:40px;">
 
-    <a href="{{ url_for('eval_data_splitting') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
+    <a href="{{ url_for('anomaly_detection_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-tree"></i></span>
+      <div class="sp-nav-card-title">Isolation Forest</div>
+      <div class="sp-nav-card-desc">Isolate anomalous tracks using random tree splits — no labels needed.</div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
 
+    <a href="{{ url_for('anomaly_detection_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
+      <div class="sp-nav-card-title">One-Class SVM</div>
+      <div class="sp-nav-card-desc">Learn a tight kernel boundary around normal tracks — flag everything outside.</div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
+
+    <a href="{{ url_for('anomaly_detection_page') }}" class="sp-nav-card" style="text-decoration:none;">
+      <span class="sp-nav-card-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <div class="sp-nav-card-title">Autoencoder Detection</div>
+      <div class="sp-nav-card-desc">Flag tracks the neural network cannot reconstruct — high error = anomaly.</div>
+      <span class="sp-nav-card-badge">Available</span>
+    </a>
+
+  </div>
+
+  <!-- invisible anchor -->
+  <div style="display:none;" id="navCardsEnd"></div>
+
+  <!-- ============================================================
+       MODEL EVALUATION — SECTION HEADER
+       ============================================================ -->
+  <div class="sp-section-header" style="margin-top:40px;margin-bottom:16px;">
+    <h2 class="sp-section-title">
+      <i class="fa-solid fa-square-poll-vertical" style="color:var(--accent);margin-right:10px;font-size:20px;"></i>
+      Model Evaluation
+    </h2>
+  </div>
+
+  <div class="sp-nav-cards" style="margin-bottom:40px;">
+
+    <a href="{{ url_for('eval_data_splitting') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-arrows-split-up-and-left"></i></span>
-
-      <div class="sp-nav-card-title">
-        Train / Val / Test Split
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Three-way split discipline, data snooping bias prevention,
-        and held-out test set integrity.
-      </div>
-
+      <div class="sp-nav-card-title">Train / Val / Test Split</div>
+      <div class="sp-nav-card-desc">Three-way split discipline, data snooping bias prevention, and held-out test set integrity.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         CROSS-VALIDATION & NESTED CV
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_cross_validation') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_cross_validation') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-arrows-spin"></i></span>
-
-      <div class="sp-nav-card-title">
-        Cross-Validation &amp; Nested CV
-      </div>
-
-      <div class="sp-nav-card-desc">
-        K-Fold vs Stratified K-Fold for class preservation,
-        and unbiased nested CV hyperparameter tuning.
-      </div>
-
+      <div class="sp-nav-card-title">Cross-Validation &amp; Nested CV</div>
+      <div class="sp-nav-card-desc">K-Fold vs Stratified K-Fold for class preservation, and unbiased nested CV hyperparameter tuning.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         CLASSIFICATION METRICS
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_classification_metrics') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_classification_metrics') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-bullseye"></i></span>
-
-      <div class="sp-nav-card-title">
-        Classification Metrics
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Accuracy trap diagnostics, Precision, Recall, F1 score,
-        confusion matrix, ROC-AUC and PR-AUC.
-      </div>
-
+      <div class="sp-nav-card-title">Classification Metrics</div>
+      <div class="sp-nav-card-desc">Accuracy, Precision, Recall, F1 score, confusion matrix, ROC-AUC and PR-AUC.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         REGRESSION METRICS
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_regression_metrics') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_regression_metrics') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-chart-line"></i></span>
-
-      <div class="sp-nav-card-title">
-        Regression Metrics
-      </div>
-
-      <div class="sp-nav-card-desc">
-        RMSE, MAE, MedAE, and R² evaluations on audio loudness
-        with outlier sensitivity analysis.
-      </div>
-
+      <div class="sp-nav-card-title">Regression Metrics</div>
+      <div class="sp-nav-card-desc">RMSE, MAE, MedAE and R² evaluations on audio loudness with outlier sensitivity analysis.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         PROBABILITY CALIBRATION
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_calibration') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_calibration') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-gauge-high"></i></span>
-
-      <div class="sp-nav-card-title">
-        Probability Calibration
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Reliability diagrams, Brier score, Platt scaling (Sigmoid)
-        and Isotonic regression calibration.
-      </div>
-
+      <div class="sp-nav-card-title">Probability Calibration</div>
+      <div class="sp-nav-card-desc">Reliability diagrams, Brier score, Platt scaling (Sigmoid) and Isotonic regression calibration.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         HYPERPARAMETER SEARCH
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_hyperparameter_search') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_hyperparameter_search') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-sliders"></i></span>
-
-      <div class="sp-nav-card-title">
-        Hyperparameter Search
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Grid Search vs Random Search (Bergstra-Bengio paradigm)
-        and parameter subspace exploration.
-      </div>
-
+      <div class="sp-nav-card-title">Hyperparameter Search</div>
+      <div class="sp-nav-card-desc">Grid Search vs Random Search (Bergstra-Bengio paradigm) and parameter subspace exploration.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         LEARNING & VALIDATION CURVES
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_learning_curves') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_learning_curves') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-chart-area"></i></span>
-
-      <div class="sp-nav-card-title">
-        Learning &amp; Validation Curves
-      </div>
-
-      <div class="sp-nav-card-desc">
-        Diagnosing high bias (under-fitting), high variance
-        (over-fitting), and data scarcity.
-      </div>
-
+      <div class="sp-nav-card-title">Learning &amp; Validation Curves</div>
+      <div class="sp-nav-card-desc">Diagnosing high bias (under-fitting), high variance (over-fitting), and data scarcity.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
 
-
-    <!-- ====================================================
-         STATISTICAL SIGNIFICANCE
-         ==================================================== -->
-
-    <a href="{{ url_for('eval_significance_testing') }}"
-       class="sp-nav-card"
-       style="text-decoration:none;">
-
+    <a href="{{ url_for('eval_significance_testing') }}" class="sp-nav-card" style="text-decoration:none;">
       <span class="sp-nav-card-icon"><i class="fa-solid fa-scale-balanced"></i></span>
-
-      <div class="sp-nav-card-title">
-        Statistical Significance
-      </div>
-
-      <div class="sp-nav-card-desc">
-        McNemar's paired test for classifiers and Paired Bootstrap
-        hypothesis testing for regressors.
-      </div>
-
+      <div class="sp-nav-card-title">Statistical Significance</div>
+      <div class="sp-nav-card-desc">McNemar's paired test for classifiers and Paired Bootstrap hypothesis testing for regressors.</div>
       <span class="sp-nav-card-badge">Available</span>
-
     </a>
-
 
   </div>
 

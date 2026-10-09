@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,6 +25,14 @@ PREPROCESSED_PATH = os.path.join(
 CHART_DIR = os.path.join(BASE_DIR, "static", "charts")
 os.makedirs(CHART_DIR, exist_ok=True)
 
+# These 10 columns are already StandardScaled in preprocessed_dataset.csv.
+# Do NOT re-scale. Do NOT include one-hot or binary columns.
+AUDIO_FEATURES = [
+    "duration_ms", "danceability", "energy", "loudness",
+    "speechiness", "acousticness", "instrumentalness",
+    "liveness", "valence", "tempo",
+]
+
 
 def _load_preprocessed():
     if not os.path.exists(PREPROCESSED_PATH):
@@ -36,34 +43,18 @@ def _load_preprocessed():
 
     df = pd.read_csv(PREPROCESSED_PATH)
 
-    # Core continuous Spotify audio features provide meaningful density dimensions.
-    # Exclude one-hot encoded dummy columns (genres, keys, modes, etc.)
-    # so DBSCAN does not suffer from high-dimensional sparse binary inflation.
-    dummy_prefixes = (
-        "track_genre_", "explicit_", "key_", "mode_", "time_signature_"
-    )
-    feature_cols = [
-        c for c in df.columns
-        if not c.startswith(dummy_prefixes)
-        and c not in ["track_id", "id", "explicit"]
-    ]
+    # Use exactly the 10 continuous scaled audio features.
+    # They are already StandardScaled — no re-scaling needed.
+    available = [c for c in AUDIO_FEATURES if c in df.columns]
+    if not available:
+        raise ValueError(
+            "None of the expected audio feature columns found in "
+            "preprocessed_dataset.csv"
+        )
 
-    numeric = df[feature_cols].select_dtypes(include=np.number).copy()
-
-    if numeric.empty:
-        raise ValueError("No numeric features found for DBSCAN.")
-
-    # Clean missing / infinity
+    numeric = df[available].copy()
     numeric = numeric.replace([np.inf, -np.inf], np.nan)
-    numeric = numeric.fillna(numeric.median(numeric_only=True))
-    numeric = numeric.fillna(0)
-
-    # Remove zero-variance columns
-    varying_cols = numeric.columns[numeric.nunique(dropna=False) > 1]
-    numeric = numeric[varying_cols]
-
-    if numeric.empty:
-        raise ValueError("No varying numeric features available for DBSCAN.")
+    numeric = numeric.fillna(numeric.median(numeric_only=True)).fillna(0)
 
     return numeric
 
@@ -182,9 +173,8 @@ def run_dbscan(
     else:
         sample = numeric.copy()
 
-    # Standardize continuous features
-    scaler = StandardScaler()
-    X = scaler.fit_transform(sample.to_numpy(dtype=float))
+    # Data is already StandardScaled — use directly
+    X = sample.to_numpy(dtype=float)
 
     # Fit DBSCAN
     model = DBSCAN(

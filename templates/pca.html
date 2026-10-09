@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="marshmellow-pink">
-
+<html lang="en" data-theme="spotify-dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,102 +8,66 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='dbscan.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
-
 <body>
 
 {% include '_site_header.html' %}
 
 <main class="sp-page">
 
-  <!-- Breadcrumb -->
   <nav class="sp-breadcrumb">
-    <a href="{{ url_for('index') }}">
-      <i class="fa-solid fa-house"></i> Home
-    </a>
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
     <i class="fa-solid fa-chevron-right"></i>
     <span>Unsupervised / Principal Component Analysis</span>
   </nav>
 
-  <!-- Page heading -->
   <div class="sp-page-title-block">
     <p class="sp-label">Linear Dimensionality Reduction</p>
     <h1>Principal Component Analysis (PCA)</h1>
     <p>
-      Transform correlated Spotify audio features into orthogonal, uncorrelated principal components
-      that maximize total data variance.
+      PCA finds the directions of maximum variance in the Spotify audio features.
+      The number of components to keep is chosen automatically using the
+      <strong>Scree Plot elbow</strong>.
+      PC1 and PC2 are always used for 2D visualisation.
     </p>
   </div>
 
   {% if error %}
-    <div class="sp-error">
-      <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
-    </div>
+  <div class="sp-error">
+    <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+  </div>
   {% endif %}
 
-  <!-- Hero Section -->
+  <!-- Hero -->
   <section class="sp-section dbscan-hero">
     <div>
-      <p class="sp-section-label">Marshmellow Pink • Orthogonal Decomposition</p>
-      <h2>Variance Maximization &amp; Eigenvector Projection</h2>
+      <p class="sp-section-label">Orthogonal Decomposition</p>
+      <h2>Variance Maximisation &amp; Eigenvector Projection</h2>
       <p class="dbscan-help">
-        <strong>PCA</strong> identifies orthogonal axes along which the variance of the Spotify tracks is maximized.
-        The first principal component (PC1) accounts for the largest possible variance, and each succeeding component
-        captures the highest remaining variance under the constraint of being orthogonal to prior components.
+        PCA rotates the 10 audio feature axes so that the new axes (principal components)
+        each point in the direction of decreasing variance. The first component (PC1) captures
+        the most spread; every subsequent component captures the next highest variance
+        while being perpendicular to all previous ones.
       </p>
-      <p class="dbscan-help" style="margin-top: 6px;">
-        Dataset source: <strong>processed_data/preprocessed_dataset.csv</strong> (11 continuous Spotify features).
+      <p class="dbscan-help" style="margin-top:6px;">
+        Dataset: <strong>processed_data/preprocessed_dataset.csv</strong>
+        · Sample: 1,500 tracks · Features: 10 continuous audio features (pre-scaled)
       </p>
     </div>
-    <div class="dbscan-icon" style="background: linear-gradient(135deg, #ffd0e3, #ffb2d1); color: #ad1457;">
+    <div class="dbscan-icon">
       <i class="fa-solid fa-arrows-split-up-and-left"></i>
     </div>
   </section>
 
-  <!-- Configuration Controls -->
+  <!-- Settings — just a Run button -->
   <section class="sp-section">
-    <p class="sp-section-label">Parameters</p>
+    <p class="sp-section-label">Settings</p>
     <h2>PCA Settings</h2>
-
-    <form method="GET" class="dbscan-controls">
-      <div class="dbscan-input">
-        <label for="n_components">
-          <i class="fa-solid fa-hashtag"></i> Number of Components (K)
-        </label>
-        <input
-          id="n_components"
-          type="number"
-          name="n_components"
-          min="2"
-          max="11"
-          value="{{ results.n_components if results else 5 }}"
-        >
-        <small>Target projection dimensions</small>
-      </div>
-
-      <div class="dbscan-input">
-        <label for="whiten">
-          <i class="fa-solid fa-sliders"></i> Whiten Components
-        </label>
-        <select id="whiten" name="whiten" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
-          <option value="false" {% if results and not results.whiten %}selected{% endif %}>False (Standard Variance)</option>
-          <option value="true" {% if results and results.whiten %}selected{% endif %}>True (Unit Variance Scaling)</option>
-        </select>
-        <small>Enforce uncorrelated unit variance</small>
-      </div>
-
-      <div class="dbscan-input">
-        <label for="svd_solver">
-          <i class="fa-solid fa-calculator"></i> SVD Solver
-        </label>
-        <select id="svd_solver" name="svd_solver" style="padding: 10px 14px; border-radius: 9px; border: 1.5px solid #f8bbd0; background: #fffbfc; color: var(--text-primary); font-size: 14px; font-weight: 600;">
-          <option value="auto" {% if results and results.svd_solver == 'auto' %}selected{% endif %}>Auto (Optimal Solver)</option>
-          <option value="full" {% if results and results.svd_solver == 'full' %}selected{% endif %}>Full (Exact SVD)</option>
-          <option value="randomized" {% if results and results.svd_solver == 'randomized' %}selected{% endif %}>Randomized (Fast Truncated)</option>
-        </select>
-        <small>Decomposition algorithm</small>
-      </div>
-
-      <button type="submit" class="sp-action-btn" style="margin-bottom: 2px;">
+    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:18px;">
+      PCA automatically fits all 10 components and selects how many to retain
+      using the <strong>Scree Plot elbow</strong>. No manual configuration needed.
+    </p>
+    <form method="GET">
+      <button type="submit" class="sp-action-btn">
         <i class="fa-solid fa-arrows-rotate"></i> Compute PCA
       </button>
     </form>
@@ -112,80 +75,110 @@
 
   {% if results %}
 
-  <!-- Statistics Cards -->
+  <!-- Elbow result callout -->
+  <div class="sp-callout" style="margin-bottom:28px;">
+    <div class="sp-callout-icon"><i class="fa-solid fa-scissors"></i></div>
+    <div class="sp-callout-body">
+      <div class="sp-callout-title">
+        Selected Components: {{ results.elbow_k }}
+        &nbsp;·&nbsp;
+        Explained Variance: {{ results.elbow_var_pct }}%
+        &nbsp;·&nbsp;
+        Reason: Scree Plot Elbow
+      </div>
+      <div class="sp-callout-text">
+        PCA computed all {{ results.input_features }} components from the data.
+        The Scree Plot elbow (the point where adding another component gives the least extra benefit)
+        falls at <strong>K = {{ results.elbow_k }}</strong>, capturing
+        <strong>{{ results.elbow_var_pct }}%</strong> of total variance.
+        PC1 and PC2 are still used for 2D visualisation regardless of this selection.
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
   <section class="dbscan-stats">
     <div class="dbscan-stat-card dbscan-stat-clusters">
       <div class="dbscan-stat-top">
-        <span class="dbscan-stat-label">Total Explained Variance</span>
-        <i class="fa-solid fa-percent dbscan-stat-icon" style="color: #ec407a;"></i>
+        <span class="dbscan-stat-label">Components Retained</span>
+        <i class="fa-solid fa-scissors dbscan-stat-icon"></i>
       </div>
-      <strong>{{ results.total_explained_variance }}%</strong>
-      <span class="dbscan-stat-sub">Captured across {{ results.n_components }} components</span>
+      <strong style="color:var(--accent);">{{ results.elbow_k }}</strong>
+      <span class="dbscan-stat-sub">Selected by Scree Plot elbow</span>
     </div>
 
     <div class="dbscan-stat-card dbscan-stat-core">
       <div class="dbscan-stat-top">
-        <span class="dbscan-stat-label">PC1 Variance</span>
-        <i class="fa-solid fa-arrow-trend-up dbscan-stat-icon" style="color: #e91e63;"></i>
+        <span class="dbscan-stat-label">Variance Retained</span>
+        <i class="fa-solid fa-percent dbscan-stat-icon"></i>
       </div>
-      <strong>{{ results.pc1_var }}%</strong>
-      <span class="dbscan-stat-sub">Primary direction of variance</span>
+      <strong>{{ results.elbow_var_pct }}%</strong>
+      <span class="dbscan-stat-sub">Across {{ results.elbow_k }} components</span>
     </div>
 
     <div class="dbscan-stat-card dbscan-stat-border">
       <div class="dbscan-stat-top">
-        <span class="dbscan-stat-label">PC2 Variance</span>
-        <i class="fa-solid fa-arrows-up-down dbscan-stat-icon" style="color: #ab47bc;"></i>
+        <span class="dbscan-stat-label">PC1 Variance</span>
+        <i class="fa-solid fa-arrow-trend-up dbscan-stat-icon"></i>
       </div>
-      <strong>{{ results.pc2_var }}%</strong>
-      <span class="dbscan-stat-sub">Orthogonal secondary variance</span>
+      <strong>{{ results.pc1_var }}%</strong>
+      <span class="dbscan-stat-sub">Largest direction of spread</span>
     </div>
 
     <div class="dbscan-stat-card dbscan-stat-noise">
       <div class="dbscan-stat-top">
-        <span class="dbscan-stat-label">Dimension Reduction</span>
-        <i class="fa-solid fa-compress dbscan-stat-icon" style="color: #78909c;"></i>
+        <span class="dbscan-stat-label">PC2 Variance</span>
+        <i class="fa-solid fa-arrows-up-down dbscan-stat-icon"></i>
       </div>
-      <strong>{{ results.input_features }}D → {{ results.n_components }}D</strong>
-      <span class="dbscan-stat-sub">Sample size: {{ "{:,}".format(results.sample_size) }}</span>
+      <strong>{{ results.pc2_var }}%</strong>
+      <span class="dbscan-stat-sub">Used with PC1 for 2D view</span>
     </div>
   </section>
 
-  <!-- Graph 1: Scree Plot & Cumulative Explained Variance -->
+  <!-- GRAPH 1: Scree Plot -->
   <div class="sp-section">
     <p class="sp-section-label">Variance Structure</p>
-    <h2>PCA Scree Plot &amp; Cumulative Explained Variance</h2>
+    <h2>Scree Plot &amp; Cumulative Explained Variance</h2>
     <p class="sp-kmeans-help">
-      The scree plot shows individual variance explained by each principal component alongside the cumulative curve.
-      The dotted lines mark the standard 80% and 90% information retention thresholds.
+      Each bar shows how much variance one component captures.
+      <span style="color:var(--accent);font-weight:700;">Green bars</span> are the
+      {{ results.elbow_k }} components retained by the elbow.
+      Grey bars are the remainder — they add little extra information.
+      The green dashed vertical line marks the elbow cutoff at K = {{ results.elbow_k }}.
     </p>
     <div class="sp-chart-card sp-hier-chart">
       <img src="{{ url_for('static', filename=results.scree_chart) }}"
-           alt="PCA Scree Plot and Cumulative Explained Variance">
+           alt="PCA Scree Plot with elbow">
     </div>
   </div>
 
-  <!-- Graph 2: 2D Component Projection -->
+  <!-- GRAPH 2: 2D Projection -->
   <div class="sp-section">
-    <p class="sp-section-label">Projection Map</p>
-    <h2>2D Principal Component Projection (PC1 vs. PC2)</h2>
+    <p class="sp-section-label">2D Visualisation</p>
+    <h2>PC1 vs PC2 Projection</h2>
     <p class="sp-kmeans-help">
-      Spotify tracks mapped onto the two most informative linear dimensions.
-      Together, PC1 and PC2 explain <strong>{{ results.pc1_var + results.pc2_var }}%</strong> of the total audio feature variation.
+      Each dot is one Spotify track projected onto the two most informative directions.
+      PC1 (horizontal) explains <strong>{{ results.pc1_var }}%</strong> and
+      PC2 (vertical) explains <strong>{{ results.pc2_var }}%</strong> of total variance.
+      Tracks close together in this plot have similar audio feature profiles.
+      <em>Note: PC1 and PC2 are fixed as the first two components and are not changed by the elbow selection.</em>
     </p>
     <div class="sp-chart-card sp-hier-chart">
       <img src="{{ url_for('static', filename=results.proj_chart) }}"
-           alt="2D Principal Component Projection">
+           alt="PCA PC1 vs PC2 Projection">
     </div>
   </div>
 
-  <!-- Graph 3: Feature Loadings Heatmap -->
+  <!-- GRAPH 3: Feature Loadings -->
   <div class="sp-section">
     <p class="sp-section-label">Component Interpretation</p>
-    <h2>PCA Feature Loadings Matrix (Eigenvector Weights)</h2>
+    <h2>Feature Loadings — What Does Each Component Represent?</h2>
     <p class="sp-kmeans-help">
-      Each cell reveals how strongly an audio feature contributes to that principal component.
-      High positive values (orange/brown) and negative values (purple) show the dominant drivers of each axis.
+      Each cell shows how much a feature contributes to a component.
+      <strong>Warm colours (red)</strong> = strong positive contribution.
+      <strong>Cool colours (blue)</strong> = strong negative contribution.
+      Neutral = little influence.
+      Use this to understand what PC1, PC2, etc. actually measure musically.
     </p>
     <div class="sp-chart-card sp-hier-chart">
       <img src="{{ url_for('static', filename=results.loadings_chart) }}"
@@ -193,84 +186,124 @@
     </div>
   </div>
 
-  <!-- Loadings Table -->
+  <!-- Loadings table -->
   <section class="sp-section">
-    <p class="sp-section-label">Numerical Breakdown</p>
-    <h2>Feature Contribution Weights</h2>
-
+    <p class="sp-section-label">Numerical Detail</p>
+    <h2>Feature Loading Weights (PC1 – PC4)</h2>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+      A weight close to +1 or −1 means that feature has a strong influence on that component.
+      Close to 0 means little influence.
+    </p>
     <div class="sp-table-wrap">
       <table class="sp-table">
         <thead>
           <tr>
             <th>Audio Feature</th>
-            <th>PC1 Loading</th>
-            <th>PC2 Loading</th>
-            {% if results.n_components >= 3 %}<th>PC3 Loading</th>{% endif %}
-            {% if results.n_components >= 4 %}<th>PC4 Loading</th>{% endif %}
+            <th>PC1</th>
+            <th>PC2</th>
+            {% if results.n_components >= 3 %}<th>PC3</th>{% endif %}
+            {% if results.n_components >= 4 %}<th>PC4</th>{% endif %}
           </tr>
         </thead>
         <tbody>
           {% for row in results.loadings_table %}
-            <tr>
-              <td><strong>{{ row.feature }}</strong></td>
-              <td style="color: {% if row.pc1 > 0.3 %}#d6336c{% elif row.pc1 < -0.3 %}#ab47bc{% else %}inherit{% endif %}; font-weight: 600;">
-                {{ "%.3f"|format(row.pc1) }}
-              </td>
-              <td style="color: {% if row.pc2 > 0.3 %}#d6336c{% elif row.pc2 < -0.3 %}#ab47bc{% else %}inherit{% endif %}; font-weight: 600;">
-                {{ "%.3f"|format(row.pc2) }}
-              </td>
-              {% if results.n_components >= 3 %}
-                <td>{{ "%.3f"|format(row.pc3) }}</td>
-              {% endif %}
-              {% if results.n_components >= 4 %}
-                <td>{{ "%.3f"|format(row.pc4) }}</td>
-              {% endif %}
-            </tr>
+          <tr>
+            <td><strong>{{ row.feature }}</strong></td>
+            <td style="font-weight:600;
+                       color:{% if row.pc1 > 0.3 %}var(--accent){% elif row.pc1 < -0.3 %}var(--text-secondary){% else %}inherit{% endif %};">
+              {{ "%.3f"|format(row.pc1) }}
+            </td>
+            <td style="font-weight:600;
+                       color:{% if row.pc2 > 0.3 %}var(--accent){% elif row.pc2 < -0.3 %}var(--text-secondary){% else %}inherit{% endif %};">
+              {{ "%.3f"|format(row.pc2) }}
+            </td>
+            {% if results.n_components >= 3 %}
+            <td>{{ "%.3f"|format(row.pc3) }}</td>
+            {% endif %}
+            {% if results.n_components >= 4 %}
+            <td>{{ "%.3f"|format(row.pc4) }}</td>
+            {% endif %}
+          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- Theory & Methodology -->
+  <!-- All components table -->
   <section class="sp-section">
-    <p class="sp-section-label">Theory</p>
-    <h2>Understanding Principal Component Analysis</h2>
+    <p class="sp-section-label">All Components</p>
+    <h2>Variance per Component</h2>
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr><th>Component</th><th>Variance (%)</th><th>Cumulative (%)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for comp in results.components_info %}
+          <tr {% if comp.retained %}style="background:var(--accent-dim);"{% endif %}>
+            <td><strong>{{ comp.name }}</strong></td>
+            <td>{{ comp.variance_ratio }}%</td>
+            <td>{{ comp.cumulative_ratio }}%</td>
+            <td>
+              {% if comp.retained %}
+              <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 9px;
+                           border-radius:99px;background:var(--accent);color:var(--bg-primary);
+                           font-size:11px;font-weight:700;">
+                <i class="fa-solid fa-check"></i> Retained
+              </span>
+              {% else %}
+              <span style="color:var(--text-muted);font-size:12px;">Dropped</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic;">
+      Components retained = {{ results.elbow_k }} (Scree Plot elbow at {{ results.elbow_var_pct }}% cumulative variance).
+      PC1 and PC2 are always used for the 2D visualisation above.
+    </p>
+  </section>
 
+  <!-- Explainer cards -->
+  <section class="sp-section">
+    <p class="sp-section-label">How It Works</p>
+    <h2>PCA in Plain English</h2>
     <div class="dbscan-explanation-grid">
       <div class="dbscan-explanation-card">
-        <i class="fa-solid fa-arrows-to-dot" style="color: #e91e63;"></i>
-        <h3>1. Variance Maximization</h3>
+        <i class="fa-solid fa-arrows-to-dot"></i>
+        <h3>1. Find the Spread</h3>
         <p>
-          PCA rotates the feature coordinates so that the first axis lies along the longest stretch of data variance,
-          preserving the maximum amount of signal.
+          PCA looks at all 10 audio features together and finds the direction
+          in which the tracks vary the most. That direction becomes PC1.
         </p>
       </div>
-
       <div class="dbscan-explanation-card">
-        <i class="fa-solid fa-draw-polygon" style="color: #ab47bc;"></i>
-        <h3>2. Orthogonality</h3>
+        <i class="fa-solid fa-draw-polygon"></i>
+        <h3>2. Stay Perpendicular</h3>
         <p>
-          Every subsequent component is strictly perpendicular (at a 90° angle) to all previous components,
-          guaranteeing that they capture entirely zero redundant information.
+          Each new component captures the next-highest remaining variance
+          while pointing in a completely different direction from the previous ones.
         </p>
       </div>
-
       <div class="dbscan-explanation-card">
-        <i class="fa-solid fa-chart-line" style="color: #f06292;"></i>
+        <i class="fa-solid fa-scissors"></i>
         <h3>3. Scree Plot Elbow</h3>
         <p>
-          The "elbow" point on the scree plot indicates diminishing returns, helping you choose the minimal
-          number of components necessary to preserve 80-90% variance.
+          The elbow is where the variance captured by each new component
+          stops dropping quickly. We keep everything up to that point —
+          {{ results.elbow_k }} components, {{ results.elbow_var_pct }}% of total variance.
         </p>
       </div>
-
       <div class="dbscan-explanation-card">
-        <i class="fa-solid fa-weight-hanging" style="color: #78909c;"></i>
-        <h3>4. Loading Coefficients</h3>
+        <i class="fa-solid fa-eye"></i>
+        <h3>4. PC1 &amp; PC2 for Viewing</h3>
         <p>
-          Loadings measure the correlation between original audio features and principal components,
-          allowing human interpretation of what PC1 and PC2 musically represent.
+          The 2D chart always shows PC1 on the x-axis and PC2 on the y-axis —
+          the two most informative directions — regardless of how many
+          components are retained.
         </p>
       </div>
     </div>
@@ -280,11 +313,7 @@
 
 </main>
 
-<footer class="sp-footer">
-  Built with <span>♥</span> using Flask &amp; Spotify Design Language
-</footer>
-
+<footer class="sp-footer">Built with <span>♥</span> using Flask &amp; Spotify Design Language</footer>
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
-
 </body>
 </html>

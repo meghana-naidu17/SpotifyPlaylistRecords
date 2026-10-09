@@ -1,239 +1,320 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="marshmellow-pink">
+<html lang="en" data-theme="spotify-dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hierarchical Clustering — Spotify Playlist Analytics</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dbscan.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body>
-  {% include '_site_header.html' %}
 
-  <main class="sp-page">
-    <nav class="sp-breadcrumb">
-      <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
-      <i class="fa-solid fa-chevron-right"></i>
-      <span>Unsupervised / Hierarchical Clustering</span>
-    </nav>
+{% include '_site_header.html' %}
 
-    <div class="sp-page-title-block">
-      <p class="sp-label">Unsupervised Learning</p>
-      <h1>Hierarchical Clustering</h1>
-      <p>
-        Group Spotify tracks into nested clusters using the preprocessed dataset.
-        Optimal cluster count <strong>K is calculated automatically</strong> via Silhouette Score optimization,
-        and all clustering graphs are generated directly.
+<main class="sp-page">
+
+  <nav class="sp-breadcrumb">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Unsupervised / Hierarchical Clustering</span>
+  </nav>
+
+  <div class="sp-page-title-block">
+    <p class="sp-label">Unsupervised Learning</p>
+    <h1>Hierarchical Clustering</h1>
+    <p>
+      Each linkage method builds its <strong>own</strong> hierarchical structure.
+      The optimal K is derived from <strong>that linkage's dendrogram</strong> using the
+      largest-gap cutoff — not from Silhouette Score optimisation.
+      Silhouette is shown as an <em>evaluation</em> metric only.
+    </p>
+  </div>
+
+  {% if error %}
+  <div class="sp-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+  {% endif %}
+
+  <!-- Hero -->
+  <section class="sp-section dbscan-hero">
+    <div>
+      <p class="sp-section-label">Hierarchical Learning</p>
+      <h2>Linkage-Driven Cluster Discovery</h2>
+      <p class="dbscan-help">
+        Selects one of four linkage strategies — <strong>Ward</strong>, <strong>Complete</strong>,
+        <strong>Average</strong>, or <strong>Single</strong>. Each strategy merges clusters differently,
+        producing a unique dendrogram. The natural cutoff (the widest gap between consecutive merge
+        distances) determines <strong>K for that linkage</strong>.
+      </p>
+      <p class="dbscan-help" style="margin-top:6px;">
+        Dataset: <strong>processed_data/preprocessed_dataset.csv</strong>
+        · Sample: 1,200 tracks · Features: 10 continuous audio features (pre-scaled)
       </p>
     </div>
+    <div class="dbscan-icon">
+      <i class="fa-solid fa-diagram-project"></i>
+    </div>
+  </section>
 
-    {% if error %}
-      <div class="sp-error">
-        <i class="fa-solid fa-triangle-exclamation"></i>{{ error }}
+  <!-- Configuration -->
+  <section class="sp-section">
+    <p class="sp-section-label">Configuration</p>
+    <h2>Clustering Settings</h2>
+
+    <form method="GET" class="dbscan-controls" style="align-items:center;gap:20px;flex-wrap:wrap;">
+
+      <div class="dbscan-input">
+        <label><i class="fa-solid fa-link" style="color:var(--accent);margin-right:5px;"></i>Linkage Method</label>
+        <select name="method">
+          <option value="ward"     {% if results and results.method == 'ward'     %}selected{% endif %}>Ward (Minimum Variance)</option>
+          <option value="complete" {% if results and results.method == 'complete' %}selected{% endif %}>Complete (Farthest Point)</option>
+          <option value="average"  {% if results and results.method == 'average'  %}selected{% endif %}>Average (Pairwise Average)</option>
+          <option value="single"   {% if results and results.method == 'single'   %}selected{% endif %}>Single (Nearest Neighbor)</option>
+        </select>
+        <small>Each method produces its own dendrogram and K</small>
       </div>
-    {% endif %}
 
-    <div class="sp-section sp-hier-hero">
+      {% if results %}
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-secondary);">
+          Linkage-Based K
+        </span>
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;
+                    background:var(--accent-dim);border:1.5px solid var(--accent);
+                    border-radius:9px;color:var(--accent);font-weight:800;font-size:14px;">
+          <i class="fa-solid fa-scissors"></i>
+          Dendrogram K = {{ results.selected_k }}
+          &nbsp;·&nbsp;
+          Cutoff = {{ results.cutoff_dist }}
+        </div>
+        <small style="color:var(--text-muted);font-size:11px;">
+          Derived from the {{ results.method|title }} linkage's largest merge-distance gap
+        </small>
+      </div>
+      {% endif %}
+
+      <button class="sp-action-btn" type="submit" style="margin-top:{% if results %}0{% else %}22px{% endif %};">
+        <i class="fa-solid fa-arrows-rotate"></i> Run Hierarchical Clustering
+      </button>
+
+    </form>
+  </section>
+
+  {% if results %}
+
+  <!-- Stat cards -->
+  <div class="dbscan-stats">
+    <div class="dbscan-stat-card dbscan-stat-clusters">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Source Rows</span>
+        <i class="fa-solid fa-database dbscan-stat-icon"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.dataset_records) }}</strong>
+      <span class="dbscan-stat-sub">preprocessed records</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-core">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Rows Clustered</span>
+        <i class="fa-solid fa-layer-group dbscan-stat-icon"></i>
+      </div>
+      <strong>{{ "{:,}".format(results.sample_records) }}</strong>
+      <span class="dbscan-stat-sub">reproducible sample (seed=42)</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-border">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Linkage-Based K</span>
+        <i class="fa-solid fa-scissors dbscan-stat-icon"></i>
+      </div>
+      <strong style="color:var(--accent);">{{ results.selected_k }}</strong>
+      <span class="dbscan-stat-sub">From {{ results.method|title }} dendrogram cutoff</span>
+    </div>
+
+    <div class="dbscan-stat-card dbscan-stat-noise">
+      <div class="dbscan-stat-top">
+        <span class="dbscan-stat-label">Silhouette Score</span>
+        <i class="fa-solid fa-chart-line dbscan-stat-icon"></i>
+      </div>
+      <strong>{{ results.final_silhouette }}</strong>
+      <span class="dbscan-stat-sub">Evaluation metric — not used to select K</span>
+    </div>
+  </div>
+
+  <!-- Key metrics callout -->
+  <div class="sp-callout" style="margin-bottom:24px;">
+    <div class="sp-callout-icon"><i class="fa-solid fa-scissors"></i></div>
+    <div class="sp-callout-body">
+      <div class="sp-callout-title">
+        {{ results.method|title }} Linkage → K = {{ results.selected_k }}
+        &nbsp;·&nbsp; Cutoff Distance = {{ results.cutoff_dist }}
+      </div>
+      <div class="sp-callout-text">
+        The <strong>{{ results.method|title }}</strong> linkage matrix was built from the data.
+        The largest gap between consecutive merge distances occurred at
+        <strong>{{ results.cutoff_dist }}</strong>, naturally splitting the dendrogram into
+        <strong>{{ results.selected_k }} clusters</strong>.
+        Silhouette score for this partition: <strong>{{ results.final_silhouette }}</strong>
+        (shown as an evaluation metric — it did not determine K).
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAPH 1: Dendrogram -->
+  <div class="sp-section">
+    <p class="sp-section-label">{{ results.method|title }} Linkage — Dendrogram</p>
+    <h2>{{ results.method|title }} Dendrogram with Linkage Cutoff (K = {{ results.selected_k }})</h2>
+    <p class="sp-kmeans-help">
+      The dendrogram shows how the {{ results.method|title }} linkage progressively merges tracks.
+      The green dashed line is the <strong>linkage-specific cutoff</strong> at distance
+      <strong>{{ results.cutoff_dist }}</strong> — the point where the largest gap in merge distances occurs.
+      This cutoff isolates <strong>{{ results.selected_k }} natural clusters</strong>.
+    </p>
+    <div class="sp-chart-card sp-hier-chart">
+      <img src="{{ url_for('static', filename=results.dendrogram) }}"
+           alt="{{ results.method|title }} dendrogram with cutoff">
+    </div>
+  </div>
+
+  <!-- GRAPH 2: Silhouette evaluation -->
+  <div class="sp-section">
+    <p class="sp-section-label">Silhouette Evaluation (not K selection)</p>
+    <h2>Silhouette Score by K — {{ results.method|title }} Linkage</h2>
+    <p class="sp-kmeans-help">
+      This chart shows silhouette scores across K = {{ results.silhouette_scores[0].k }}–{{ results.silhouette_scores[-1].k }}
+      for the <strong>{{ results.method|title }}</strong> linkage.
+      The <span style="color:#ff4757;font-weight:700;">red dot</span> marks
+      K = {{ results.selected_k }} — the cluster count derived from the dendrogram.
+      The silhouette score at this K is <strong>{{ results.final_silhouette }}</strong>.
+      <em>This chart is for evaluation only — K was not chosen by silhouette.</em>
+    </p>
+    <div class="sp-chart-card sp-hier-chart">
+      <img src="{{ url_for('static', filename=results.silhouette_chart) }}"
+           alt="Silhouette evaluation for {{ results.method|title }} linkage">
+    </div>
+  </div>
+
+  <!-- GRAPH 3: Cluster scatter -->
+  <div class="sp-section">
+    <p class="sp-section-label">Cluster View</p>
+    <h2>{{ results.method|title }} Clusters (PCA 2D, K = {{ results.selected_k }})</h2>
+    <p class="sp-kmeans-help">
+      PCA projects the 10-feature space onto 2 dimensions.
+      Each colour is a cluster derived from the <strong>{{ results.method|title }}</strong> linkage.
+      <strong>X</strong> marks the centroid of each cluster.
+    </p>
+    <div class="sp-chart-card sp-hier-chart">
+      <img src="{{ url_for('static', filename=results.cluster_chart) }}"
+           alt="{{ results.method|title }} PCA cluster visualization">
+    </div>
+  </div>
+
+  <!-- Results tables -->
+  <div class="sp-section">
+    <p class="sp-section-label">Detailed Results</p>
+    <h2>Cluster Sizes &amp; Silhouette Evaluation — {{ results.method|title }} Linkage</h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+
+      <!-- Cluster counts -->
       <div>
-        <p class="sp-section-label">Marshmellow Pink • Hierarchical Learning</p>
-        <h2>Automated Track Grouping &amp; Hierarchy</h2>
-        <p class="sp-kmeans-help">
-          The algorithm loads <strong>processed_data/preprocessed_dataset.csv</strong> and clusters
-          a reproducible sample of 1,200 records. Rather than manually guessing <em>K</em>, the optimal cluster
-          count is <strong>mathematically calculated</strong> by evaluating Silhouette Scores across <em>K</em> = 2 to 8.
+        <h3 style="margin-bottom:10px;font-size:15px;color:var(--text-primary);">
+          Tracks per Cluster (K = {{ results.selected_k }}, {{ results.method|title }})
+        </h3>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead><tr><th>Cluster</th><th>Records</th></tr></thead>
+            <tbody>
+              {% for cluster, count in results.cluster_counts.items() %}
+              <tr>
+                <td><strong>{{ cluster }}</strong></td>
+                <td>{{ "{:,}".format(count) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Silhouette evaluation table -->
+      <div>
+        <h3 style="margin-bottom:10px;font-size:15px;color:var(--text-primary);">
+          Silhouette Score by K — Evaluation Only
+        </h3>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr><th>K</th><th>Silhouette Score</th><th>Note</th></tr>
+            </thead>
+            <tbody>
+              {% for item in results.silhouette_scores %}
+              <tr {% if item.is_selected %}style="background:var(--accent-dim);"{% endif %}>
+                <td>{{ item.k }}</td>
+                <td>{{ "%.4f"|format(item.score) }}</td>
+                <td>
+                  {% if item.is_selected %}
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 9px;
+                               border-radius:99px;background:var(--accent);color:var(--bg-primary);
+                               font-size:11px;font-weight:700;">
+                    <i class="fa-solid fa-scissors"></i> Dendrogram K
+                  </span>
+                  {% else %}
+                  <span style="color:var(--text-muted);font-size:12px;">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic;">
+          K was selected from the {{ results.method|title }} dendrogram cutoff, not from the highest silhouette score.
         </p>
       </div>
-      <div class="sp-hier-icon"><i class="fa-solid fa-diagram-project"></i></div>
+
     </div>
+  </div>
 
-    <div class="sp-section">
-      <p class="sp-section-label">Configuration</p>
-      <h2>Clustering Settings</h2>
-
-      <form method="GET" class="sp-kmeans-controls" style="align-items: center; gap: 16px; flex-wrap: wrap;">
-        <label style="display: flex; flex-direction: column; gap: 6px; font-weight: bold; color: var(--text-primary); font-size: 13px;">
-          Linkage Method
-          <select name="method" class="sp-hier-select" style="padding: 10px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-primary); font-size: 14px;">
-            <option value="ward" {% if results and results.method == 'ward' %}selected{% endif %}>Ward (Minimum Variance)</option>
-            <option value="complete" {% if results and results.method == 'complete' %}selected{% endif %}>Complete (Farthest Point)</option>
-            <option value="average" {% if results and results.method == 'average' %}selected{% endif %}>Average (Pairwise Average)</option>
-            <option value="single" {% if results and results.method == 'single' %}selected{% endif %}>Single (Nearest Neighbor)</option>
-          </select>
-        </label>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <span style="font-size: 13px; font-weight: bold; color: var(--text-primary);">Cluster Count (K)</span>
-          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; background: rgba(232, 107, 151, 0.12); border: 1.5px solid var(--accent); border-radius: 9px; color: var(--accent); font-weight: 700; font-size: 14px;">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Auto-Calculated: <strong>K = {{ results.selected_k if results else 2 }}</strong></span>
-          </div>
-        </div>
-
-        <button class="sp-action-btn" type="submit" style="margin-top: 22px;">
-          <i class="fa-solid fa-arrows-rotate"></i> Recalculate Clusters
-        </button>
-      </form>
-
-      <p class="sp-kmeans-help" style="margin-top: 14px;">
-        <strong>Automatic K Calculation:</strong> The system computes the Silhouette Score for all cluster numbers between 2 and 8 and selects the peak score directly.
-      </p>
+  <!-- Explanation -->
+  <div class="sp-section">
+    <p class="sp-section-label">How It Works</p>
+    <h2>Linkage → Dendrogram → K → Silhouette (Evaluation)</h2>
+    <div class="dbscan-explanation-grid">
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-file-csv"></i>
+        <h3>1. Preprocessed Data</h3>
+        <p>10 pre-scaled continuous audio features from preprocessed_dataset.csv. No re-scaling applied.</p>
+      </div>
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-sitemap"></i>
+        <h3>2. Linkage Matrix</h3>
+        <p>The selected linkage method ({{ results.method|title }}) builds its own hierarchical merge tree from the data — independently from other methods.</p>
+      </div>
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-scissors"></i>
+        <h3>3. Dendrogram Cutoff → K</h3>
+        <p>
+          The largest gap between consecutive merge distances is found.
+          This is the natural "elbow" of the {{ results.method|title }} dendrogram.
+          Cutoff = {{ results.cutoff_dist }} → K = {{ results.selected_k }}.
+        </p>
+      </div>
+      <div class="dbscan-explanation-card">
+        <i class="fa-solid fa-chart-line"></i>
+        <h3>4. Silhouette = Evaluation</h3>
+        <p>
+          Silhouette score of <strong>{{ results.final_silhouette }}</strong> measures cluster quality for K = {{ results.selected_k }}.
+          It evaluates the result — it did not choose K.
+        </p>
+      </div>
     </div>
+  </div>
 
-    {% if results %}
-      <div class="sp-hier-stats">
-        <div class="sp-stat-card">
-          <span class="sp-stat-label">Source Rows</span>
-          <strong>{{ "{:,}".format(results.dataset_records) }}</strong>
-          <span class="sp-stat-sub">preprocessed records</span>
-        </div>
-        <div class="sp-stat-card">
-          <span class="sp-stat-label">Rows Clustered</span>
-          <strong>{{ "{:,}".format(results.sample_records) }}</strong>
-          <span class="sp-stat-sub">reproducible sample</span>
-        </div>
-        <div class="sp-stat-card">
-          <span class="sp-stat-label">Optimal Clusters</span>
-          <strong style="color: var(--accent);">{{ results.selected_k }}</strong>
-          <span class="sp-stat-sub">Calculated Automatically</span>
-        </div>
-        <div class="sp-stat-card">
-          <span class="sp-stat-label">Peak Silhouette</span>
-          <strong>{{ "%.4f"|format(results.optimal_score) }}</strong>
-          <span class="sp-stat-sub">{{ results.method|title }} linkage</span>
-        </div>
-      </div>
+  {% endif %}
 
-      <!-- Graph 1: Dendrogram with Cutoff Line -->
-      <div class="sp-section">
-        <p class="sp-section-label">Hierarchy &amp; Cutoff</p>
-        <h2>Linkage Dendrogram with Automatic Cutoff</h2>
-        <p class="sp-kmeans-help">
-          The dendrogram illustrates how track clusters hierarchically merge. The horizontal dashed line marks
-          the automatic Euclidean distance cutoff that isolates the <strong>{{ results.selected_k }}</strong> optimal clusters.
-        </p>
-        <div class="sp-chart-card sp-hier-chart">
-          <img src="{{ url_for('static', filename=results.dendrogram) }}"
-               alt="Hierarchical clustering dendrogram with cutoff line">
-        </div>
-      </div>
+</main>
 
-      <!-- Graph 2: Silhouette Optimization Curve -->
-      <div class="sp-section">
-        <p class="sp-section-label">Optimization Curve</p>
-        <h2>Automated K Determination (Silhouette Analysis)</h2>
-        <p class="sp-kmeans-help">
-          Silhouette scores measure how well-separated and cohesive clusters are. The optimal cluster count
-          is identified at the peak score (K={{ results.selected_k }}, score={{ "%.4f"|format(results.optimal_score) }}).
-        </p>
-        <div class="sp-chart-card sp-hier-chart">
-          <img src="{{ url_for('static', filename=results.silhouette_chart) }}"
-               alt="Silhouette score vs cluster count K">
-        </div>
-      </div>
-
-      <!-- Graph 3: PCA Cluster View -->
-      <div class="sp-section">
-        <p class="sp-section-label">Cluster View</p>
-        <h2>Hierarchical Cluster Visualization (PCA 2D)</h2>
-        <p class="sp-kmeans-help">
-          Principal Component Analysis projects the high-dimensional feature space onto 2 dimensions for visual inspection.
-          Bold <strong>'X'</strong> markers indicate the center of each discovered cluster.
-        </p>
-        <div class="sp-chart-card sp-hier-chart">
-          <img src="{{ url_for('static', filename=results.cluster_chart) }}"
-               alt="Hierarchical clustering PCA visualization">
-        </div>
-      </div>
-
-      <!-- Cluster Distribution & Silhouette Table -->
-      <div class="sp-section">
-        <p class="sp-section-label">Calculated Results</p>
-        <h2>Cluster Distribution &amp; Silhouette Comparison</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-          <div>
-            <h3 style="margin-bottom: 10px; font-size: 15px; color: var(--text-primary);">Tracks Per Cluster (K={{ results.selected_k }})</h3>
-            <div class="sp-table-wrap">
-              <table class="sp-table">
-                <thead>
-                  <tr>
-                    <th>Cluster</th>
-                    <th>Records</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for cluster, count in results.cluster_counts.items() %}
-                    <tr>
-                      <td><strong>{{ cluster }}</strong></td>
-                      <td>{{ "{:,}".format(count) }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div>
-            <h3 style="margin-bottom: 10px; font-size: 15px; color: var(--text-primary);">Evaluated Candidate K Scores</h3>
-            <div class="sp-table-wrap">
-              <table class="sp-table">
-                <thead>
-                  <tr>
-                    <th>Clusters (K)</th>
-                    <th>Silhouette Score</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for item in results.silhouette_scores %}
-                    <tr {% if item.is_best %}style="background: rgba(232, 107, 151, 0.12); font-weight: bold;"{% endif %}>
-                      <td>K = {{ item.k }}</td>
-                      <td>{{ "%.4f"|format(item.score) }}</td>
-                      <td>
-                        {% if item.is_best %}
-                          <span style="display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: #fff; font-size: 11px;">Optimal</span>
-                        {% else %}
-                          <span style="color: var(--text-muted); font-size: 12px;">Candidate</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sp-section">
-        <p class="sp-section-label">Method</p>
-        <h2>How Automated Hierarchical Clustering Works</h2>
-        <div class="sp-hier-explain-grid">
-          <div class="sp-hier-explain-card">
-            <i class="fa-solid fa-file-csv"></i>
-            <h3>1. Preprocessed Data</h3>
-            <p>Loads standard preprocessed features while excluding explicit target indicators.</p>
-          </div>
-          <div class="sp-hier-explain-card">
-            <i class="fa-solid fa-sitemap"></i>
-            <h3>2. Agglomeration &amp; Dendrogram</h3>
-            <p>Recursively merges the closest clusters according to the selected linkage metric.</p>
-          </div>
-          <div class="sp-hier-explain-card">
-            <i class="fa-solid fa-chart-line"></i>
-            <h3>3. Automatic K Selection</h3>
-            <p>Computes Silhouette Scores for K = 2 through 8 to find the mathematically optimal number of clusters.</p>
-          </div>
-          <div class="sp-hier-explain-card">
-            <i class="fa-solid fa-chart-simple"></i>
-            <h3>4. Direct Visualization</h3>
-            <p>Renders dendrogram cutoff, silhouette curve, and 2D PCA cluster distribution directly without manual setup.</p>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-  </main>
-
-  <footer class="sp-footer">Built with <span>♥</span> using Flask &amp; Spotify Design Language</footer>
-  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+<footer class="sp-footer">Built with <span>♥</span> using Flask &amp; Spotify Design Language</footer>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>
