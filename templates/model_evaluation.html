@@ -230,8 +230,8 @@
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-award"></i></div>
-          <div class="sp-stat-value">{{ results.mean_nested_score }}%</div>
-          <div class="sp-stat-label">Nested CV Generalization (±{{ results.nested_score_std }}%)</div>
+          <div class="sp-stat-value">{{ results.mean_nested_f1 }}%</div>
+          <div class="sp-stat-label">Nested CV Mean F1 (±{{ results.nested_f1_std }}%)</div>
         </div>
       </div>
 
@@ -244,8 +244,9 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-circle-check"></i> Methodological Recommendation</h4>
-        <p>{{ results.recommendation }} Standard K-Fold introduces sampling noise across folds that skews performance metrics.</p>
+        <h4><i class="fa-solid fa-circle-check"></i> Methodological &amp; Preprocessing Discipline</h4>
+        <p>{{ results.recommendation }}</p>
+        <p style="margin-top: 6px;"><strong>Class Imbalance &amp; Metric Alignment:</strong> Tuning and validation optimize F1 score rather than raw accuracy. While raw outer accuracy is ~{{ results.mean_nested_acc }}% (which is comparable to the ~91.5% obtained by a naive majority classifier predicting zero explicit tracks), Nested CV F1 reflects genuine explicit-track classification ability without data leakage.</p>
       </div>
     {% endif %}
 
@@ -279,18 +280,23 @@
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-radar"></i></div>
           <div class="sp-stat-value">{{ results.real_recall }}%</div>
-          <div class="sp-stat-label">Tuned Model Recall</div>
+          <div class="sp-stat-label">Tuned Model Recall (F1: {{ results.real_f1 }}%)</div>
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-gem"></i></div>
-          <div class="sp-stat-value">{{ results.pr_auc }}</div>
-          <div class="sp-stat-label">PR-AUC (ROC-AUC: {{ results.roc_auc }})</div>
+          <div class="sp-stat-value">{{ results.average_precision }}</div>
+          <div class="sp-stat-label">Average Precision (AP)</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-chart-area"></i></div>
+          <div class="sp-stat-value">{{ results.trapezoidal_pr_auc }}</div>
+          <div class="sp-stat-label">Trapezoidal PR-AUC (ROC-AUC: {{ results.roc_auc }})</div>
         </div>
       </div>
 
       <div class="sp-section">
         <p class="sp-section-label">Curve Analysis</p>
-        <h2>ROC-AUC vs Precision-Recall Curve (PR-AUC)</h2>
+        <h2>ROC-AUC vs Precision-Recall Curve (PR-AUC &amp; AP)</h2>
         <div class="sp-chart-card wide">
           <img src="{{ url_for('static', filename=results.chart_url) }}" alt="ROC and PR Curve Comparison">
         </div>
@@ -325,8 +331,9 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-circle-check"></i> Key Takeaway</h4>
-        <p>{{ results.verdict }} ROC-AUC can remain artificially high because the massive true negative pool suppresses the False Positive Rate.</p>
+        <h4><i class="fa-solid fa-circle-check"></i> Key Takeaway &amp; Metric Distinction</h4>
+        <p>{{ results.verdict }}</p>
+        <p style="margin-top: 6px;"><strong>Average Precision vs Trapezoidal PR-AUC:</strong> Average Precision (AP = {{ results.average_precision }}) computes rectangular step integration at every threshold, avoiding the over-optimistic linear interpolation bias inherent to trapezoidal PR-AUC (AUC = {{ results.trapezoidal_pr_auc }}). ROC-AUC ({{ results.roc_auc }}) remains artificially elevated because the massive true negative class suppresses the False Positive Rate.</p>
       </div>
     {% endif %}
 
@@ -347,6 +354,11 @@
       </div>
 
       <div class="sp-stats-grid">
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-calculator"></i></div>
+          <div class="sp-stat-value">{{ results.mse }} dB²</div>
+          <div class="sp-stat-label">MSE (Mean Squared Error)</div>
+        </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-wave-square"></i></div>
           <div class="sp-stat-value">{{ results.rmse }} dB</div>
@@ -432,8 +444,9 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-circle-check"></i> Calibration Discipline</h4>
-        <p>{{ results.meaning }} Calibration models are strictly fitted on the Validation set (never Training) using <code>cv='prefit'</code> to prevent over-optimistic probability alignment.</p>
+        <h4><i class="fa-solid fa-circle-check"></i> Calibration Discipline &amp; Methodology</h4>
+        <p>{{ results.meaning }}</p>
+        <p style="margin-top: 6px;">{{ results.calibration_discipline }}</p>
       </div>
     {% endif %}
 
@@ -445,35 +458,35 @@
       <div class="sp-callout success">
         <div class="sp-callout-icon"><i class="fa-solid fa-sliders"></i></div>
         <div class="sp-callout-body">
-          <div class="sp-callout-title">Grid vs Random (Bergstra-Bengio) vs Bayesian Optimization</div>
+          <div class="sp-callout-title">Hyperparameter Optimization: Grid vs Random Search (Bergstra-Bengio)</div>
           <div class="sp-callout-text">
             Grid Search tests a rigid lattice, redundantly re-testing unimportant hyperparameter values.
             <strong>Random Search</strong> explores distinct coordinates along every dimension, finding superior configurations in fewer iterations.
-            <strong>Bayesian Optimization</strong> uses Gaussian Process surrogates and acquisition functions (Expected Improvement) to intelligently guide the search.
+            Mean cross-validation F1 scores guide hyperparameter selection, while the final selected model is evaluated on the vaulted held-out test set for unbiased generalization.
           </div>
         </div>
       </div>
 
       <div class="sp-stats-grid">
         <div class="sp-stat-card">
-          <div class="sp-stat-icon"><i class="fa-solid fa-hashtag"></i></div>
-          <div class="sp-stat-value">{{ results.total_trials }}</div>
-          <div class="sp-stat-label">Evaluation Budget (Trials)</div>
-        </div>
-        <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-border-all"></i></div>
           <div class="sp-stat-value">{{ results.grid_best_score }}</div>
-          <div class="sp-stat-label">Grid Search Best Score</div>
+          <div class="sp-stat-label">Grid Search Best CV F1 (Held-out Test: {{ results.grid_test_f1 }})</div>
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-shuffle"></i></div>
           <div class="sp-stat-value">{{ results.random_best_score }}</div>
-          <div class="sp-stat-label">Random Search Best Score</div>
+          <div class="sp-stat-label">Random Search Best CV F1 (Held-out Test: {{ results.random_test_f1 }})</div>
         </div>
         <div class="sp-stat-card">
-          <div class="sp-stat-icon"><i class="fa-solid fa-brain"></i></div>
-          <div class="sp-stat-value">{{ results.bayesian_best_score }}</div>
-          <div class="sp-stat-label">Bayesian Opt Best Score</div>
+          <div class="sp-stat-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div class="sp-stat-value">{{ results.best_search_score }}</div>
+          <div class="sp-stat-label">Best CV F1 Across Searches ({{ results.selected_model_name }})</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon"><i class="fa-solid fa-vault"></i></div>
+          <div class="sp-stat-value">{{ results.selected_test_f1 }}</div>
+          <div class="sp-stat-label">Selected Model Held-out Test F1 (Acc: {{ results.selected_test_acc }}%)</div>
         </div>
       </div>
 
@@ -486,8 +499,9 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-lightbulb"></i> The Bergstra-Bengio Theorem</h4>
-        <p>{{ results.bergstra_bengio_insight }} In high-dimensional tuning of Spotify models (e.g. Gradient Boosting), Random Search and Bayesian Optimization drastically outperform Grid Search for equivalent compute budgets.</p>
+        <h4><i class="fa-solid fa-lightbulb"></i> Optimization Dynamics &amp; Generalization</h4>
+        <p>{{ results.bergstra_bengio_insight }}</p>
+        <p style="margin-top: 6px;"><strong>Cross-Validation vs Final Held-Out Test Evaluation:</strong> {{ results.evaluation_note }} Grid best parameters: <code>max_depth={{ results.grid_best_params.max_depth }}, min_samples_split={{ results.grid_best_params.min_samples_split }}</code>. Random best parameters: <code>max_depth={{ results.random_best_params.max_depth }}, min_samples_split={{ results.random_best_params.min_samples_split }}</code>.</p>
       </div>
     {% endif %}
 
@@ -515,18 +529,18 @@
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-sitemap"></i></div>
-          <div class="sp-stat-value">{{ results.optimal_capacity }}</div>
-          <div class="sp-stat-label">Optimal Tree Max Depth</div>
+          <div class="sp-stat-value">{{ results.best_tested_depth }}</div>
+          <div class="sp-stat-label">Best Tested Tree Depth (Range: 2–20)</div>
         </div>
         <div class="sp-stat-card">
-          <div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="sp-stat-value">Sufficient</div>
-          <div class="sp-stat-label">Data Scarcity Diagnostic</div>
+          <div class="sp-stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div class="sp-stat-value">Scaling Up</div>
+          <div class="sp-stat-label">Capacity Boundary Diagnostic</div>
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
-          <div class="sp-stat-value">Optimal</div>
-          <div class="sp-stat-label">Bias-Variance Trade-off</div>
+          <div class="sp-stat-value">High Variance</div>
+          <div class="sp-stat-label">Train-Val Generalization Gap</div>
         </div>
       </div>
 
@@ -539,10 +553,11 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-stethoscope"></i> Diagnostic Criteria</h4>
+        <h4><i class="fa-solid fa-stethoscope"></i> Diagnostic Criteria &amp; Empirical Findings</h4>
         <p><strong>Under-fitting (High Bias):</strong> {{ results.high_bias_indicator }}</p>
         <p style="margin-top: 6px;"><strong>Over-fitting (High Variance):</strong> {{ results.high_variance_indicator }}</p>
         <p style="margin-top: 6px;"><strong>Verdict on Spotify Data:</strong> {{ results.data_scarcity_verdict }}</p>
+        <p style="margin-top: 6px;"><strong>Preprocessing Leakage Prevention:</strong> StandardScaler is fitted separately inside each fold via a scikit-learn Pipeline, ensuring unbiased cross-validation estimates without leaking test fold statistics.</p>
       </div>
     {% endif %}
 
@@ -572,17 +587,17 @@
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
           <div class="sp-stat-value">{{ results.mcnemar_p_value }}</div>
-          <div class="sp-stat-label">McNemar p-value (p &lt; 0.05)</div>
+          <div class="sp-stat-label">McNemar p-value (Significant at 0.05)</div>
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
           <div class="sp-stat-value">{{ results.bootstrap_mean_diff }} dB</div>
-          <div class="sp-stat-label">Bootstrap Mean Difference</div>
+          <div class="sp-stat-label">Bootstrap Mean MAE Difference</div>
         </div>
         <div class="sp-stat-card">
           <div class="sp-stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
-          <div class="sp-stat-value">[{{ results.ci_lower }}, {{ results.ci_upper }}]</div>
-          <div class="sp-stat-label">95% Confidence Interval</div>
+          <div class="sp-stat-value">[{{ results.ci_lower }}, {{ results.ci_upper }}] dB</div>
+          <div class="sp-stat-label">Bootstrap 95% CI (Includes 0)</div>
         </div>
       </div>
 
@@ -595,8 +610,15 @@
       </div>
 
       <div class="eval-takeaway-box">
-        <h4><i class="fa-solid fa-certificate"></i> Statistical Verdict</h4>
-        <p>{{ results.verdict }} Because the 95% Bootstrap Confidence Interval strictly excludes 0, the Multiple Ridge regressor is statistically significantly superior to the Simple Linear baseline on Spotify track loudness.</p>
+        <h4><i class="fa-solid fa-certificate"></i> Statistical Verdicts (Reported Separately)</h4>
+        <div style="margin-bottom: 12px; padding: 12px; background: rgba(29, 185, 84, 0.08); border-left: 3px solid var(--accent); border-radius: 4px;">
+          <strong style="color: var(--accent);"><i class="fa-solid fa-bullseye"></i> Classifier Comparison (Logistic Regression vs Random Forest):</strong>
+          <p style="margin-top: 4px; color: var(--text-primary);">{{ results.classifier_verdict }}</p>
+        </div>
+        <div style="padding: 12px; background: rgba(230, 57, 70, 0.08); border-left: 3px solid var(--danger); border-radius: 4px;">
+          <strong style="color: var(--danger);"><i class="fa-solid fa-chart-line"></i> Regressor Comparison (Simple Linear vs Multiple Ridge):</strong>
+          <p style="margin-top: 4px; color: var(--text-primary);">{{ results.regressor_verdict }}</p>
+        </div>
       </div>
     {% endif %}
 

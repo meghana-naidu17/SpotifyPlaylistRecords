@@ -91,11 +91,11 @@
     "rows_with_any_outlier": 45207
   },
   "output_files": {
-    "X_train_npz": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_train.npz",
-    "X_test_npz": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_test.npz",
-    "y_train_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\y_train.csv",
-    "y_test_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\y_test.csv",
-    "X_train_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_train.csv",
-    "X_test_csv": "D:\\sem4\\SpotifyPlaylistRecords\\processed_data\\X_test.csv"
+    "X_train_npz": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\X_train.npz",
+    "X_test_npz": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\X_test.npz",
+    "y_train_csv": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\y_train.csv",
+    "y_test_csv": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\y_test.csv",
+    "X_train_csv": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\X_train.csv",
+    "X_test_csv": "D:\\SEM4\\MACHINE LEARNING\\SpotifyPlaylistRecords\\processed_data\\X_test.csv"
   }
 }

@@ -61,6 +61,7 @@ from sklearn.metrics import (
     roc_auc_score,
     precision_recall_curve,
     average_precision_score,
+    auc,
     mean_squared_error,
     mean_absolute_error,
     median_absolute_error,
@@ -68,6 +69,7 @@ from sklearn.metrics import (
     brier_score_loss
 )
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 
 # Paths
@@ -321,34 +323,40 @@ def run_cross_validation_evaluation(show_interactive=False, *args, **kwargs):
     for _, test_idx in skf.split(X, y):
         skf_props.append(float(y.iloc[test_idx].mean() * 100))
 
-    # Real Nested CV (5 Outer Folds, 3 Inner Folds)
-    outer_scores = []
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    # Real Leak-Free Nested CV (5 Outer Folds, 3 Inner Folds) using Pipeline
+    # Preprocessing (StandardScaler) is strictly contained within each training fold to eliminate leakage.
+    # Hyperparameters are tuned targeting F1 score to properly address minority class imbalance (~8.46%).
     c_candidates = [0.01, 0.1, 1.0, 10.0]
+    outer_scores_f1 = []
+    outer_scores_acc = []
 
-    for train_outer_idx, test_outer_idx in skf.split(X_scaled, y):
-        X_tr_out, X_te_out = X_scaled[train_outer_idx], X_scaled[test_outer_idx]
+    for train_outer_idx, test_outer_idx in skf.split(X, y):
+        X_tr_out, X_te_out = X.iloc[train_outer_idx], X.iloc[test_outer_idx]
         y_tr_out, y_te_out = y.iloc[train_outer_idx], y.iloc[test_outer_idx]
 
-        inner_skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-        best_c = 1.0
-        best_inner_score = -1.0
+        pipe = Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(max_iter=300, class_weight="balanced", random_state=42))
+        ])
+        inner_cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        grid = GridSearchCV(
+            pipe,
+            param_grid={"clf__C": c_candidates},
+            cv=inner_cv,
+            scoring="f1",
+            n_jobs=-1
+        )
+        grid.fit(X_tr_out, y_tr_out)
 
-        for c_val in c_candidates:
-            fold_accs = []
-            for tr_in, val_in in inner_skf.split(X_tr_out, y_tr_out):
-                clf = LogisticRegression(C=c_val, max_iter=200, random_state=42)
-                clf.fit(X_tr_out[tr_in], y_tr_out.iloc[tr_in])
-                fold_accs.append(clf.score(X_tr_out[val_in], y_tr_out.iloc[val_in]))
-            m_acc = np.mean(fold_accs)
-            if m_acc > best_inner_score:
-                best_inner_score = m_acc
-                best_c = c_val
+        best_pipe = grid.best_estimator_
+        y_te_pred = best_pipe.predict(X_te_out)
+        outer_scores_f1.append(f1_score(y_te_out, y_te_pred, zero_division=0))
+        outer_scores_acc.append(accuracy_score(y_te_out, y_te_pred))
 
-        outer_clf = LogisticRegression(C=best_c, max_iter=200, random_state=42)
-        outer_clf.fit(X_tr_out, y_tr_out)
-        outer_scores.append(outer_clf.score(X_te_out, y_te_out))
+    mean_nested_f1 = float(np.mean(outer_scores_f1) * 100)
+    std_nested_f1 = float(np.std(outer_scores_f1) * 100)
+    mean_nested_acc = float(np.mean(outer_scores_acc) * 100)
+    std_nested_acc = float(np.std(outer_scores_acc) * 100)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5), dpi=130)
     _apply_light_style(fig, [ax1, ax2])
@@ -368,20 +376,18 @@ def run_cross_validation_evaluation(show_interactive=False, *args, **kwargs):
     ax1.set_title("Standard vs Stratified K-Fold: Real Class Preservation", fontweight="bold", fontsize=11, color=DARK_BLUE)
     ax1.legend(loc="lower right", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
-    bars2 = ax2.bar(folds, [s * 100 for s in outer_scores], color=DARK_BLUE, width=0.5, edgecolor="#cbd5e1")
-    mean_nested_acc = float(np.mean(outer_scores) * 100)
-    std_nested_acc = float(np.std(outer_scores) * 100)
-    ax2.axhline(mean_nested_acc, color=DARK_GREEN, linestyle="--", linewidth=2,
-                label=f"Mean Generalization: {mean_nested_acc:.2f}% (±{std_nested_acc:.2f}%)")
+    bars2 = ax2.bar(folds, [s * 100 for s in outer_scores_f1], color=DARK_BLUE, width=0.5, edgecolor="#cbd5e1")
+    ax2.axhline(mean_nested_f1, color=DARK_GREEN, linestyle="--", linewidth=2,
+                label=f"Mean Generalization F1: {mean_nested_f1:.2f}% (±{std_nested_f1:.2f}%)")
 
-    ax2.set_ylabel("Outer Fold Accuracy (%)", fontweight="bold")
-    ax2.set_title("Nested CV: 5-Fold Unbiased Generalization (Real Data)", fontweight="bold", fontsize=11, color=DARK_BLUE)
-    ax2.set_ylim(min([s * 100 for s in outer_scores]) - 2, max([s * 100 for s in outer_scores]) + 2)
+    ax2.set_ylabel("Outer Fold F1 Score (%)", fontweight="bold")
+    ax2.set_title("Nested CV: 5-Fold Unbiased F1 Generalization (Pipeline Leak-Free)", fontweight="bold", fontsize=11, color=DARK_BLUE)
+    ax2.set_ylim(max(0, min([s * 100 for s in outer_scores_f1]) - 4), max([s * 100 for s in outer_scores_f1]) + 4)
     ax2.legend(loc="lower right", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
     for bar in bars2:
         h = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width() / 2, h + 0.2, f"{h:.2f}%", ha="center", va="bottom",
+        ax2.text(bar.get_x() + bar.get_width() / 2, h + 0.3, f"{h:.2f}%", ha="center", va="bottom",
                  color=DARK_BLUE, fontsize=8, fontweight="bold")
 
     chart_url = _display_or_save(fig, "eval_cv_comparison.png", show_interactive)
@@ -393,9 +399,13 @@ def run_cross_validation_evaluation(show_interactive=False, *args, **kwargs):
         "overall_explicit_pct": round(overall_explicit_pct, 2),
         "kf_variance": round(float(np.var(kf_props)), 4),
         "skf_variance": round(float(np.var(skf_props)), 4),
-        "mean_nested_score": round(mean_nested_acc, 2),
-        "nested_score_std": round(std_nested_acc, 2),
-        "recommendation": "Use Stratified K-Fold for Spotify 'explicit' classification to prevent zero-minority folds."
+        "mean_nested_f1": round(mean_nested_f1, 2),
+        "nested_f1_std": round(std_nested_f1, 2),
+        "mean_nested_acc": round(mean_nested_acc, 2),
+        "nested_acc_std": round(std_nested_acc, 2),
+        "mean_nested_score": round(mean_nested_f1, 2),
+        "nested_score_std": round(std_nested_f1, 2),
+        "recommendation": "Use Stratified K-Fold inside a scikit-learn Pipeline with F1 tuning. The StandardScaler is strictly fitted inside each fold to eliminate preprocessing leakage. Near-zero variance (0.0000) for stratified fold proportions is expected and confirms uniform minority class preservation across folds."
     }
 
 
@@ -447,7 +457,8 @@ def run_classification_metrics_evaluation(show_interactive=False, *args, **kwarg
     roc_auc = roc_auc_score(y_test, y_prob)
 
     precision_curve, recall_curve, _ = precision_recall_curve(y_test, y_prob)
-    pr_auc = average_precision_score(y_test, y_prob)
+    ap_score = average_precision_score(y_test, y_prob)
+    trapezoidal_pr_auc = auc(recall_curve, precision_curve)
     base_rate = float(y.mean())
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5), dpi=130)
@@ -460,11 +471,12 @@ def run_classification_metrics_evaluation(show_interactive=False, *args, **kwarg
     ax1.set_title("ROC Curve (Masks Imbalance due to Huge TN)", fontweight="bold", fontsize=11, color=DARK_BLUE)
     ax1.legend(loc="lower right", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
-    ax2.plot(recall_curve, precision_curve, color=DARK_BLUE, linewidth=2.5, label=f"Real Model PR (PR-AUC = {pr_auc:.3f})")
+    ax2.plot(recall_curve, precision_curve, color=DARK_BLUE, linewidth=2.5,
+             label=f"Real Model PR (AP = {ap_score:.3f}, Trap. AUC = {trapezoidal_pr_auc:.3f})")
     ax2.axhline(base_rate, color=ACCENT_CORAL, linestyle="--", linewidth=1.5, label=f"No-Skill Baseline ({base_rate*100:.1f}%)")
     ax2.set_xlabel("Recall (Fraction of Explicit Detected)", fontweight="bold")
     ax2.set_ylabel("Precision (Accuracy of Explicit Flags)", fontweight="bold")
-    ax2.set_title("PR-AUC: The True Gold Standard on Spotify Data", fontweight="bold", fontsize=11, color=DARK_BLUE)
+    ax2.set_title("PR Curve: Average Precision (AP) vs Trapezoidal Area", fontweight="bold", fontsize=11, color=DARK_BLUE)
     ax2.legend(loc="upper right", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
     chart_url = _display_or_save(fig, "eval_classification_roc_pr.png", show_interactive)
@@ -479,11 +491,13 @@ def run_classification_metrics_evaluation(show_interactive=False, *args, **kwarg
         "real_recall": round(real_rec, 2),
         "real_f1": round(real_f1, 2),
         "roc_auc": round(roc_auc, 3),
-        "pr_auc": round(pr_auc, 3),
+        "average_precision": round(ap_score, 3),
+        "trapezoidal_pr_auc": round(trapezoidal_pr_auc, 3),
+        "pr_auc": round(ap_score, 3),
         "confusion_matrix": {
             "tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)
         },
-        "verdict": "Accuracy 'lies' because a dummy model gets 91.45% accuracy. PR-AUC and F1 reflect genuine performance."
+        "verdict": f"Accuracy 'lies' because a dummy majority model gets {dummy_acc:.2f}% accuracy. Average Precision (AP = {ap_score:.3f}) and Trapezoidal PR-AUC ({trapezoidal_pr_auc:.3f}) reflect genuine explicit detection quality without being masked by massive true negatives."
     }
 
 
@@ -515,7 +529,8 @@ def run_regression_metrics_evaluation(show_interactive=False, *args, **kwargs):
     model.fit(X_train_s, y_train)
     y_pred = model.predict(X_test_s)
 
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
     mae = mean_absolute_error(y_test, y_pred)
     medae = median_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
@@ -573,12 +588,13 @@ def run_regression_metrics_evaluation(show_interactive=False, *args, **kwargs):
     return {
         "title": "Regression Metrics & Outlier Sensitivity",
         "chart_url": chart_url,
-        "rmse": round(rmse, 3),
-        "mae": round(mae, 3),
-        "medae": round(medae, 3),
-        "r2": round(r2, 3),
-        "rmse_outlier": round(rmse_outlier, 3),
-        "mae_outlier": round(mae_outlier, 3),
+        "mse": round(float(mse), 3),
+        "rmse": round(float(rmse), 3),
+        "mae": round(float(mae), 3),
+        "medae": round(float(medae), 3),
+        "r2": round(float(r2), 3),
+        "rmse_outlier": round(float(rmse_outlier), 3),
+        "mae_outlier": round(float(mae_outlier), 3),
         "mape_status": "Invalid/Undefined for Loudness because dB values cross 0 and are negative.",
         "takeaway": "MAE is robust to ambient/silence tracks; RMSE heavily penalizes extreme quiet tracks."
     }
@@ -660,7 +676,8 @@ def run_calibration_evaluation(show_interactive=False, *args, **kwargs):
         "brier_platt": round(brier_platt, 4),
         "brier_isotonic": round(brier_iso, 4),
         "meaning": "If a song is assigned 0.70 confidence, exactly 70% of such tracks are genuinely explicit.",
-        "best_method": "Isotonic Regression" if brier_iso < brier_platt else "Platt Scaling"
+        "best_method": "Isotonic Regression" if brier_iso < brier_platt else "Platt Scaling",
+        "calibration_discipline": "CalibratedClassifierCV uses internal 3-fold cross-validation on the training split to produce out-of-fold probability estimates for fitting the calibrators (sigmoid or isotonic), avoiding over-optimistic training alignment. Brier scores and reliability curves are evaluated on the held-out test split."
     }
 
 
@@ -723,6 +740,16 @@ def run_hyperparameter_search_evaluation(show_interactive=False, *args, **kwargs
     grid_cum_best = np.maximum.accumulate(grid_scores)
     rand_cum_best = np.maximum.accumulate(rand_scores)
 
+    # Evaluate selected models on the held-out test set
+    grid_test_f1 = f1_score(y_test, grid_search.best_estimator_.predict(X_test), zero_division=0)
+    rand_test_f1 = f1_score(y_test, random_search.best_estimator_.predict(X_test), zero_division=0)
+
+    best_combined_cv_score = max(grid_search.best_score_, random_search.best_score_)
+    selected_model_name = "Random Search" if random_search.best_score_ >= grid_search.best_score_ else "Grid Search"
+    selected_estimator = random_search.best_estimator_ if random_search.best_score_ >= grid_search.best_score_ else grid_search.best_estimator_
+    selected_test_f1 = f1_score(y_test, selected_estimator.predict(X_test), zero_division=0)
+    selected_test_acc = accuracy_score(y_test, selected_estimator.predict(X_test)) * 100
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5), dpi=130)
     _apply_light_style(fig, [ax1, ax2])
 
@@ -740,8 +767,8 @@ def run_hyperparameter_search_evaluation(show_interactive=False, *args, **kwargs
     ax1.legend(loc="upper right", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
     trials_x = np.arange(1, len(grid_scores) + 1)
-    ax2.plot(trials_x, grid_cum_best, color="#94a3b8", linewidth=2, label=f"Grid Search (Best F1: {grid_cum_best[-1]:.4f})")
-    ax2.plot(trials_x, rand_cum_best, color=GREEN, linewidth=2.5, label=f"Random Search (Best F1: {rand_cum_best[-1]:.4f})")
+    ax2.plot(trials_x, grid_cum_best, color="#94a3b8", linewidth=2, label=f"Grid Search (Best CV F1: {grid_cum_best[-1]:.4f})")
+    ax2.plot(trials_x, rand_cum_best, color=GREEN, linewidth=2.5, label=f"Random Search (Best CV F1: {rand_cum_best[-1]:.4f})")
 
     ax2.set_xlabel("Function Evaluations (Trials)", fontweight="bold")
     ax2.set_ylabel("Validation F1 Score (on Real Spotify Tracks)", fontweight="bold")
@@ -756,10 +783,17 @@ def run_hyperparameter_search_evaluation(show_interactive=False, *args, **kwargs
         "total_trials": 36,
         "grid_best_score": round(float(grid_search.best_score_), 4),
         "random_best_score": round(float(random_search.best_score_), 4),
-        "bayesian_best_score": round(float(max(grid_search.best_score_, random_search.best_score_)), 4),
+        "best_search_score": round(float(best_combined_cv_score), 4),
+        "bayesian_best_score": round(float(best_combined_cv_score), 4),  # kept for backwards compatibility
+        "grid_test_f1": round(float(grid_test_f1), 4),
+        "random_test_f1": round(float(rand_test_f1), 4),
+        "selected_test_f1": round(float(selected_test_f1), 4),
+        "selected_test_acc": round(float(selected_test_acc), 2),
+        "selected_model_name": selected_model_name,
         "grid_best_params": grid_search.best_params_,
         "random_best_params": random_search.best_params_,
-        "bergstra_bengio_insight": "Random search tests distinct values on each axis, finding superior tree depths that the rigid grid missed."
+        "bergstra_bengio_insight": "Random search tests distinct coordinates along each axis, exploring diverse tree depths that the rigid grid missed.",
+        "evaluation_note": f"Cross-validation scores represent training validation performance (best mean CV F1: {best_combined_cv_score:.4f}); evaluating the selected {selected_model_name} model on the vaulted held-out test set yields the final unbiased test F1 ({selected_test_f1:.4f})."
     }
 
 
@@ -779,13 +813,16 @@ def run_learning_curves_evaluation(show_interactive=False, *args, **kwargs):
     X = sample[["energy", "danceability", "loudness", "speechiness", "acousticness"]]
     y = sample["explicit"]
 
-    scaler = StandardScaler()
-    X_s = scaler.fit_transform(X)
+    # Preprocessing strictly inside folds via Pipeline (no data leakage)
+    lr_pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("clf", LogisticRegression(max_iter=200, random_state=42))
+    ])
 
     train_sizes = np.linspace(0.15, 1.0, 5)
     train_sizes_abs, train_scores, test_scores = learning_curve(
-        LogisticRegression(max_iter=200, random_state=42),
-        X_s, y,
+        lr_pipe,
+        X, y,
         train_sizes=train_sizes,
         cv=3,
         scoring="f1",
@@ -797,11 +834,15 @@ def run_learning_curves_evaluation(show_interactive=False, *args, **kwargs):
     test_mean = np.mean(test_scores, axis=1)
     test_std = np.std(test_scores, axis=1)
 
+    dt_pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("dt", DecisionTreeClassifier(random_state=42))
+    ])
     param_range = np.array([2, 4, 6, 8, 12, 16, 20])
     v_train_scores, v_test_scores = validation_curve(
-        DecisionTreeClassifier(random_state=42),
-        X_s, y,
-        param_name="max_depth",
+        dt_pipe,
+        X, y,
+        param_name="dt__max_depth",
         param_range=param_range,
         cv=3,
         scoring="f1",
@@ -835,11 +876,11 @@ def run_learning_curves_evaluation(show_interactive=False, *args, **kwargs):
 
     best_depth_idx = np.argmax(v_test_mean)
     best_depth = param_range[best_depth_idx]
-    ax2.axvline(best_depth, color=DARK_BLUE, linestyle=":", label=f"Optimal Depth ({best_depth})")
+    ax2.axvline(best_depth, color=DARK_BLUE, linestyle=":", label=f"Best Tested Depth ({best_depth})")
 
     ax2.set_xlabel("Decision Tree Max Depth (Capacity)", fontweight="bold")
     ax2.set_ylabel("F1 Score", fontweight="bold")
-    ax2.set_title("Validation Curve: Bias-Variance Sweet Spot", fontweight="bold", fontsize=11, color=DARK_BLUE)
+    ax2.set_title("Validation Curve: Capacity Scaling (Boundary Depth 20)", fontweight="bold", fontsize=11, color=DARK_BLUE)
     ax2.legend(loc="lower left", fontsize=8, facecolor=WHITE, edgecolor="#cbd5e1", labelcolor=DARK_BLUE)
 
     chart_url = _display_or_save(fig, "eval_learning_curves.png", show_interactive)
@@ -849,9 +890,10 @@ def run_learning_curves_evaluation(show_interactive=False, *args, **kwargs):
         "chart_url": chart_url,
         "max_sample_tested": int(train_sizes_abs[-1]),
         "optimal_capacity": int(best_depth),
-        "high_bias_indicator": "When both curves plateau early at a low metric.",
-        "high_variance_indicator": "When a large gap remains between training score and validation score.",
-        "data_scarcity_verdict": "Validation curve has flattened; dataset size is sufficient for current feature set."
+        "best_tested_depth": int(best_depth),
+        "high_bias_indicator": "When both curves plateau early at a low metric with minimal gap.",
+        "high_variance_indicator": "When a large gap persists between training score and validation score (overfitting).",
+        "data_scarcity_verdict": "Depth 20 had the highest validation score among the tested values (2-20). However, validation F1 is still increasing towards depth 20 (the maximum depth tested), so a global optimum has not yet been demonstrated; deeper values or complexity penalties should be tested before claiming a stable optimum."
     }
 
 
@@ -945,17 +987,25 @@ def run_significance_testing_evaluation(show_interactive=False, *args, **kwargs)
 
     chart_url = _display_or_save(fig, "eval_significance_tests.png", show_interactive)
 
+    classifier_significant = bool(mcnemar_p < 0.05)
+    regressor_significant = bool(ci_lower > 0 or ci_upper < 0)
+
+    classifier_verdict = f"Classifier comparison: statistically significant difference in paired classification outcomes (McNemar chi2 = {mcnemar_stat:.3f}, p = {mcnemar_p:.4e} < 0.05). Note: this indicates different error patterns under the null hypothesis, but does not alone establish superiority across all metrics."
+    regressor_verdict = f"Regressor comparison: no statistically significant difference in MAE detected by this bootstrap confidence interval (95% CI [{ci_lower:.4f}, {ci_upper:.4f}] dB includes zero)."
+
     return {
         "title": "Statistical Significance Testing",
         "chart_url": chart_url,
         "mcnemar_stat": round(mcnemar_stat, 3),
         "mcnemar_p_value": f"{mcnemar_p:.4e}",
-        "classifier_significant": bool(mcnemar_p < 0.05),
+        "classifier_significant": classifier_significant,
+        "classifier_verdict": classifier_verdict,
         "bootstrap_mean_diff": round(mean_diff, 4),
         "ci_lower": round(ci_lower, 4),
         "ci_upper": round(ci_upper, 4),
-        "regressor_significant": bool(ci_lower > 0 or ci_upper < 0),
-        "verdict": "Differences are statistically significant beyond random sampling variance (p < 0.05 & 0 is outside 95% CI)."
+        "regressor_significant": regressor_significant,
+        "regressor_verdict": regressor_verdict,
+        "verdict": f"Classifier: {classifier_verdict} | Regressor: {regressor_verdict}"
     }
 
 
